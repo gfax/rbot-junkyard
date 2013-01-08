@@ -216,28 +216,20 @@ class Brawl
     end
 
     def add_cards(request)
-      if request.class == Array
-        request.each do |r|
-          @cards << r
-        end
-      else
-        @cards << request
+      request = [request] unless request.is_a?(Array)
+      request.each do |r|
+        @cards << r
       end
     end
 
     def delete_cards(request)
-      if request.class == Array
-        request.each do |r|
-          # Grab an updated copy of the cards
-          # array before starting each iteration.
-          c = cards.dup
-          n = 0
-          n += 1 until c[n].name == r.name
-          @cards.delete_at(n)
-        end
-      else
+      request = [request] unless request.is_a?(Array)
+      request.each do |r|
+        # Grab an updated copy of the cards
+        # array before starting each iteration.
+        c = cards.dup
         n = 0
-        n += 1 until cards[n].name == request.name
+        n += 1 until c[n].name == r.name
         @cards.delete_at(n)
       end
     end
@@ -245,7 +237,6 @@ class Brawl
     def sort_cards
       # .to_s => sorts by color then name
       @cards = cards.sort {|x,y| x.to_s <=> y.to_s }
-      #@cards = a.reverse
     end
 
     def to_s
@@ -294,6 +285,9 @@ class Brawl
   end
 
   def create_deck
+    30.times do
+      @deck << Card.new('looke out')
+    end
     10.times do
       @deck << Card.new('gutpunch')
       @deck << Card.new('neck punch')
@@ -453,8 +447,8 @@ class Brawl
   end
 
   def has_turn?(src)
-    return false if @turn.nil?
-    return true if src == @players[@turn].user
+    return false if turn.nil?
+    return true if src == players[turn].user
     return false
   end
 
@@ -815,7 +809,9 @@ class Brawl
       player.discard = nil
       say p_health(players[n])
       check_health(players[n])
-      increment_turn unless opponent.grabbed
+      unless opponent.grabbed or player.discard.name == 'looke out'
+        increment_turn
+      end
       return
     end
     case player.discard.type
