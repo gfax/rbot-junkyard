@@ -28,32 +28,32 @@ class Brawl
       when 'grab'
         @type = :counter
         @string = "%{p} grabs %{o}. Respond or pass, %{o}."
-      when 'pillow'
+      when 'wet pillow'
         @type = :counter
         @health = 2
-        @string = "%{p} holds up a pillow in defense."
-      when 'insurance'
+        @string = "The wet pillow descends from heaven to shield %{p}."
+      when 'credit feed'
         @type = :counter
         @health = 5
-        @string = "%{p} uses health insurance and " +
+        @string = "%{p} feeds me some credits and " +
                   "is restored to #{@health} health!"
-      when 'humiliation'
+      when 'roach approach'
         @type = :attack
-        @string = "%{p} psychologically devastates %{o} with deep humiliation."
+        @string = "%{p} psychologically devastates %{o} with a Roach approach."
         @skips = 2
-      when 'eye poke'
+      when 'broken heart'
         @type = :attack
         @health = -2
-        @string = "%{p} pokes out %{o}'s eye. ;("
+        @string = "%{o} watches Jurassic Bark. :'("
         @skips = 1
       when 'gutpunch'
         @type = :attack
         @health = -2
-        @string = "%{p} punches %{o} in the guts."
-      when 'nose bleed'
+        @string = "A wild TODD appears and gutpunches %{o}."
+      when 'chihiro'
         @type = :attack
         @health = -3
-        @string = "%{p} pops %{o} in the nose, spraying blood everywhere."
+        @string = "Chihiro claws %{o} in an excited rage. She pees a little."
         @skips = 1
       when 'neck punch'
         @type = :attack
@@ -62,31 +62,36 @@ class Brawl
       when 'kickball'
         @type = :attack
         @health = -4
-        @string = "%{p} delivers %{o}'s private belongings a swift kick."
-      when 'uppercut'
+        innuendo = [ "toolbox", "mulberry bush", "weed whacker", 
+                     "particle accelerator", "anodes", "anchors",
+                     "Jimmy Deans", "coat rack", "balls"
+                   ]
+        @string = "%{p} delivers %{o}'s #{innuendo.sample} a swift kick."
+      when 'touch'
         @type = :attack
         @health = -5
-        @string = "%{o} receives an uppercut from %{p}."
+        @string = "%{o} receives a touch from LordKaT."
       when 'slot machine'
         @type = :attack
         @string = "Next time stick to the pachinkos, %{o}."
-      when 'trip'
+      when 'looke out'
         @type = :unstoppable
-        @string = "%{p} trips %{o}."
+        @string = "%{o} decides to wait around for Looke."
         @skips = 1
-      when 'trout slap'
+      when 'danger zone'
         @type = :unstoppable
         @health = -1
-        @string = "%{p} slaps %{o} around a bit with a large trout."
+        @string = "%{p} leaves Danger Zone on repeat and " +
+                  "forever ruins %{o}'s last.fm profile."
         @skips = -1
       when 'a gun'
         @type = :unstoppable
         @health = -2
         @string = "%{p} shoots %{o} in the FACE."
-      when 'tire iron'
+      when "rocket lawn chair"
         @type = :unstoppable
         @health = -3
-        @string = "%{p} whacks %{o} upside the head with a tire iron."
+        @string = "%{p} blows up %{o} with a Rocket Lawn Chair."
       when 'flipper'
         @type = :unstoppable
         case rand(2)
@@ -100,17 +105,17 @@ class Brawl
       when 'garbage man'
         @type = :unstoppable
         @string = "%{p} dumps a bunch of garbage cards on %{o}."
-      when 'pill steal'
+      when 'peel steal'
         @type = :unstoppable
-        @string = "%{p} rummages through %{o}'s hand for pills."
-      when 'soup'
+        @string = "%{p} rummages through %{o}'s hand for peelz."
+      when 'ddp'
         @type = :support
         @health = 1
-        @string = "%{p} sips on some soup and relaxes."
-      when 'pills'
+        @string = "%{p} takes a sip of DDP, relaxes."
+      when 'peelz'
         @type = :support
         @health = 2
-        @string = "%{p} popped some pills!"
+        @string = "%{p} peel'd up!"
       when 'armor'
         @type = :support
         @health = 5
@@ -178,7 +183,7 @@ class Brawl
            else Irc.color(:blue) + '+' + health.to_s
            end
       case name
-      when 'ffffff', 'the bees'
+      when 'ddp', 'ffffff', 'the bees'
         Bold + color + " #{name.upcase} #{hs}" + NormalText
       else
         card_name = name.split(' ').each{|w| w.capitalize!}.join(' ')
@@ -278,7 +283,7 @@ class Brawl
     end
     8.times do
       @deck << Card.new('grab')
-      @deck << Card.new('pills')
+      @deck << Card.new('peelz')
     end
     7.times do
       @deck << Card.new('kickball')
@@ -288,23 +293,23 @@ class Brawl
       @deck << Card.new('dodge')
     end
     5.times do
-      @deck << Card.new('uppercut')
+      @deck << Card.new('touch')
     end
     3.times do
-      @deck << Card.new('eye poke')
-      @deck << Card.new('soup')
-      @deck << Card.new('pillow')
+      @deck << Card.new('broken heart')
+      @deck << Card.new('ddp')
+      @deck << Card.new('wet pillow')
     end
     2.times do
       @deck << Card.new('a gun')
-      @deck << Card.new('trout slap')
-      @deck << Card.new('nose bleed')
-      @deck << Card.new('insurance')
-      @deck << Card.new('trip')
-      @deck << Card.new('pill steal')
-      @deck << Card.new('humiliation')
+      @deck << Card.new('danger zone')
+      @deck << Card.new('chihiro')
+      @deck << Card.new('credit feed')
+      @deck << Card.new('looke out')
+      @deck << Card.new('peel steal')
+      @deck << Card.new('roach approach')
       @deck << Card.new('slot machine')
-      @deck << Card.new('surgery')
+      @deck << Card.new('white wedding')
     end
     1.times do
       @deck << Card.new('armor')
@@ -315,11 +320,11 @@ class Brawl
       @deck << Card.new('garbage man')
       @deck << Card.new('it\'s getting windy')
       @deck << Card.new('multi-ball')
-      @deck << Card.new('tire iron')
+      @deck << Card.new('rocket lawn chair')
       @deck << Card.new('shifty business')
       @deck << Card.new('the bees')
       @deck << Card.new('whirlwind')
-      @deck << Card.new("reverse")
+      @deck << Card.new("you're your grandfather")
     end
     @deck.shuffle!
   end
@@ -821,7 +826,7 @@ class Brawl
       end
       # Adjust damage depending if opponent has a pillow.
       if opponent.discard
-        if opponent.discard.name == 'pillow'
+        if opponent.discard.name == 'wet pillow'
           damage += opponent.discard.health
           damage = 0 if damage > 0
           say opponent.discard.string % { :p => opponent, :o => player }
@@ -860,10 +865,10 @@ class Brawl
         opponent.cards |= player.garbage
         player.delete_cards(player.garbage)
         player.garbage = nil
-      when 'pill steal'
+      when 'peel steal'
         temp_deck = []
         opponent.cards.each do |e|
-          temp_deck << e if e.name == 'pills'
+          temp_deck << e if e.name == 'peelz'
         end
         if temp_deck.length > 0
           n = player.health + (temp_deck.length * temp_deck.first.health)
@@ -889,16 +894,16 @@ class Brawl
     opponent.skips += player.discard.skips
     # Redemption tokens
     if opponent.discard
-      if opponent.discard.name == 'insurance'
+      if opponent.discard.name == 'credit feed'
         say p_health(opponent)
         say opponent.discard.string % { :p => opponent }
         opponent.health = opponent.discard.health
       end
     end
     # Announce health
-    if player.discard.type == :support or player.discard.name == 'pill steal'
-      if player.discard.name == 'pill steal'
-        say "#{player} stole #{temp_deck.length} pills!" if temp_deck.length > 0
+    if player.discard.type == :support or player.discard.name == 'peel steal'
+      if player.discard.name == 'peel steal'
+        say "#{player} stole #{temp_deck.length} peelz!" if temp_deck.length > 0
       end
       say p_health(player)
     elsif player.discard.name != 'garbage man' and player.discard.name != 'flipper'
@@ -971,12 +976,12 @@ class Brawl
         increment_turn
         return
       end
-    when 'insurance'
+    when 'credit feed'
       bees = if player.bees then -1 else 0 end
       ensuing_health = player.health + opponent.discard.health + bees
       unless ensuing_health < 1 and not player.deflector
-        notify player, "You can only use your insurance " +
-                       "as a last resort before death."
+        notify player, "You can only credit feed as " +
+                       "a last resort before death."
         return
       end
     end
@@ -1127,7 +1132,7 @@ class BrawlPlugin < Plugin
     when 'attacking'
       "When it's a player's turn they can play an #{y}Attack#{c}/" +
       "#{o}Unstoppable#{c} card to attack a player, or a #{t}Support#{c} " +
-      "card (like pills if you wish to heal). Instead of attacking " +
+      "card (like peels if you wish to heal). Instead of attacking " +
       "when it's their turn, a player can discard cards they " +
       "don't want. If they have no playable cards, they must discard."
     when 'attacked'
@@ -1174,36 +1179,40 @@ class BrawlPlugin < Plugin
       "#{w}Grab#{c} - Play this as a counter so you can attack back. " +
       "This cannot be dodged. Also note this can be played before " +
       "an attack to disguise your type of attack."
-    when 'pillow'
-      "#{w}Pillow#{c} - Reduces opponent's attack by 2 points."
-    when 'insurance'
-      "#{w}Insurance#{c} - Can only be used against a " +
+    when /wet( pillow)?/, 'pillow'
+      "#{w}Wet Pillow#{c} - Reduces opponent's attack by 2 points."
+    when /credit( feed)?/, 'feed'
+      "#{w}Credit Feed#{c} - Can only be used against a " +
       "blockable killing blow. Resets you to 5 health points."
-    when 'humiliation'
-      "#{y}Humiliation#{c} (-0) - This does no damage, " +
+    when /roach( approach)?/, 'approach'
+      "#{y}Roach Approach#{c} (-0) - This does no damage, " +
       "but your opponent must spend 2 turns in therapy."
-    when /eye( ?poke)?/, 'poke'
-      "#{y}Eye Poke#{c} (-2) - Opponent loses 2 health and is blinded for 1 turn."
+    when /broken( heart)?/, /jurr*ass*ic( ?bark)?/, 'heart', 'bark'
+      "#{y}Broken Heart#{c} (-2) - Opponent must watch " +
+      "Jurassic Bark, lose 2 health, and a turn."
     when /gut( ?punch)?/, 'punch'
-      "#{y}Gutpunch#{c} (-2) - Basic attack."
-    when /nose ?(bleed)?/
-      "#{y}Nose Bleed#{c} (-3) - Opponent loses a turn to clean it up."
+      "#{y}Gutpunch#{c} (-2) - Basic TODD-inspired technique."
+    when 'chihiro'
+      "#{y}Chihiro#{c} (-3) - Chihiro claws your opponent in an excited " +
+      "rage. She pees a little. Opponent loses a turn to clean it up."
     when /neck( ?punch)?/
       "#{y}Neck Punch#{c} (-3) - Slightly more powerful " +
       "attack directed at the neck of your opponent."
     when /kick( ?ball)?/
       "#{y}Kickball#{c} (-4) - Major damage due to a swift kick " +
       "in the balls. Can be used on players that don't have balls."
-    when /upper ?cut/
-      "#{y}Uppercut#{c} (-5) - Ultimate damage."
-    when 'trip'
-      "#{o}Trip#{c} (-0) - Trip your opponent when they least suspect it, causing them to lose 1 turn."
-    when /trout( ?slap)?/, 'slap'
-      "#{o}Trout Slap#{c} (-1) - An mIRC-inspired attack. Slap your opponent with a trout."
+    when 'touch'
+      "#{y}Touch#{c} (-5) - LordKaT appears to deliver an ultimate attack."
+    when /looke( ?out)?/
+      "#{o}Looke Out#{c} (-0) - Looke's in town! He Says he's going " +
+      "to visit. Opponent loses a turn to wait for him. (He never comes.)"
+    when /danger( ?zone)?/, 'zone'
+      "#{o}Danger Zone#{c} (-1) - Roach scrobbles Danger Zone 570 times " +
+      "on your opponent's computer and now their music libraries are SUPER."
     when /(a ?)gun/
       "#{o}A Gun#{c} (-2) - Can't dodge a gun. Simple as that."
-    when /tire( ?iron)?/, 'iron'
-      "#{o}Tire Iron#{c} (-3) - Beat your defenseless opponent senseless."
+    when /rocket(( ?lawn)? ?chair)?/, 'lawn', 'chair'
+      "#{o}Rocket Lawn Chair#{c} (-3) - Still not as good as shotgun."
     when /flippers?/
       "#{o}Flipper#{c} (-0) - Opponent drops " +
       "all their cards and draws new ones."
@@ -1211,25 +1220,26 @@ class BrawlPlugin < Plugin
       "#{o}Garbage Man#{c} (-0) - Give a player all your cards " +
       "you don't want. The opponent won't get any new cards until " +
       "they manage to get their hand below 5 cards again."
-    when /pill( ?steal)?/, 'steal'
-      "#{o}Pill Steal#{c} (+0 to +#{MAX_HP-1}) - Steal all of an " +
-      "opponent's pills if he has any, and use them on yourself."
+    when /peel( ?steal)?/, 'steal'
+      "#{o}Peel Steal#{c} (+0 to +#{MAX_HP-1}) - Steal all of an " +
+      "opponent's peels if he has any, and use them on yourself."
     when /slot( ?machine)?/, 'machine'
       "#{o}Slot Machine#{c} (-0 to -9) - Spits out three " +
       "random attack values from 0 to 3. Attack does the " +
       "sum of the three numbers. Can't be blocked."
-    when 'soup'
-      "#{t}Soup#{c} (+1) - Take a sip. Relax. Gain health."
-    when 'pills'
-      "#{t}Pills#{c} (+2) - Heal yourself by 2 points, up to a " +
+    when 'ddp'
+      "#{t}DDP#{c} (+1) - Take a sip. Relax. Gain health."
+    when /peel(s|z)/
+      "#{t}Peelz#{c} (+2) - Heal yourself by 2 points, up to a " +
       "maximum of #{MAX_HP}. Can be played instead of attacking."
     when 'armor'
       "#{t}Armor#{c} (+5) - Adds 5 extra points to your " +
       "health on top of your maximum. Your main HP will " +
       "be protected until the armor is depleted."
-    when /s(e|u)rg(e|u)ry/
-        "#{t}Surgery#{c} (#{MAX_HP-1}) - Used only when " +
-        "a player has 1 health. Resets health to #{MAX_HP}."
+    when /white( ?wedding)?/, 'wedding'
+      "#{t}White Wedding#{c} (#{MAX_HP-1}) - It's a nice day " +
+      "to... START AGAIN!!!! HEALTH RESTORED!!! (can only " +
+      "be used if you have exactly 1 health remaining)"
     when /deflect(ed|or|ing|s)?/
       "#{b}Deflector#{c} - Next attack played " +
       "against you hurts a random player that isn't you."
@@ -1250,8 +1260,9 @@ class BrawlPlugin < Plugin
     when 'whirlwind'
       "#{b}Whirlwind#{c} - Every player shifts the cards " +
       "in their hands over to the player beside them."
-    when 'reverse'
-      "#{b}Reverse#{c} - REVERSE playing order."
+    when /you('?re|r)(( ?you('?re|r))?( ?grand(father|pa))?)?/, /grand(father|pa)/
+      "#{b}You're Your Grandfather#{c} - Time is " +
+      "moving backwards! REVERSE playing order."
     else
       "Brawl help topics: commands, objective, stats, " +
       "#{Bold}Rules:#{Bold} attacking, attacked, cards, grabbing"
