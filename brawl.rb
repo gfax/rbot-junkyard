@@ -5,7 +5,7 @@
 # Author:: Lite <degradinglight@gmail.com>
 # Copyright:: (C) 2012 gfax.ch
 # License:: GPL
-# Version:: 2013-01-07
+# Version:: 2013-01-08
 #
 # TODO: Make Reverse increment turn in 2-player game
 
@@ -212,14 +212,7 @@ class Brawl
       @grabbed = false   # currently being grabbed
       @health = MAX_HP   # initial health
       @multiball = false # gets to go again when true
-      @skips = 0          # skips player when > 0
-    end
-
-    def add_cards(request)
-      request = [request] unless request.is_a?(Array)
-      request.each do |r|
-        @cards << r
-      end
+      @skips = 0         # skips player when > 0
     end
 
     def delete_cards(request)
@@ -285,9 +278,6 @@ class Brawl
   end
 
   def create_deck
-    30.times do
-      @deck << Card.new('looke out')
-    end
     10.times do
       @deck << Card.new('gutpunch')
       @deck << Card.new('neck punch')
@@ -352,7 +342,7 @@ class Brawl
     else
       cards = @deck.pop(n)
     end
-    unless turn.nil? 
+    unless turn.nil?
       notify player, "#{Bold}You drew:#{Bold} #{cards.join(', ')}"
     end
     player.cards |= cards
@@ -363,6 +353,9 @@ class Brawl
     # Pick a random player to start with.
     @turn = rand(@players.length)
     say p_turn
+    players.each do |p|
+      notify p, p_cards(p)
+    end
   end
 
   def add_player(user)
@@ -494,7 +487,6 @@ class Brawl
 
   def p_turn
     player = players[turn]
-    notify players[turn], p_cards(players[turn])
     return "It's #{player}'s turn."
   end
 
@@ -755,11 +747,8 @@ class Brawl
         n = rand(players.length)
       end
       say card.string % { :p => player, :o => players[n] }
-      temp_deck = []
-      temp_deck << player.cards
-      temp_deck << players[n].cards
-      players[n].cards = temp_deck[0]
-      player.cards = temp_deck[1]
+      player.cards, players[n].cards = players[n].cards, player.cards
+      notify(player, p_cards(player)) unless player == players[turn]
     when 'the bees'
       n = rand(players.length)
       players[n].bees = true
@@ -775,6 +764,7 @@ class Brawl
         n += 1
       end
       say card.string % { :p => player }
+      notify(player, p_cards(player)) unless player == players[turn]
     when "you're your grandfather"
       if reverse
         @reverse = false
@@ -806,10 +796,9 @@ class Brawl
       player.damage += player.discard.health.abs
       players[n].skips += player.discard.skips
       say player.discard.string % { :p => player, :o => players[n] }
-      player.discard = nil
       say p_health(players[n])
       check_health(players[n])
-      unless opponent.grabbed or player.discard.name == 'looke out'
+      if opponent.grabbed == false and player.discard.type != :unstoppable
         increment_turn
       end
       return
@@ -1036,6 +1025,7 @@ class Brawl
       increment_turn
     else 
       say p_turn
+      notify player, p_cards(player)
     end
   end
 
