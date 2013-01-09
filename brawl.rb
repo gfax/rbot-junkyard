@@ -138,8 +138,8 @@ class Brawl
         @string = "%{p} drops a fireball on everyone."
       when 'it\'s getting windy'
         @type = :power
-        @string = "%{p} turns up the ceiling fan and blows up a gust! " +
-                  "Every player passes a random card forward."
+        @string = "%{p} turns up the ceiling fan too high and blows up " +
+                  "a gust! Every player passes a random card forward."
       when 'multi-ball'
         @type = :power
         @string = "%{p} lites multi-ball."
@@ -727,6 +727,7 @@ class Brawl
       say p_health
       check_health
     when 'it\'s getting windy'
+      say card.string % { :p => player }
       temp_deck = []
       players.each do |p|
         c = p.cards[rand(p.cards.length)]
