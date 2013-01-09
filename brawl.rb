@@ -334,7 +334,7 @@ class Brawl
     if deck.length < n
       n -= deck.length
       cards = @deck.pop(deck.length)
-      @deck = discard.dup
+      @deck = @discard.dup
       @discard = []
       @bot.action channel, "shuffles the deck."
       @deck.shuffle!
