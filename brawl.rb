@@ -766,12 +766,12 @@ class Brawl
       say card.string % { :p => player }
       notify(player, p_cards(player)) unless player == players[turn]
     when "you're your grandfather"
-      if reverse
-        @reverse = false
-      else
-        @reverse = true
-      end
+      @reverse = if reverse then false else true end
       say card.string % { :p => player }
+      if players.length == 2 and player != players[turn]
+        increment_turn
+        return
+      end
     end
     if player == players[turn]
       # In the rare event a player has no 
