@@ -5,8 +5,9 @@
 # Author:: Lite <degradinglight@gmail.com>
 # Copyright:: (C) 2012 gfax.ch
 # License:: GPL
-# Version:: 2013-01-08
+# Version:: 2013-01-10
 #
+# TODO: Fix crashing when dropping player in a 3+ player game.
 
 class Brawl
 
@@ -122,7 +123,7 @@ class Brawl
         @string = "%{p} buckles on some armor."
       when 'white wedding'
         @type = :support
-        @health = 9
+        @health = MAX_HP - 1
         @string = "It's a nice day to... START AGAIN!!! HEALTH RESTORED!!!"
       when 'deflector'
         @type = :power
@@ -350,7 +351,7 @@ class Brawl
 
   def start_game
     # Pick a random player to start with.
-    @turn = rand(@players.length)
+    @turn = rand(players.length)
     say p_turn
     players.each do |p|
       notify p, p_cards(p)
@@ -1274,8 +1275,7 @@ class BrawlPlugin < Plugin
     :desc => "Number of seconds before starting a game of Brawl.")
 
   def message(m)
-    return unless @games.key?(m.channel)
-    return unless m.plugin
+    return unless @games.key?(m.channel) or m.plugin
     g = @games[m.channel]
     msg = m.message.downcase
     p = g.get_player(m.source.nick)
