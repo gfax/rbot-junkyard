@@ -5,9 +5,8 @@
 # Author:: Lite <degradinglight@gmail.com>
 # Copyright:: (C) 2012 gfax.ch
 # License:: GPL
-# Version:: 2013-01-10
+# Version:: 2013-01-12
 #
-# TODO: Fix crashing when dropping player in a 3+ player game.
 
 class Brawl
 
@@ -532,19 +531,18 @@ class Brawl
   end
 
   def pass(player)
-    wait = false
     unless attacked
       say "Play or discard."
       return
     end
     if attacked.discard
       if player == players[turn]
-        do_move(attacked, players[turn], wait)
+        do_move(attacked, players[turn], wait=false)
       end
     end
     if players[turn].discard
       if player == attacked
-        do_move(players[turn], attacked, wait)
+        do_move(players[turn], attacked, wait=false)
       end
     end
     increment_turn
@@ -935,8 +933,7 @@ class Brawl
       elsif c[1].name == 'garbage man'
         player.garbage = c[2..-1]
       end
-      wait = false
-      do_move(opponent, player, wait)
+      do_move(opponent, player, wait=false)
       return if player.health < 1 # In case player dies mid-grab.
       player.discard = c[1]
       opponent.grabbed = true
@@ -969,9 +966,9 @@ class Brawl
       end
       return
     when 'block'
-      @discard << c[0]
-      player.delete_cards(c[0])
       unless opponent.discard.type == :unstoppable
+        @discard << c[0]
+        player.delete_cards(c[0])
         say c[0].string % { :p => player, :o => opponent,
                             :c => opponent.discard }
         increment_turn
@@ -987,10 +984,10 @@ class Brawl
       end
     end
     # Play counter
+    @discard << c[0]
     player.delete_cards(c[0])
     player.discard = c[0]
-    wait = false
-    do_move(opponent, player, wait)
+    do_move(opponent, player, wait=false)
     increment_turn
   end
 
@@ -1322,7 +1319,7 @@ class BrawlPlugin < Plugin
       end
     when /^(od?|order)\b/
       m.reply g.p_order unless g.turn.nil?
-    when /^(sc?|score)\b/
+    when /^(sc?|scores?)\b/
       m.reply g.p_damage unless g.turn.nil?
     when /^(tu?|turn)\b/
       m.reply g.p_turn unless g.turn.nil?
