@@ -5,8 +5,9 @@
 # Author:: Lite <degradinglight@gmail.com>
 # Copyright:: (C) 2012 gfax.ch
 # License:: GPL
-# Version:: 2013-01-08
+# Version:: 2013-01-15
 #
+# TODO: Fix crashing when dropping player in a 3+ player game.
 
 class Brawl
 
@@ -117,7 +118,7 @@ class Brawl
         @string = "%{p} buckles on some armor."
       when 'white wedding'
         @type = :support
-        @health = 9
+        @health = MAX_HP - 1
         @string = "It's a nice day to... START AGAIN!!! HEALTH RESTORED!!!"
       when 'deflector'
         @type = :power
@@ -345,7 +346,7 @@ class Brawl
 
   def start_game
     # Pick a random player to start with.
-    @turn = rand(@players.length)
+    @turn = rand(players.length)
     say p_turn
     players.each do |p|
       notify p, p_cards(p)
@@ -526,19 +527,18 @@ class Brawl
   end
 
   def pass(player)
-    wait = false
     unless attacked
       say "Play or discard."
       return
     end
     if attacked.discard
       if player == players[turn]
-        do_move(attacked, players[turn], wait)
+        do_move(attacked, players[turn], wait=false)
       end
     end
     if players[turn].discard
       if player == attacked
-        do_move(players[turn], attacked, wait)
+        do_move(players[turn], attacked, wait=false)
       end
     end
     increment_turn
@@ -710,6 +710,7 @@ class Brawl
     when 'ffffff'
       victim = players[rand(players.length)]
       victim.health += card.health
+      player.damage += card.health.abs
       say card.string % { :p => player, :o => victim }
       say p_health(victim)
       check_health(victim)
@@ -717,6 +718,7 @@ class Brawl
       say card.string % { :p => player }
       players.each do |p|
         p.health += card.health
+        player.damage += card.health.abs
       end
       say p_health
       check_health
@@ -929,8 +931,7 @@ class Brawl
       elsif c[1].name == 'garbage man'
         player.garbage = c[2..-1]
       end
-      wait = false
-      do_move(opponent, player, wait)
+      do_move(opponent, player, wait=false)
       return if player.health < 1 # In case player dies mid-grab.
       player.discard = c[1]
       opponent.grabbed = true
@@ -963,9 +964,9 @@ class Brawl
       end
       return
     when 'block'
-      @discard << c[0]
-      player.delete_cards(c[0])
       unless opponent.discard.type == :unstoppable
+        @discard << c[0]
+        player.delete_cards(c[0])
         say c[0].string % { :p => player, :o => opponent,
                             :c => opponent.discard }
         increment_turn
@@ -981,10 +982,10 @@ class Brawl
       end
     end
     # Play counter
+    @discard << c[0]
     player.delete_cards(c[0])
     player.discard = c[0]
-    wait = false
-    do_move(opponent, player, wait)
+    do_move(opponent, player, wait=false)
     increment_turn
   end
 
@@ -1263,8 +1264,7 @@ class BrawlPlugin < Plugin
     :desc => "Number of seconds before starting a game of Brawl.")
 
   def message(m)
-    return unless @games.key?(m.channel)
-    return unless m.plugin
+    return unless @games.key?(m.channel) or m.plugin
     g = @games[m.channel]
     msg = m.message.downcase
     p = g.get_player(m.source.nick)
@@ -1311,7 +1311,7 @@ class BrawlPlugin < Plugin
       end
     when /^(od?|order)\b/
       m.reply g.p_order unless g.turn.nil?
-    when /^(sc?|score)\b/
+    when /^(sc?|scores?)\b/
       m.reply g.p_damage unless g.turn.nil?
     when /^(tu?|turn)\b/
       m.reply g.p_turn unless g.turn.nil?
