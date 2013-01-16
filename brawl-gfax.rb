@@ -5,8 +5,9 @@
 # Author:: Lite <degradinglight@gmail.com>
 # Copyright:: (C) 2012 gfax.ch
 # License:: GPL
-# Version:: 2013-01-12
+# Version:: 2013-01-15
 #
+# TODO: Fix crashing when dropping player in a 3+ player game.
 
 class Brawl
 
@@ -714,6 +715,7 @@ class Brawl
     when 'ffffff'
       victim = players[rand(players.length)]
       victim.health += card.health
+      player.damage += card.health.abs
       say card.string % { :p => player, :o => victim }
       say p_health(victim)
       check_health(victim)
@@ -721,6 +723,7 @@ class Brawl
       say card.string % { :p => player }
       players.each do |p|
         p.health += card.health
+        player.damage += card.health.abs
       end
       say p_health
       check_health
