@@ -5,7 +5,7 @@
 # Author:: Lite <degradinglight@gmail.com>
 # Copyright:: (C) 2012 gfax.ch
 # License:: GPL
-# Version:: 2013-01-15
+# Version:: 2013-01-18
 #
 # TODO: Fix crashing when dropping player in a 3+ player game.
 
@@ -101,9 +101,9 @@ class Brawl
       when 'garbage man'
         @type = :unstoppable
         @string = "%{p} dumps a bunch of garbage cards on %{o}."
-      when 'pill steal'
+      when 'heal steal'
         @type = :unstoppable
-        @string = "%{p} rummages through %{o}'s hand for pills."
+        @string = "%{p} rummages through %{o}'s hand for soup and pills."
       when 'soup'
         @type = :support
         @health = 1
@@ -302,7 +302,7 @@ class Brawl
       @deck << Card.new('nose bleed')
       @deck << Card.new('insurance')
       @deck << Card.new('trip')
-      @deck << Card.new('pill steal')
+      @deck << Card.new('heal steal')
       @deck << Card.new('humiliation')
       @deck << Card.new('slot machine')
       @deck << Card.new('surgery')
@@ -862,21 +862,23 @@ class Brawl
         opponent.cards |= player.garbage
         player.delete_cards(player.garbage)
         player.garbage = nil
-      when 'pill steal'
-        temp_deck = []
+      when 'heal steal'
+        h, temp_deck = player.health, []
         opponent.cards.each do |e|
-          temp_deck << e if e.name == 'pills'
+          if e.name == 'soup' or e.name == 'peelz'
+            temp_deck << e
+            h += e.health
+          end
         end
         if temp_deck.length > 0
-          n = player.health + (temp_deck.length * temp_deck.first.health)
           opponent.delete_cards(temp_deck)
-          if n <= MAX_HP
-            player.health = n
+          if h <= MAX_HP
+            player.health = h
           elsif player.health <= MAX_HP
-            if n > MAX_HP
+            if h > MAX_HP
               player.health = MAX_HP
             else
-              player.health = n
+              player.health = h
             end
           else
           end
@@ -898,9 +900,12 @@ class Brawl
       end
     end
     # Announce health
-    if player.discard.type == :support or player.discard.name == 'pill steal'
-      if player.discard.name == 'pill steal'
-        say "#{player} stole #{temp_deck.length} pills!" if temp_deck.length > 0
+    if player.discard.type == :support or player.discard.name == 'heal steal'
+      if player.discard.name == 'heal steal'
+        if temp_deck.length > 0
+          s = if temp_deck.length > 1 then 's' else '' end
+          say "#{player} stole #{temp_deck.length} heal card#{s}!"
+        end
       end
       say p_health(player)
     elsif player.discard.name != 'garbage man' and player.discard.name != 'flipper'
@@ -1212,9 +1217,9 @@ class BrawlPlugin < Plugin
       "#{o}Garbage Man#{c} (-0) - Give a player all your cards " +
       "you don't want. The opponent won't get any new cards until " +
       "they manage to get their hand below 5 cards again."
-    when /pill( ?steal)?/, 'steal'
-      "#{o}Pill Steal#{c} (+0 to +#{MAX_HP-1}) - Steal all of an " +
-      "opponent's pills if he has any, and use them on yourself."
+    when /heal( ?steal)?/, 'steal'
+      "#{o}Heal Steal#{c} (+0 to +#{MAX_HP-1}) - Steal all of an " +
+      "opponent's soup and pills, if he has any, and use them on yourself."
     when /slot( ?machine)?/, 'machine'
       "#{o}Slot Machine#{c} (-0 to -9) - Spits out three " +
       "random attack values from 0 to 3. Attack does the " +
@@ -1371,7 +1376,7 @@ class BrawlPlugin < Plugin
         a = a.to_a.each { |e| e.slice!(0) }
         a.flatten!
         a.sort! { |x,y| y[:damage] <=> x[:damage] }
-        top_players = a.pop(5)
+        top_players = a[0..4]
         n = 1
         top_players.each do |k|
           m.reply "#{Bold}#{n}. #{k[:nick]}#{Bold} - #{k[:damage]} dmg " +
@@ -1403,9 +1408,15 @@ end
 
 plugin = BrawlPlugin.new
 
-plugin.map 'brawl cancel', :private => false, :action => :stop_game
-plugin.map 'brawl end', :private => false, :action => :stop_game
-plugin.map 'brawl stat[s] [:x [:y]]', :action => :show_stats
-plugin.map 'brawl stop', :private => false, :action => :stop_game
-plugin.map 'brawl top', :action => :show_stats, :defaults => { :x => false }
-plugin.map 'brawl', :private => false, :action => :create_game
+plugin.map 'brawl cancel',
+  :private => false, :action => :stop_game
+plugin.map 'brawl end',
+  :private => false, :action => :stop_game
+plugin.map 'brawl stat[s] [:x [:y]]',
+  :action => :show_stats
+plugin.map 'brawl stop',
+  :private => false, :action => :stop_game
+plugin.map 'brawl top',
+  :private => false, :action => :show_stats, :defaults => { :x => false }
+plugin.map 'brawl',
+  :private => false, :action => :create_game
