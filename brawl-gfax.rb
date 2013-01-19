@@ -779,7 +779,7 @@ class Brawl
     
     # In the rare event the player (or current player) has no 
     # more cards, pass to the next player.
-    increment_turn if player.cards.length == 0 || players[turn].cards.length == 0
+    increment_turn if players[turn].cards.length == 0
 
     notify player, p_cards(player)
   end
