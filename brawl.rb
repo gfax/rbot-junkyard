@@ -5,7 +5,7 @@
 # Author:: Lite <degradinglight@gmail.com>
 # Copyright:: (C) 2012 gfax.ch
 # License:: GPL
-# Version:: 2013-01-18
+# Version:: 2013-01-19
 #
 # TODO: Fix crashing when dropping player in a 3+ player game.
 
@@ -475,7 +475,8 @@ class Brawl
       a << e
       p = a.first
     end
-    string = "Playing order: "
+    string = p_turn
+    string << " Playing order: "
     string << a.join(', ')
     return string
   end
@@ -660,8 +661,13 @@ class Brawl
       player.garbage = c[1..-1]
     end
     player.delete_cards(c[0])
+    deflecting = if opponent.deflector then true else false end
     do_move(player, opponent)
-    increment_turn if c[0].type == :support or c[0].type == :unstoppable
+    if opponent.grabbed == false and deflecting
+      increment_turn 
+    elsif c[0].type == :support or c[0].type == :unstoppable
+      increment_turn
+    end
   end
 
   def play_counter(player, a)
@@ -770,11 +776,9 @@ class Brawl
         return
       end
     end
-    
-    # In the rare event the player (or current player) has no 
-    # more cards, pass to the next player.
+    # In the rare event the current player has
+    # no more cards, pass to the next player.
     increment_turn if players[turn].cards.length == 0
-    
     notify player, p_cards(player)
   end
 
@@ -787,16 +791,9 @@ class Brawl
       end
       say "#{opponent} deflects #{player}'s attack!"
       opponent.deflector = false
-      players[n].health += player.discard.health
-      player.damage += player.discard.health.abs
-      players[n].skips += player.discard.skips
-      say player.discard.string % { :p => player, :o => players[n] }
-      say p_health(players[n])
-      check_health(players[n])
-      if opponent.grabbed == false and player.discard.type != :unstoppable
-        increment_turn
-      end
-      return
+      @attacked = players[n]
+      opponent = players[n]
+      wait = false
     end
     case player.discard.type
     when :attack
@@ -843,7 +840,7 @@ class Brawl
     when :unstoppable
       if opponent.discard
         if opponent.discard.type == :counter
-          say "#{opponent}'s counter was thwarted!"
+          say "#{opponent}'s #{opponent.discard} was thwarted!"
         end
       end
       case player.discard.name
@@ -1151,8 +1148,8 @@ class BrawlPlugin < Plugin
       "Use #{prefix}help #{plugin} <card> for card-specific info."
     when /commands?/
       "c/cards - show cards and health, d/discard - discard, " +
-      "o/order - show playing order, pa/pass - pass, p/play - " +
-      "play cards, s/score - show score, t/turn - current turn"
+      "pa/pass - pass, p/play - play cards, s/score - show score, " +
+      "t/turn - show current turn and playing order"
     when 'grabbing'
       "Although a Counter card, Grab can be played on a player's turn. " +
       "They must play their intended attack/unstoppable/support card " +
@@ -1312,12 +1309,10 @@ class BrawlPlugin < Plugin
       else
         g.play_counter(p, request)
       end
-    when /^(od?|order)\b/
+    when /^(od?|order)\b/, /^(tu?|turn)\b/
       m.reply g.p_order unless g.turn.nil?
     when /^(sc?|scores?)\b/
       m.reply g.p_damage unless g.turn.nil?
-    when /^(tu?|turn)\b/
-      m.reply g.p_turn unless g.turn.nil?
     end
   end
 
