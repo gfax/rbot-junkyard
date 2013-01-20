@@ -1222,7 +1222,7 @@ class BrawlPlugin < Plugin
       "#{o}Garbage Man#{c} (-0) - Give a player all your cards " +
       "you don't want. The opponent won't get any new cards until " +
       "they manage to get their hand below 5 cards again."
-    when /peel( ?steal)?/, 'steal'
+    when /heal( ?steal)?/, 'steal'
       "#{o}Heal Steal#{c} (+0 to +#{MAX_HP-1}) - Steal all of an " +
       "opponent's DDP and peels, if he has any, and use them on yourself."
     when /slot( ?machine)?/, 'machine'
