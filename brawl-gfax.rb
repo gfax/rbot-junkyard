@@ -553,10 +553,11 @@ class Brawl
 
   def play_move(a)
     player = players[turn]
-    # Figure out who player is attacking, if anybody.
+    # Figure out which player is attacking, if anybody.
     if players.length == 2
       # If just two players are playing, the opponent
       # is assumed to be the player not attacking.
+      a.delete_at(0) if get_player(a[0])
       if turn == 1
         opponent = players[0]
       else
@@ -1286,7 +1287,7 @@ class BrawlPlugin < Plugin
     when /^(ca?|cards?)\b/
       if p.nil?
         retort = 
-          [ "Don't make me take you and this" +
+          [ "Don't make me take you and this " +
             "#{BRAWL} outside, #{m.source.nick}.",
             "Sorry, #{m.source.nick}, this is between me and the guys.",
             "What do you need, #{m.source.nick}?"
