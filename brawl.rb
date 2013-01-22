@@ -5,7 +5,7 @@
 # Author:: Lite <degradinglight@gmail.com>
 # Copyright:: (C) 2012 gfax.ch
 # License:: GPL
-# Version:: 2013-01-19
+# Version:: 2013-01-22
 #
 # TODO: Fix crashing when dropping player in a 3+ player game.
 
@@ -135,6 +135,9 @@ class Brawl
         @type = :power
         @string = "%{p} turns up the ceiling fan too high and blows up " +
                   "a gust! Every player passes a random card forward."
+      when 'loot bag'
+        @type = :power
+        @string = "%{p} loots %{n} cards from the deck."
       when 'multi-ball'
         @type = :power
         @string = "%{p} lites multi-ball."
@@ -161,7 +164,7 @@ class Brawl
     def color
       case type
       when :counter
-        Irc.color(:white,:black)
+        Irc.color(:green,:black)
       when :attack
         Irc.color(:yellow,:black)
       when :unstoppable
@@ -279,16 +282,16 @@ class Brawl
     end
     8.times do
       @deck << Card.new('grab')
-      @deck << Card.new('pills')
     end
     7.times do
       @deck << Card.new('kickball')
+      @deck << Card.new('pills')
     end
     6.times do
-      @deck << Card.new('block')
       @deck << Card.new('dodge')
     end
     5.times do
+      @deck << Card.new('block')
       @deck << Card.new('uppercut')
     end
     3.times do
@@ -315,6 +318,7 @@ class Brawl
       @deck << Card.new('flipper')
       @deck << Card.new('garbage man')
       @deck << Card.new('it\'s getting windy')
+      @deck << Card.new('loot bag')
       @deck << Card.new('multi-ball')
       @deck << Card.new('tire iron')
       @deck << Card.new('shifty business')
@@ -742,6 +746,10 @@ class Brawl
         @players[next_turn(n)].cards << e
         n += 1
       end
+    when 'loot bag'
+      n = if player.cards.length > 8 then 0 else 8 - player.cards.length end
+      deal(player, n)
+      say card.string % { :p => player, :n => n }
     when 'multi-ball'
       player.multiball = true
       say card.string % { :p => player }
@@ -828,6 +836,7 @@ class Brawl
       opponent.health += damage
       player.damage += damage.abs
     when :support
+    # FIXME: increment health instead of using if_statements
       player.health += player.discard.health
       if player.health > MAX_HP
         unless player.discard.name == 'armor'
@@ -1118,32 +1127,32 @@ class BrawlPlugin < Plugin
   end
 
   def help(plugin, topic='')
-    c = NormalText
-    b = Bold + Irc.color(:brown,:black)
-    o = Bold + Irc.color(:olive,:black)
-    t = Bold + Irc.color(:teal,:black)
-    w = Bold + Irc.color(:white,:black)
-    y = Bold + Irc.color(:yellow,:black)
+    cl = NormalText
+    p = Bold + Irc.color(:brown,:black)
+    u = Bold + Irc.color(:olive,:black)
+    s = Bold + Irc.color(:teal,:black)
+    c = Bold + Irc.color(:green,:black)
+    a = Bold + Irc.color(:yellow,:black)
     prefix = @bot.config['core.address_prefix'].first
     case topic.downcase
     when 'attacking'
-      "When it's a player's turn they can play an #{y}Attack#{c}/" +
-      "#{o}Unstoppable#{c} card to attack a player, or a #{t}Support#{c} " +
+      "When it's a player's turn they can play an #{a}Attack#{cl}/" +
+      "#{u}Unstoppable#{cl} card to attack a player, or a #{s}Support#{cl} " +
       "card (like pills if you wish to heal). Instead of attacking " +
       "when it's their turn, a player can discard cards they " +
       "don't want. If they have no playable cards, they must discard."
     when 'attacked'
-      "#{w}Counter#{c} cards are played by the person being attacked to " +
+      "#{c}Counter#{cl} cards are played by the person being attacked to " +
       "negate or mitigate the damage they receive. If they counter " +
       "an attack with a Grab they must also play an Attack, Support, " +
       "or Unstoppable card face down along with it. If they have " +
       "no counter, they can pass and accept fate."
     when /cards?/
       "Players have 5 cards in their hand. There are 5 types of cards: " +
-      "#{y}Attack Cards#{c} are played on your turn against other players. " +
-      "#{o}Unstoppable Cards#{c} are as well, but cannot be blocked by the " +
-      "opponent. #{t}Support Cards#{c} heal you. #{w}Counter Cards#{c} " +
-      "counter attacks against you. #{b}Power Cards#{c} either" +
+      "#{a}Attack Cards#{cl} are played on your turn against other players. " +
+      "#{u}Unstoppable Cards#{cl} are as well, but cannot be blocked by the " +
+      "opponent. #{s}Support Cards#{cl} heal you. #{w}Counter Cards#{cl} " +
+      "counter attacks against you. #{p}Power Cards#{cl} either" +
       "affect all players or a random player. They do not consume " +
       "a turn. Play these cards at the beginning of anyone's turn. " +
       "Use #{prefix}help #{plugin} <card> for card-specific info."
@@ -1167,93 +1176,95 @@ class BrawlPlugin < Plugin
       "#{prefix}#{plugin} stats #channel nick (channel-specific stats) - " +
       "#{prefix}#{plugin} top (top 5 players)"
     when 'block'
-      "#{w}Block#{c} - Block a basic attack card when played against you. " +
+      "#{c}Block#{cl} - Block a basic attack card when played against you. " +
       "Can be used against a grab to nullify the grab's proceeding attack."
     when 'dodge'
-      "#{w}Dodge#{c} - Similar to a block, but the attack " +
+      "#{c}Dodge#{cl} - Similar to a block, but the attack " +
       "is passed onto the next player. Cannot counter a grab."
     when 'grab'
-      "#{w}Grab#{c} - Play this as a counter so you can attack back. " +
+      "#{c}Grab#{cl} - Play this as a counter so you can attack back. " +
       "This cannot be dodged. Also note this can be played before " +
       "an attack to disguise your type of attack."
     when 'pillow'
-      "#{w}Pillow#{c} - Reduces opponent's attack by 2 points."
+      "#{c}Pillow#{cl} - Reduces opponent's attack by 2 points."
     when 'insurance'
-      "#{w}Insurance#{c} - Can only be used against a " +
+      "#{c}Insurance#{cl} - Can only be used against a " +
       "blockable killing blow. Resets you to 5 health points."
     when 'humiliation'
-      "#{y}Humiliation#{c} (-0) - This does no damage, " +
+      "#{a}Humiliation#{cl} (-0) - This does no damage, " +
       "but your opponent must spend 2 turns in therapy."
     when /eye( ?poke)?/, 'poke'
-      "#{y}Eye Poke#{c} (-2) - Opponent loses 2 health and is blinded for 1 turn."
+      "#{a}Eye Poke#{cl} (-2) - Opponent loses 2 health and is blinded for 1 turn."
     when /gut( ?punch)?/, 'punch'
-      "#{y}Gutpunch#{c} (-2) - Basic attack."
+      "#{a}Gutpunch#{cl} (-2) - Basic attack."
     when /nose ?(bleed)?/
-      "#{y}Nose Bleed#{c} (-3) - Opponent loses a turn to clean it up."
+      "#{a}Nose Bleed#{cl} (-3) - Opponent loses a turn to clean it up."
     when /neck( ?punch)?/
-      "#{y}Neck Punch#{c} (-3) - Slightly more powerful " +
+      "#{a}Neck Punch#{cl} (-3) - Slightly more powerful " +
       "attack directed at the neck of your opponent."
     when /kick( ?ball)?/
-      "#{y}Kickball#{c} (-4) - Major damage due to a swift kick " +
+      "#{a}Kickball#{cl} (-4) - Major damage due to a swift kick " +
       "in the balls. Can be used on players that don't have balls."
     when /upper ?cut/
-      "#{y}Uppercut#{c} (-5) - Ultimate damage."
+      "#{a}Uppercut#{cl} (-5) - Ultimate damage."
     when 'trip'
-      "#{o}Trip#{c} (-0) - Trip your opponent when they least suspect it, causing them to lose 1 turn."
+      "#{u}Trip#{cl} (-0) - Trip your opponent when they least suspect it, causing them to lose 1 turn."
     when /trout( ?slap)?/, 'slap'
-      "#{o}Trout Slap#{c} (-1) - An mIRC-inspired attack. Slap your opponent with a trout."
+      "#{u}Trout Slap#{cl} (-1) - An mIRC-inspired attack. Slap your opponent with a trout."
     when /(a ?)gun/
-      "#{o}A Gun#{c} (-2) - Can't dodge a gun. Simple as that."
+      "#{u}A Gun#{cl} (-2) - Can't dodge a gun. Simple as that."
     when /tire( ?iron)?/, 'iron'
-      "#{o}Tire Iron#{c} (-3) - Beat your defenseless opponent senseless."
+      "#{u}Tire Iron#{cl} (-3) - Beat your defenseless opponent senseless."
     when /flippers?/
-      "#{o}Flipper#{c} (-0) - Opponent drops " +
+      "#{u}Flipper#{cl} (-0) - Opponent drops " +
       "all their cards and draws new ones."
     when /garbage( ?man)?/, 'man'
-      "#{o}Garbage Man#{c} (-0) - Give a player all your cards " +
+      "#{u}Garbage Man#{cl} (-0) - Give a player all your cards " +
       "you don't want. The opponent won't get any new cards until " +
       "they manage to get their hand below 5 cards again."
     when /heal( ?steal)?/, 'steal'
-      "#{o}Heal Steal#{c} (+0 to +#{MAX_HP-1}) - Steal all of an " +
+      "#{u}Heal Steal#{cl} (+0 to +#{MAX_HP-1}) - Steal all of an " +
       "opponent's soup and pills, if he has any, and use them on yourself."
     when /slot( ?machine)?/, 'machine'
-      "#{o}Slot Machine#{c} (-0 to -9) - Spits out three " +
+      "#{u}Slot Machine#{cl} (-0 to -9) - Spits out three " +
       "random attack values from 0 to 3. Attack does the " +
       "sum of the three numbers. Can't be blocked."
     when 'soup'
-      "#{t}Soup#{c} (+1) - Take a sip. Relax. Gain health."
+      "#{s}Soup#{cl} (+1) - Take a sip. Relax. Gain health."
     when 'pills'
-      "#{t}Pills#{c} (+2) - Heal yourself by 2 points, up to a " +
+      "#{s}Pills#{cl} (+2) - Heal yourself by 2 points, up to a " +
       "maximum of #{MAX_HP}. Can be played instead of attacking."
     when 'armor'
-      "#{t}Armor#{c} (+5) - Adds 5 extra points to your " +
+      "#{s}Armor#{cl} (+5) - Adds 5 extra points to your " +
       "health on top of your maximum. Your main HP will " +
       "be protected until the armor is depleted."
     when /s(e|u)rg(e|u)ry/
-        "#{t}Surgery#{c} (#{MAX_HP-1}) - Used only when " +
+        "#{s}Surgery#{cl} (#{MAX_HP-1}) - Used only when " +
         "a player has 1 health. Resets health to #{MAX_HP}."
     when /deflect(ed|or|ing|s)?/
-      "#{b}Deflector#{c} - Next attack played " +
+      "#{p}Deflector#{cl} - Next attack played " +
       "against you hurts a random player that isn't you."
     when /f+/
-      "#{b}FFFFFF#{c} - Inflicts 6 damage " +
+      "#{p}FFFFFF#{cl} - Inflicts 6 damage " +
       "to a random player (including you)."
     when /it\'?s(( ?getting)? ?windy)?/, 'getting', 'windy'
-      "#{b}It's Getting Windy#{c} - All players choose " +
+      "#{p}It's Getting Windy#{cl} - All players choose " +
       "a random card from the player previous to them."
+    when /loot( bag)?/, 'bag'
+      "#{p}Loot Bag#{cl} - Player draws up to 8 cards in his hand."
     when /multi-?( ?ball)?/, 'ball'
-      "#{b}Multi-ball#{c} - Take an extra turn after your turn."
+      "#{p}Multi-ball#{cl} - Take an extra turn after your turn."
     when /shifty( ?business)?/, 'business'
-      "#{b}Shifty Business#{c} - Swap hand cards with a random player."
+      "#{p}Shifty Business#{cl} - Swap hand cards with a random player."
     when /the( ?bee*s)?/, 'bee*s'
-      "#{b}THE BEES#{c} - Random player is stung by bees and " +
+      "#{p}THE BEES#{cl} - Random player is stung by bees and " +
       "must do their best Nicholas Cage impression. Also, " +
       "-1 health every turn until player uses a support card."
     when 'whirlwind'
-      "#{b}Whirlwind#{c} - Every player shifts the cards " +
+      "#{p}Whirlwind#{cl} - Every player shifts the cards " +
       "in their hands over to the player beside them."
     when 'reverse'
-      "#{b}Reverse#{c} - REVERSE playing order."
+      "#{p}Reverse#{cl} - REVERSE playing order."
     else
       "Brawl help topics: commands, objective, stats, " +
       "#{Bold}Rules:#{Bold} attacking, attacked, cards, grabbing"
