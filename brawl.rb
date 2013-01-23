@@ -1211,7 +1211,7 @@ class BrawlPlugin < Plugin
       "#{u}Trip#{cl} (-0) - Trip your opponent when they least suspect it, causing them to lose 1 turn."
     when /trout( ?slap)?/, 'slap'
       "#{u}Trout Slap#{cl} (-1) - An mIRC-inspired attack. Slap your opponent with a trout."
-    when /(a ?)gun/
+    when /(a ?)?gun/
       "#{u}A Gun#{cl} (-2) - Can't dodge a gun. Simple as that."
     when /tire( ?iron)?/, 'iron'
       "#{u}Tire Iron#{cl} (-3) - Beat your defenseless opponent senseless."
@@ -1251,12 +1251,12 @@ class BrawlPlugin < Plugin
       "#{p}It's Getting Windy#{cl} - All players choose " +
       "a random card from the player previous to them."
     when /loot( bag)?/, 'bag'
-      "#{p}Loot Bag#{cl} - Player draws up to 8 cards in his hand."
+      "#{p}Loot Bag#{cl} - Player draws until he has 8 cards in his hand."
     when /multi-?( ?ball)?/, 'ball'
       "#{p}Multi-ball#{cl} - Take an extra turn after your turn."
     when /shifty( ?business)?/, 'business'
       "#{p}Shifty Business#{cl} - Swap hand cards with a random player."
-    when /the( ?bee*s)?/, 'bee*s'
+    when /the( ?be*s*)?/, /be*s*/
       "#{p}THE BEES#{cl} - Random player is stung by bees and " +
       "must do their best Nicholas Cage impression. Also, " +
       "-1 health every turn until player uses a support card."

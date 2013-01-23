@@ -1221,7 +1221,7 @@ class BrawlPlugin < Plugin
     when /danger( ?zone)?/, 'zone'
       "#{u}Danger Zone#{cl} (-1) - Roach scrobbles Danger Zone 570 times " +
       "on your opponent's computer and now their music libraries are SUPER."
-    when /(a ?)gun/
+    when /(a ?)?gun/
       "#{u}A Gun#{cl} (-2) - Can't dodge a gun. Simple as that."
     when /rocket(( ?lawn)? ?chair)?/, 'lawn', 'chair'
       "#{u}Rocket Lawn Chair#{cl} (-3) - Still not as good as shotgun."
@@ -1262,12 +1262,12 @@ class BrawlPlugin < Plugin
       "#{p}It's Getting Windy#{cl} - All players choose " +
       "a random card from the player previous to them."
     when /loot( bag)?/, 'bag'
-      "#{p}Loot Bag#{cl} - Player draws up to 8 cards in his hand."
+      "#{p}Loot Bag#{cl} - Player draws until he has 8 cards in his hand."
     when /multi-?( ?ball)?/, 'ball'
       "#{p}Multi-ball#{cl} - Take an extra turn after your turn."
     when /shifty( ?business)?/, 'business'
       "#{p}Shifty Business#{cl} - Swap hand cards with a random player."
-    when /the( ?bee*s)?/, 'bee*s'
+    when /the( ?be*s*)?/, /be*s*/
       "#{p}THE BEES#{cl} - Random player is stung by bees and " +
       "must do their best Nicholas Cage impression. Also, " +
       "-1 health every turn until player uses a support card."
