@@ -423,6 +423,7 @@ class Brawl
       say "#{player} has been removed from the game."
     end
     @discard |= player.cards
+    @discard << player.deflector if player.deflector
     @dropouts << player
     @players.delete(player)
     end_game if players.length == 1
@@ -672,6 +673,9 @@ class Brawl
       player.garbage = c[1..-1]
     end
     player.delete_cards(c[0])
+    # Deflector (by our interpretation of the rules, automatically
+    # pushes the attack onto a person without giving them a chance
+    # to respond, therefore we execute the attack and increment_turn.
     deflecting = if opponent.deflector then true else false end
     do_move(player, opponent)
     if opponent.grabbed == false and deflecting
@@ -718,11 +722,12 @@ class Brawl
       say "You cannot play power cards in the middle of an attack, #{player}."
       return
     end
-    @discard << card
+    # Deflector isn't discarded until it is used up.
+    @discard << card unless card.name == 'deflector'
     player.delete_cards(card)
     case card.name
     when 'deflector'
-      player.deflector = true
+      player.deflector = card
       say card.string % { :p => player }
     when 'ffffff'
       victim = players[rand(players.length)]
@@ -805,6 +810,7 @@ class Brawl
         n = rand(players.length)
       end
       say "#{opponent} deflects #{player}'s attack!"
+      @discard << opponent.deflector
       opponent.deflector = false
       @attacked = players[n]
       opponent = players[n]
@@ -842,11 +848,13 @@ class Brawl
       opponent.health += damage
       player.damage += damage.abs
     when :support
-    # FIXME: increment health instead of using if_statements
-      player.health += player.discard.health
-      if player.health > MAX_HP
-        unless player.discard.name == 'armor'
-          player.health = MAX_HP
+      if player.discard.name == 'armor'
+        player.health += player.discard.health
+      else
+        n = player.discard.health
+        until player.health >= MAX_HP or n < 1
+          player.health += 1
+          n -= 1
         end
       end
       if player.bees
@@ -914,8 +922,7 @@ class Brawl
     if player.discard.type == :support or player.discard.name == 'heal steal'
       if player.discard.name == 'heal steal'
         if temp_deck.length > 0
-          s = if temp_deck.length > 1 then 's' else '' end
-          say "#{player} stole #{temp_deck.length} heal card#{s}!"
+          say "#{player} steals and chugs #{temp_deck.join(', ')}!!"
         end
       end
       say p_health(player)
@@ -1253,8 +1260,8 @@ class BrawlPlugin < Plugin
       "to... START AGAIN!!!! HEALTH RESTORED!!! (can only " +
       "be used if you have exactly 1 health remaining)"
     when /deflect(ed|or|ing|s)?/
-      "#{p}Deflector#{cl} - Next attack played " +
-      "against you hurts a random player that isn't you."
+      "#{p}Deflector#{cl} - Next attack played against you " +
+      "automatically attacks a random player that isn't you."
     when /f+/
       "#{p}FFFFFF#{cl} - Inflicts 6 damage " +
       "to a random player (including you)."
