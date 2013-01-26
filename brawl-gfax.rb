@@ -7,7 +7,6 @@
 # License:: GPL
 # Version:: 2013-01-26
 #
-# TODO: Fix crashing when dropping player in a 3+ player game.
 
 class Brawl
 
@@ -261,7 +260,7 @@ class Brawl
   BRAWL = Bold + "Brawl!" + Bold
 
   attr_reader :attacked, :channel, :deck, :discard, :dropouts,
-              :manager, :players, :registry, :started
+              :manager, :players, :registry, :slots, :started
 
   def initialize(plugin, channel, registry, manager)
     debug "BRAWL STARTED"
@@ -275,6 +274,7 @@ class Brawl
     @manager = manager
     @players = []     # players currently in game
     @registry = registry
+    @slots = []
     @started = nil    # if game started
     create_deck
     add_player(manager)
@@ -491,6 +491,16 @@ class Brawl
     end
   end
 
+  def valid_insurance?(player, opponent)
+    bees = if player.bees then -1 else 0 end
+    ensuing_health = player.health + opponent.discard.health + bees
+    if opponent.discard.id == :slot_machine
+      slots.each { |n| ensuing_health -= n }
+    end
+    return true unless ensuing_health < 1 and not player.deflector
+    return false
+  end
+
   def p_cards(player)
     n = 0
     c = Bold + Irc.color(:white,:black)
@@ -651,7 +661,6 @@ class Brawl
       when :grab
         next
       when :insurance
-        #TODO: make a method to test for valid insurance
         next
       else
         next if p.health > (MAX_HP / 2) + 1
@@ -749,6 +758,7 @@ class Brawl
         end
         @discard |= [ c[0], c[1] ]
         player.discard = c[1]
+        do_slots(player)
         if player.discard.id == :garbage_man
           player.garbage = c[2..-1]
         end
@@ -769,7 +779,7 @@ class Brawl
     else
     end
     # Play the card
-    if c[0].id == :insurance
+    if c[0].id == :surgery
       unless player.health == 1
         notify player, "You can only use that card with 1 health."
         return
@@ -915,6 +925,16 @@ class Brawl
     notify player, p_cards(player)
   end
 
+  def do_slots(player)
+    return if player.discard.nil?
+    return unless player.discard.id == :slot_machine
+    @slots.clear
+    3.times do
+      n = rand(4)
+      @slots << n
+    end
+  end
+
   def do_move(player, opponent, wait=true)
     # Exercise deflectors.
     if opponent.deflector and player.discard.type != :support
@@ -923,6 +943,7 @@ class Brawl
         n = rand(players.length)
       end
       say "#{opponent} deflects #{player}'s attack!"
+      do_slots(player) # In case a Slot Machine was deflected.
       @discard << opponent.deflector
       opponent.deflector = false
       @attacked = players[n]
@@ -932,6 +953,7 @@ class Brawl
     case player.discard.type
     when :attack
       if wait
+        do_slots(player) # Get some new slots while we wait.
         say "#{player} plays #{player.discard}. Respond or pass, #{opponent}."
         notify opponent, p_cards(opponent)
         @attacked = opponent 
@@ -942,10 +964,9 @@ class Brawl
       # Determine amount of damage.
       if player.discard.id == :slot_machine
         string = "#{player} pulls #{opponent}'s lever..."
-        3.times do
-          n = rand(4)
-          string << " #{n}."
-          damage -= n
+        slots.each do |slot|
+          damage -= slot
+          string << " #{slot}."
         end
         say string
       else
@@ -1070,6 +1091,7 @@ class Brawl
       return if player.health < 1 # In case player dies mid-grab.
       player.discard = c[1]
       opponent.grabbed = true
+      do_slots(player)
       say c[0].string % { :p => player, :o => opponent }
       @discard |= [ c[0], c[1] ]
       player.delete_cards([c[0], c[1]])
@@ -1109,6 +1131,7 @@ class Brawl
         return
       end
     when :insurance
+      valid_insurance?(player, opponent)
       bees = if player.bees then -1 else 0 end
       ensuing_health = player.health + opponent.discard.health + bees
       unless ensuing_health < 1 and not player.deflector
