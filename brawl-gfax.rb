@@ -278,7 +278,9 @@ class Brawl
   end
 
   def notify(player, msg, opts={})
-    @bot.notice player.user, msg, opts
+    unless player.user == @bot.nick
+      @bot.notice player.user, msg, opts
+    end
   end
 
   def create_deck
@@ -361,16 +363,25 @@ class Brawl
     players.each do |p|
       notify p, p_cards(p)
     end
+    bot_move
   end
 
   def add_player(user)
     if p = get_player(user)
-      say "You're already in the game, #{p}."
+      if p == @bot.nick
+        say "I'm already in the game, moron."
+      else
+        say "You're already in the game, #{p}."
+      end
       return
     end
     @dropouts.each do |dp|
       if dp.user == user
-        say "You were dropped from the game, #{dp}. You can't get back in."
+        if user == @bot.nick
+          say "I was dropped from the game, moron."
+        else
+          say "You were dropped from the game, #{dp}. You can't get back in."
+        end
         return
       end
     end
@@ -417,8 +428,21 @@ class Brawl
                "%{p} perished.",
                "Fatal racing crash. Car flipped about 2,457 times. " +
                "No survivors. %{p} was killed on impact. R.I.P."
-             ].sample
-      say died % { :p => player }
+             ]
+      bot_died = [ "has seen better days",
+                   "lived a better life than all you fools.",
+                   "gives his last regards to Chanserv.",
+                   "goes to meet that ol' pi in the sky.",
+                   "wills his pancake collection to #{players.first.user}",
+                   "lost the Brawl! ...but wins the war.",
+                   "is invincible!",
+                   "can't feel his legs, but only because he has none."
+                 ]
+      if player.user == @bot.nick
+        @bot.action channel, bot_died.sample
+      else
+        say died.sample % { :p => player }
+      end
     else
       say "#{player} has been removed from the game."
     end
@@ -507,13 +531,12 @@ class Brawl
     end
   end
 
-  def discard(msg)
+  def discard(a)
     player = players[turn]
     if attacked
       say "You can only discard at the start of your turn."
       return
     end
-    a = msg.split(' ')
     return if a.length < 2
     a.delete_at(0) # [ "discard, "2", "4" ] => [ "2", "4" ]
     c = []
@@ -554,6 +577,87 @@ class Brawl
       end
     end
     increment_turn
+  end
+
+  def bot_move
+    return unless players[turn].user == @bot.nick
+    p = players[turn]
+    a = [] # array to pass to play_move
+    # For now, just make the bot pick on a random player.
+    n = rand(players.length)
+    while players[n] == p
+      n = rand(players.length)
+    end
+    a << players[n].user.to_s
+    # Iterate up or down the array depending on health.
+    if p.health <= MAX_HP/2
+      n = 0
+      c_array = p.cards
+    else
+      n = p.cards.length + 1
+      c_array = p.cards.reverse
+    end
+    c_array.each do |c|
+      if p.health <= MAX_HP/2
+        n += 1
+      else
+        n -= 1
+      end
+      case c.type
+      when :support, :unstoppable, :attack
+        next if c.name == 'white wedding' and p.health != 1
+        a << n
+        break
+      else next
+      end
+    end
+    if a.length > 1
+      say "p #{a.join(' ')}"
+      play_move(a)
+    else
+      say "d #{a.join(' ')}"
+      a = Array.new(p.cards.length) { |i| i + 1 }
+      a.shift # Don't discard the first card in hand.
+      discard(a)
+    end
+  end
+
+  def bot_counter
+    p = nil
+    players.each do |player|
+      p = player if player.user == @bot.nick
+    end
+    # Return if the bot's not playing
+    # or it's not his turn.
+    return if p.nil?
+    return unless p == attacked or p.grabbed
+    a, n = [], 0
+    p.cards.each do |c|
+      n += 1
+      next unless c.type == :counter
+      case c.name
+      when 'dodge'
+        unless p.grabbed
+          a << n
+          break
+        end
+      when 'grab'
+        next
+      when 'credit feed'
+        #TODO: make a method to test for valid credit feed
+        next
+      else
+        next if p.health > (MAX_HP / 2) + 1
+        a << n
+        break
+      end
+    end
+    if a.length > 0
+      say "(playing #{p.cards[a[0]]})"
+      play_counter(p, a)
+    else
+      pass(p)
+    end
   end
 
   def play_move(a)
@@ -650,6 +754,7 @@ class Brawl
         opponent.grabbed = true
         say c[0].string % { :p => player, :o => opponent }
         notify opponent, p_cards(opponent)
+        @bot.timer.add_once(2) { bot_counter }
         return
       else
         notify player, "That's not an attack card."
@@ -673,7 +778,7 @@ class Brawl
       player.garbage = c[1..-1]
     end
     player.delete_cards(c[0])
-    # Deflector (by our interpretation of the rules, automatically
+    # Deflector, (by our interpretation of the rules,) automatically
     # pushes the attack onto a person without giving them a chance
     # to respond, therefore we execute the attack and increment_turn.
     deflecting = if opponent.deflector then true else false end
@@ -821,7 +926,8 @@ class Brawl
       if wait
         say "#{player} plays #{player.discard}. Respond or pass, #{opponent}."
         notify opponent, p_cards(opponent)
-        @attacked = opponent
+        @attacked = opponent 
+        @bot.timer.add_once(2) { bot_counter }
         return
       end
       damage = 0
@@ -962,6 +1068,7 @@ class Brawl
       @discard |= [ c[0], c[1] ]
       player.delete_cards([c[0], c[1]])
       notify opponent, p_cards(opponent)
+      @bot.timer.add_once(2) { bot_counter }
       return
     when 'dodge'
       if player.grabbed
@@ -1026,7 +1133,7 @@ class Brawl
     else
       @turn = next_turn
     end
-    # Deal new player
+    # Deal the new player some cards.
     player = players[turn]
     if player.cards.length < 5
       n = 5 - player.cards.length
@@ -1045,6 +1152,7 @@ class Brawl
     else 
       say p_turn
       notify player, p_cards(player)
+      @bot.timer.add_once(2) { bot_move }
     end
   end
 
@@ -1316,7 +1424,11 @@ class BrawlPlugin < Plugin
       m.reply g.p_health
     when /^(di?|discard)\b/
       return unless g.has_turn?(m.source)
-      g.discard(msg)
+      a = msg.split(' ')
+      g.discard(a)
+    when /^drop bot\b/, "drop #{@bot.nick.downcase}"
+      return unless b = g.get_player(@bot.nick)
+      g.drop_player(b) unless g.turn.nil?
     when /^drop/
       return if p.nil?
       unless g.turn.nil?
@@ -1345,6 +1457,14 @@ class BrawlPlugin < Plugin
     when /^(sc?|scores?)\b/
       m.reply g.p_damage unless g.turn.nil?
     end
+  end
+
+  def add_bot(m, plugin)
+    unless @games.key?(m.channel)
+      @games[m.channel] = Brawl.new(self, m.channel, self.registry, m.source)
+    end
+    g = @games[m.channel]
+    g.add_player(@bot.nick)
   end
 
   def create_game(m, plugin)
@@ -1432,6 +1552,8 @@ end
 
 plugin = BrawlPlugin.new
 
+plugin.map 'brawl bot',
+  :private => false, :action => :add_bot
 plugin.map 'brawl cancel',
   :private => false, :action => :stop_game
 plugin.map 'brawl end',
