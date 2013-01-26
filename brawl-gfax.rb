@@ -1413,8 +1413,12 @@ class BrawlPlugin < Plugin
       g.discard(a)
     when /^drop bot\b/, "drop #{@bot.nick.downcase}"
       return unless b = g.get_player(@bot.nick)
-      g.drop_player(b) if g.started
-    when /^drop/
+      if g.players.length > 2
+        g.drop_player(b) if g.started
+      else
+        stop_game(m)
+      end
+    when /^drop\b/
       return if p.nil?
       if g.started
         g.drop_player(p)
@@ -1471,7 +1475,7 @@ class BrawlPlugin < Plugin
     @games.delete(channel)
   end
 
-  def stop_game(m, plugin)
+  def stop_game(m)
     @games.delete(m.channel)
     m.reply "#{BRAWL} stopped."
   end
