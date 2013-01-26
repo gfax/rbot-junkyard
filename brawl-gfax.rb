@@ -5,7 +5,7 @@
 # Author:: Lite <degradinglight@gmail.com>
 # Copyright:: (C) 2012 gfax.ch
 # License:: GPL
-# Version:: 2013-01-22
+# Version:: 2013-01-26
 #
 # TODO: Fix crashing when dropping player in a 3+ player game.
 
@@ -252,8 +252,8 @@ class Brawl
 
   BRAWL = Bold + "Brawl!" + Bold
 
-  attr_reader :attacked, :deck, :discard, :dropouts, :channel,
-              :registry, :reverse, :manager, :players, :turn
+  attr_reader :attacked, :channel, :deck, :discard, :dropouts,
+              :manager, :players, :registry, :started
 
   def initialize(plugin, channel, registry, manager)
     debug "BRAWL STARTED"
@@ -267,8 +267,7 @@ class Brawl
     @manager = manager
     @players = []     # players currently in game
     @registry = registry
-    @reverse = false  # true when player reverses playing order
-    @turn = nil       # player number
+    @started = nil    # if game started
     create_deck
     add_player(manager)
   end
@@ -349,7 +348,7 @@ class Brawl
     else
       cards = @deck.pop(n)
     end
-    unless turn.nil?
+    unless started.nil?
       notify player, "#{Bold}You drew:#{Bold} #{cards.join(', ')}"
     end
     player.cards |= cards
@@ -357,8 +356,8 @@ class Brawl
   end
 
   def start_game
-    # Pick a random player to start with.
-    @turn = rand(players.length)
+    @players = @players.shuffle#!
+    @started = true
     say p_turn
     players.each do |p|
       notify p, p_cards(p)
@@ -405,7 +404,7 @@ class Brawl
       attacked.discard = nil
       attacked.grabbed = nil
     end
-    if player == players[turn]
+    if player == players.first
       increment_turn
     end
     if killed
@@ -426,6 +425,7 @@ class Brawl
                "%{p} left the stage.",
                "%{p} is broken beyond repair. Nice work, ANDY.",
                "%{p} perished.",
+               "%{p} paid the ultimate price.",
                "Fatal racing crash. Car flipped about 2,457 times. " +
                "No survivors. %{p} was killed on impact. R.I.P."
              ]
@@ -436,6 +436,7 @@ class Brawl
                    "wills his pancake collection to #{players.first.user}",
                    "lost the Brawl! ...but wins the war.",
                    "is invincible!",
+                   "died the most honorable death.",
                    "can't feel his legs, but only because he has none."
                  ]
       if player.user == @bot.nick
@@ -470,8 +471,8 @@ class Brawl
   end
 
   def has_turn?(src)
-    return false if turn.nil?
-    return true if src == players[turn].user
+    return false unless started
+    return true if src == players.first.user
     return false
   end
 
@@ -502,23 +503,14 @@ class Brawl
   end
 
   def p_order
-    a = players.dup
-    a.reverse! if reverse
-    p = a.first
-    until p == players[turn]
-      e = a.shift
-      a << e
-      p = a.first
-    end
     string = p_turn
     string << " Playing order: "
-    string << a.join(', ')
+    string << players.join(', ')
     return string
   end
 
   def p_turn
-    player = players[turn]
-    return "It's #{player}'s turn."
+    return "It's #{players.first}'s turn."
   end
 
   def check_health(player=nil)
@@ -532,7 +524,7 @@ class Brawl
   end
 
   def discard(a)
-    player = players[turn]
+    player = players.first
     if attacked
       say "You can only discard at the start of your turn."
       return
@@ -567,21 +559,21 @@ class Brawl
       return
     end
     if attacked.discard
-      if player == players[turn]
-        do_move(attacked, players[turn], wait=false)
+      if player == players.first
+        do_move(attacked, players.first, wait=false)
       end
     end
-    if players[turn].discard
+    if players.first.discard
       if player == attacked
-        do_move(players[turn], attacked, wait=false)
+        do_move(players.first, attacked, wait=false)
       end
     end
     increment_turn
   end
 
   def bot_move
-    return unless players[turn].user == @bot.nick
-    p = players[turn]
+    p = players.first
+    return unless p.user == @bot.nick
     a = [] # array to pass to play_move
     # For now, just make the bot pick on a random player.
     n = rand(players.length)
@@ -653,7 +645,7 @@ class Brawl
       end
     end
     if a.length > 0
-      say "(playing #{p.cards[a[0]]})"
+      say "(playing #{p.cards[n]})"
       play_counter(p, a)
     else
       pass(p)
@@ -661,17 +653,13 @@ class Brawl
   end
 
   def play_move(a)
-    player = players[turn]
+    player = players.first
     # Figure out which player is attacking, if anybody.
     if players.length == 2
       # If just two players are playing, the opponent
       # is assumed to be the player not attacking.
       a.delete_at(0) if get_player(a[0])
-      if turn == 1
-        opponent = players[0]
-      else
-        opponent = players[1]
-      end
+      opponent = players[1]
     else
       if attacked
         opponent = attacked
@@ -681,7 +669,7 @@ class Brawl
         if temp_card.between?(0, player.cards.length-1)
           temp_card = player.cards[temp_card]
           if temp_card.type == :power or temp_card.type == :support
-            opponent = players[next_turn]
+            opponent = players[1]
           else
             opponent = get_player(a[0])
             if opponent.nil?
@@ -818,7 +806,7 @@ class Brawl
       notify player, "Wait your turn, #{player.user}."
       return
     end
-    opponent = players[turn]
+    opponent = players.first
     do_counter(player, opponent, c)
   end
 
@@ -857,9 +845,10 @@ class Brawl
         temp_deck << c
         p.delete_cards(c)
       end
+      c << c.shift
       n = 0
       temp_deck.each do |e|
-        @players[next_turn(n)].cards << e
+        @players[n].cards << e
         n += 1
       end
     when 'loot bag'
@@ -876,7 +865,7 @@ class Brawl
       end
       say card.string % { :p => player, :o => players[n] }
       player.cards, players[n].cards = players[n].cards, player.cards
-      notify(player, p_cards(player)) unless player == players[turn]
+      notify(player, p_cards(player)) unless player == players.first
     when 'the bees'
       n = rand(players.length)
       players[n].bees = true
@@ -886,24 +875,28 @@ class Brawl
       players.each do |p| 
         temp_deck << p.cards 
       end
+      temp_deck << temp_deck.shift
       n = 0
       temp_deck.each do |h|
-        @players[next_turn(n)].cards = h
+        @players[n].cards = h
         n += 1
       end
       say card.string % { :p => player }
-      notify(player, p_cards(player)) unless player == players[turn]
+      notify(player, p_cards(player)) unless player == players.first
     when "you're your grandfather"
-      @reverse = if reverse then false else true end
+      @players = @players.reverse#!
+      (players.length-1).times do
+        @players << @player.shift
+      end
       say card.string % { :p => player }
-      if players.length == 2 and player != players[turn]
+      if players.length == 2 and player != players.first
         increment_turn
         return
       end
     end
     # In the rare event the current player has
     # no more cards, pass to the next player.
-    increment_turn if players[turn].cards.length == 0
+    increment_turn if players.first.cards.length == 0
     notify player, p_cards(player)
   end
 
@@ -1126,15 +1119,15 @@ class Brawl
       attacked.grabbed = false
       @attacked = nil
     end
-    players[turn].discard = nil
-    players[turn].grabbed = false
-    if players[turn].multiball
-      players[turn].multiball = false
+    players.first.discard = nil
+    players.first.grabbed = false
+    if players.first.multiball
+      players.first.multiball = false
     else
-      @turn = next_turn
+      @players << @players.shift
     end
     # Deal the new player some cards.
-    player = players[turn]
+    player = players.first
     if player.cards.length < 5
       n = 5 - player.cards.length
       deal(player, n)
@@ -1156,21 +1149,9 @@ class Brawl
     end
   end
 
-  def next_turn(num=turn)
-    if reverse
-      if num == 0
-        n = players.length - 1
-      else
-        n = num - 1
-      end
-    else
-      if num >= players.length - 1
-        n = 0
-      else
-        n = num + 1
-      end
-    end
-    return n
+  def next_turn(num=0)
+    return 0 if num >= players.length - 1
+    return num + 1
   end
 
   def end_game
@@ -1279,8 +1260,12 @@ class BrawlPlugin < Plugin
       "Use #{prefix}help #{plugin} <card> for card-specific info."
     when /commands?/
       "c/cards - show cards and health, d/discard - discard, " +
+      "drop - remove yourself from the game, drop bot - drop me," +
       "pa/pass - pass, p/play - play cards, s/score - show score, " +
       "t/turn - show current turn and playing order"
+    when /drop(ping)?/
+      "Type 'drop' to drop from the game, or " +
+      "'drop bot' to drop the bot from the game."
     when 'grabbing'
       "Although a Counter card, Grab can be played on a player's turn. " +
       "They must play their intended attack/unstoppable/support card " +
@@ -1428,10 +1413,10 @@ class BrawlPlugin < Plugin
       g.discard(a)
     when /^drop bot\b/, "drop #{@bot.nick.downcase}"
       return unless b = g.get_player(@bot.nick)
-      g.drop_player(b) unless g.turn.nil?
+      g.drop_player(b) if g.started
     when /^drop/
       return if p.nil?
-      unless g.turn.nil?
+      if g.started
         g.drop_player(p)
       end
     when /^(pa|pass)\b/
@@ -1443,7 +1428,7 @@ class BrawlPlugin < Plugin
       end
     when /^(pl?|play)\b/
       return if p.nil?
-      return if g.turn.nil?
+      return unless g.started
       request = msg.split(' ')
       return if request.length < 2
       request.delete_at(0) # => [ "frank", "2", "4" ]
@@ -1453,9 +1438,9 @@ class BrawlPlugin < Plugin
         g.play_counter(p, request)
       end
     when /^(od?|order)\b/, /^(tu?|turn)\b/
-      m.reply g.p_order unless g.turn.nil?
+      m.reply g.p_order if g.started
     when /^(sc?|scores?)\b/
-      m.reply g.p_damage unless g.turn.nil?
+      m.reply g.p_damage if g.started
     end
   end
 
