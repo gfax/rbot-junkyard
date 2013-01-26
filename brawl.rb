@@ -15,80 +15,80 @@ class Brawl
 
   class Card
 
-    attr_reader :name, :health, :skips, :string, :type
+    attr_reader :id, :name, :health, :skips, :string, :type
 
     def initialize(id)
-      @name = id.downcase
-      case @name
-      when 'block'
+      @id = id.downcase
+      case @id
+      when :block
         @type = :counter
         @string = "%{p} blocks %{o}'s %{c}."
-      when 'dodge'
+      when :dodge
         @type = :counter
         @string = "%{p} dodges %{o}'s %{c}."
-      when 'grab'
+      when :grab
         @type = :counter
         @string = "%{p} grabs %{o}. Respond or pass, %{o}."
-      when 'pillow'
+      when :pillow
         @type = :counter
         @health = 2
         @string = "%{p} holds up a pillow in defense."
-      when 'insurance'
+      when :insurance
         @type = :counter
         @health = 5
         @string = "%{p} uses health insurance and " +
                   "is restored to #{@health} health!"
-      when 'humiliation'
+      when :humiliation
         @type = :attack
         @string = "%{p} psychologically devastates %{o} with deep humiliation."
         @skips = 2
-      when 'eye poke'
+      when :eye_poke
         @type = :attack
         @health = -2
         @string = "%{p} pokes out %{o}'s eye. ;("
         @skips = 1
-      when 'gutpunch'
+      when :gutpunch
         @type = :attack
         @health = -2
         @string = "%{p} punches %{o} in the guts."
-      when 'nose bleed'
+      when :nose_bleed
         @type = :attack
         @health = -3
         @string = "%{p} pops %{o} in the nose, spraying blood everywhere."
         @skips = 1
-      when 'neck punch'
+      when :neck_punch
         @type = :attack
         @health = -3
         @string = "%{p} delivers %{o} a punch in the neck."
-      when 'kickball'
+      when :kickball
         @type = :attack
         @health = -4
         @string = "%{p} delivers %{o}'s private belongings a swift kick."
-      when 'uppercut'
+      when :uppercut
         @type = :attack
         @health = -5
         @string = "%{o} receives an uppercut from %{p}."
-      when 'slot machine'
+      when :slot_machine
         @type = :attack
         @string = "Next time stick to the pachinkos, %{o}."
-      when 'trip'
+      when :trip
         @type = :unstoppable
         @string = "%{p} trips %{o}."
         @skips = 1
-      when 'trout slap'
+      when :trout_slap
         @type = :unstoppable
         @health = -1
         @string = "%{p} slaps %{o} around a bit with a large trout."
         @skips = -1
-      when 'a gun'
+      when :a_gun
         @type = :unstoppable
         @health = -2
         @string = "%{p} shoots %{o} in the FACE."
-      when 'tire iron'
+      when :tire_iron
         @type = :unstoppable
         @health = -3
         @string = "%{p} whacks %{o} upside the head with a tire iron."
-      when 'flipper'
+      when :flipper
         @type = :unstoppable
         case rand(2)
         when 0
@@ -98,96 +98,91 @@ class Brawl
           @string = "%{p} violently SLAPS the cards " +
                     "out of %{o}'s hand for no raisin."
         end
-      when 'garbage man'
+      when :garbage_man
         @type = :unstoppable
         @string = "%{p} dumps a bunch of garbage cards on %{o}."
-      when 'heal steal'
+      when :heal_steal
         @type = :unstoppable
         @string = "%{p} rummages through %{o}'s hand for soup and pills."
-      when 'soup'
+      when :soup
         @type = :support
         @health = 1
         @string = "%{p} sips on some soup and relaxes."
-      when 'pills'
+      when :pills
         @type = :support
         @health = 2
         @string = "%{p} popped some pills!"
-      when 'armor'
+      when :armor
         @type = :support
         @health = 5
         @string = "%{p} buckles on some armor."
-      when 'white wedding'
+      when :surgery
         @type = :support
         @health = MAX_HP - 1
-        @string = "It's a nice day to... START AGAIN!!! HEALTH RESTORED!!!"
-      when 'deflector'
+        @string = "%{p} undergoes surgery and is completely restored!"
+      when :deflector
         @type = :power
         @string = "%{p} raises a deflector shield!"
-      when 'ffffff'
+      when :ffffff
+        @name = 'FFFFFF'
         @type = :power
         @health = -6
         @string = "%{p} randomly inflicts 6 damage on %{o}. What a dick!"
-      when 'fireball'
+      when :fireball
         @type = :power
         @health = -1
         @string = "%{p} drops a fireball on everyone."
-      when 'it\'s getting windy'
+      when :windy
+        @name = 'It\'s Getting Windy'
         @type = :power
         @string = "%{p} turns up the ceiling fan too high and blows up " +
                   "a gust! Every player passes a random card forward."
-      when 'loot bag'
+      when :loot_bag
         @type = :power
         @string = "%{p} loots %{n} cards from the deck."
-      when 'multi-ball'
+      when :multiball
+        @name = 'Multi-ball'
         @type = :power
         @string = "%{p} lites multi-ball."
-      when 'shifty business'
+      when :shifty_business
         @type = :power
         @string = "%{p} swaps hands with %{o}!"
-      when 'the bees'
+      when :the_bees
         @type = :power
         @string = "%{p} drops the bee cage on %{o}'s head..."
-      when 'whirlwind'
+      when :whirlwind
         @type = :power
         @string = "FEEL THE POWER OF THE WIND"
-      when 'you\'re your grandfather'
+      when :reverse
         @type = :power
         @string = "%{p} reverses the table!"
       else
         raise 'Invalid card name.'
         return
       end
+      @name = @id.to_s.split('_').each{|w| w.capitalize!}.join(' ') if @name.nil?
       @health = 0 if @health.nil?
       @skips = 0 if @skips.nil?
     end
 
-    def color
-      case type
-      when :counter
-        Irc.color(:green,:black)
-      when :attack
-        Irc.color(:yellow,:black)
-      when :unstoppable
-        Irc.color(:olive,:black)
-      when :support
-        Irc.color(:teal,:black)
-      when :power
-        Irc.color(:brown,:black)
-      end
-    end
-
     def to_s
+      color = case type
+              when :counter
+                Irc.color(:green,:black)
+              when :attack
+                Irc.color(:yellow,:black)
+              when :unstoppable
+                Irc.color(:olive,:black)
+              when :support
+                Irc.color(:teal,:black)
+              when :power
+                Irc.color(:brown,:black)
+              end
       hs = if health.zero? then ''
            elsif health < 0 then Irc.color(:red) + health.to_s
            else Irc.color(:blue) + '+' + health.to_s
            end
-      case name
-      when 'ffffff', 'the bees'
-        Bold + color + " #{name.upcase} #{hs}" + NormalText
-      else
-        card_name = name.split(' ').each{|w| w.capitalize!}.join(' ')
-        Bold + color + " #{card_name} #{hs}" + NormalText
-      end
+      Bold + color + " #{name} #{hs}" + NormalText
     end
 
   end
@@ -220,7 +215,7 @@ class Brawl
         # array before starting each iteration.
         c = cards.dup
         n = 0
-        n += 1 until c[n].name == r.name
+        n += 1 until c[n].id == r.id
         @cards.delete_at(n)
       end
     end
@@ -278,54 +273,54 @@ class Brawl
 
   def create_deck
     10.times do
-      @deck << Card.new('gutpunch')
-      @deck << Card.new('neck punch')
+      @deck << Card.new(:gutpunch)
+      @deck << Card.new(:neck_punch)
     end
     8.times do
-      @deck << Card.new('grab')
+      @deck << Card.new(:grab)
     end
     7.times do
-      @deck << Card.new('kickball')
-      @deck << Card.new('pills')
+      @deck << Card.new(:kickball)
+      @deck << Card.new(:pills)
     end
     6.times do
-      @deck << Card.new('dodge')
+      @deck << Card.new(:dodge)
     end
     5.times do
-      @deck << Card.new('block')
-      @deck << Card.new('uppercut')
+      @deck << Card.new(:block)
+      @deck << Card.new(:uppercut)
     end
     3.times do
-      @deck << Card.new('eye poke')
-      @deck << Card.new('soup')
-      @deck << Card.new('pillow')
+      @deck << Card.new(:eye_poke)
+      @deck << Card.new(:soup)
+      @deck << Card.new(:pillow)
     end
     2.times do
-      @deck << Card.new('a gun')
-      @deck << Card.new('trout slap')
-      @deck << Card.new('nose bleed')
-      @deck << Card.new('insurance')
-      @deck << Card.new('trip')
-      @deck << Card.new('heal steal')
-      @deck << Card.new('humiliation')
-      @deck << Card.new('slot machine')
-      @deck << Card.new('surgery')
+      @deck << Card.new(:a_gun)
+      @deck << Card.new(:trout_slap)
+      @deck << Card.new(:nose_bleed)
+      @deck << Card.new(:insurance)
+      @deck << Card.new(:trip)
+      @deck << Card.new(:heal_steal)
+      @deck << Card.new(:humiliation)
+      @deck << Card.new(:slot_machine)
+      @deck << Card.new(:surgery)
     end
     1.times do
-      @deck << Card.new('armor')
-      @deck << Card.new('deflector')
-      @deck << Card.new('ffffff')
-      @deck << Card.new('fireball')
-      @deck << Card.new('flipper')
-      @deck << Card.new('garbage man')
-      @deck << Card.new('it\'s getting windy')
-      @deck << Card.new('loot bag')
-      @deck << Card.new('multi-ball')
-      @deck << Card.new('tire iron')
-      @deck << Card.new('shifty business')
-      @deck << Card.new('the bees')
-      @deck << Card.new('whirlwind')
-      @deck << Card.new("reverse")
+      @deck << Card.new(:armor)
+      @deck << Card.new(:deflector)
+      @deck << Card.new(:ffffff)
+      @deck << Card.new(:fireball)
+      @deck << Card.new(:flipper)
+      @deck << Card.new(:garbage_man)
+      @deck << Card.new(:loot_bag)
+      @deck << Card.new(:multiball)
+      @deck << Card.new(:tire_iron)
+      @deck << Card.new(:shifty_business)
+      @deck << Card.new(:the_bees)
+      @deck << Card.new(:whirlwind)
+      @deck << Card.new(:windy)
+      @deck << Card.new(:reverse)
     end
     @deck.shuffle!
   end
@@ -470,6 +465,13 @@ class Brawl
     return false
   end
 
+  def bee_recover(player)
+    if player.bees
+      say "#{player} recovers from bee allergies."
+      player.bees = false
+    end
+  end
+
   def p_cards(player)
     n = 0
     c = Bold + Irc.color(:white,:black)
@@ -591,7 +593,7 @@ class Brawl
       end
       case c.type
       when :support, :unstoppable, :attack
-        next if c.name == 'white wedding' and p.health != 1
+        next if c.id == :surgery and p.health != 1
         a << n
         break
       else next
@@ -621,16 +623,16 @@ class Brawl
     p.cards.each do |c|
       n += 1
       next unless c.type == :counter
-      case c.name
-      when 'dodge'
+      case c.id
+      when :dodge
         unless p.grabbed
           a << n
           break
         end
-      when 'grab'
+      when :grab
         next
-      when 'credit feed'
-        #TODO: make a method to test for valid credit feed
+      when :insurance
+        #TODO: make a method to test for valid insurance
         next
       else
         next if p.health > (MAX_HP / 2) + 1
@@ -711,7 +713,7 @@ class Brawl
       return
     end
     if c[0].type == :counter
-      if c[0].name == 'grab'
+      if c[0].id == :grab
         if c[1].nil?
           notify player, "Play an attack when grabbing."
           return
@@ -720,7 +722,7 @@ class Brawl
           notify player, "You can't play a #{c[1].type} card when grabbing."
           return
         end
-        if c[1].name == 'white wedding'
+        if c[1].id == :surgery
           unless player.health == 1
             notify player, "You can only use that card with 1 health."
             return
@@ -728,7 +730,7 @@ class Brawl
         end
         @discard |= [ c[0], c[1] ]
         player.discard = c[1]
-        if player.discard.name == 'garbage man'
+        if player.discard.id == :garbage_man
           player.garbage = c[2..-1]
         end
         player.delete_cards([c[0], c[1]])
@@ -748,7 +750,7 @@ class Brawl
     else
     end
     # Play the card
-    if c[0].name == 'white wedding'
+    if c[0].id == :insurance
       unless player.health == 1
         notify player, "You can only use that card with 1 health."
         return
@@ -756,7 +758,7 @@ class Brawl
     end
     @discard << c[0]
     player.discard = c[0]
-    if player.discard.name == 'garbage man'
+    if player.discard.id == :garbage_man
       player.garbage = c[1..-1]
     end
     player.delete_cards(c[0])
@@ -810,20 +812,20 @@ class Brawl
       return
     end
     # Deflector isn't discarded until it is used up.
-    @discard << card unless card.name == 'deflector'
+    @discard << card unless card.id == :deflector
     player.delete_cards(card)
-    case card.name
-    when 'deflector'
+    case card.id
+    when :deflector
       player.deflector = card
       say card.string % { :p => player }
-    when 'ffffff'
+    when :ffffff
       victim = players[rand(players.length)]
       victim.health += card.health
       player.damage += card.health.abs
       say card.string % { :p => player, :o => victim }
       say p_health(victim)
       check_health(victim)
-    when 'fireball'
+    when :fireball
       say card.string % { :p => player }
       players.each do |p|
         p.health += card.health
@@ -831,7 +833,7 @@ class Brawl
       end
       say p_health
       check_health
-    when 'it\'s getting windy'
+    when :windy
       say card.string % { :p => player }
       temp_deck = []
       players.each do |p|
@@ -845,14 +847,14 @@ class Brawl
         @players[n].cards << e
         n += 1
       end
-    when 'loot bag'
+    when :loot_bag
       n = if player.cards.length > 8 then 0 else 8 - player.cards.length end
       deal(player, n)
       say card.string % { :p => player, :n => n }
-    when 'multi-ball'
+    when :multiball
       player.multiball = true
       say card.string % { :p => player }
-    when 'shifty business'
+    when :shifty_business
       n = rand(players.length)
       while players[n] == player
         n = rand(players.length)
@@ -860,11 +862,11 @@ class Brawl
       say card.string % { :p => player, :o => players[n] }
       player.cards, players[n].cards = players[n].cards, player.cards
       notify(player, p_cards(player)) unless player == players.first
-    when 'the bees'
+    when :the_bees
       n = rand(players.length)
       players[n].bees = true
       say card.string % { :p => player, :o => players[n] }
-    when 'whirlwind'
+    when :whirlwind
       temp_deck = []
       players.each do |p| 
         temp_deck << p.cards 
@@ -877,7 +879,7 @@ class Brawl
       end
       say card.string % { :p => player }
       notify(player, p_cards(player)) unless player == players.first
-    when "you're your grandfather"
+    when :reverse
       @players = @players.reverse#!
       (players.length-1).times do
         @players << @player.shift
@@ -919,7 +921,7 @@ class Brawl
       end
       damage = 0
       # Determine amount of damage.
-      if player.discard.name == 'slot machine'
+      if player.discard.id == :slot_machine
         string = "#{player} pulls #{opponent}'s lever..."
         3.times do
           n = rand(4)
@@ -932,7 +934,7 @@ class Brawl
       end
       # Adjust damage depending if opponent has a pillow.
       if opponent.discard
-        if opponent.discard.name == 'pillow'
+        if opponent.discard.id == :pillow
           damage += opponent.discard.health
           damage = 0 if damage > 0
           say opponent.discard.string % { :p => opponent, :o => player }
@@ -941,7 +943,7 @@ class Brawl
       opponent.health += damage
       player.damage += damage.abs
     when :support
-      if player.discard.name == 'armor'
+      if player.discard.id == :armor
         player.health += player.discard.health
       else
         n = player.discard.health
@@ -950,18 +952,15 @@ class Brawl
           n -= 1
         end
       end
-      if player.bees
-        say "#{player} recovers from bee allergies."
-        player.bees = false
-      end
+      bee_recover(player)
     when :unstoppable
       if opponent.discard
         if opponent.discard.type == :counter
           say "#{opponent}'s #{opponent.discard} was thwarted!"
         end
       end
-      case player.discard.name
-      when 'flipper'
+      case player.discard.id
+      when :flipper
         until opponent.cards.length < 1
           temp_deck = opponent.cards
           temp_deck.each do |c|
@@ -969,15 +968,15 @@ class Brawl
             opponent.delete_cards(c)
           end
         end
-      when 'garbage man'
+      when :garbage_man
         @discard |= player.garbage
         opponent.cards |= player.garbage
         player.delete_cards(player.garbage)
         player.garbage = nil
-      when 'heal steal'
+      when :heal_steal
         h, temp_deck = player.health, []
         opponent.cards.each do |e|
-          if e.name == 'soup' or e.name == 'peelz'
+          if e.id == :soup or e.id == :pills
             temp_deck << e
             h += e.health
           end
@@ -1005,21 +1004,22 @@ class Brawl
     opponent.skips += player.discard.skips
     # Redemption tokens
     if opponent.discard
-      if opponent.discard.name == 'insurance'
+      if opponent.discard.id == :insurance
         say p_health(opponent)
         say opponent.discard.string % { :p => opponent }
         opponent.health = opponent.discard.health
       end
     end
     # Announce health
-    if player.discard.type == :support or player.discard.name == 'heal steal'
-      if player.discard.name == 'heal steal'
+    if player.discard.type == :support or player.discard.id == :heal_steal
+      if player.discard.id == :heal_steal
         if temp_deck.length > 0
           say "#{player} steals and chugs #{temp_deck.join(', ')}!!"
+          bee_recover(player)
         end
       end
       say p_health(player)
-    elsif player.discard.name != 'garbage man' and player.discard.name != 'flipper'
+    elsif player.discard.id != :garbage_man and player.discard.id != :flipper
       say p_health(opponent)
       check_health(opponent)
     end
@@ -1031,20 +1031,20 @@ class Brawl
       say "Play a counter or pass."
       return
     end
-    case c[0].name
-    when 'grab'
+    case c[0].id
+    when :grab
       if c[1].nil?
         notify player, "Play an attack when grabbing."
         return
       elsif c[1].type == :counter or c[1].type == :power
         notify player, "You can't play a #{c[1].type} card when grabbing."
         return
-      elsif c[1].name == 'white wedding'
+      elsif c[1].id == :white_wedding
         unless player.health == 1
           notify player, "You can only use that card with 1 health."
           return
         end
-      elsif c[1].name == 'garbage man'
+      elsif c[1].id == :garbage_man
         player.garbage = c[2..-1]
       end
       do_move(opponent, player, wait=false)
@@ -1080,7 +1080,7 @@ class Brawl
         @attacked = players[n]
       end
       return
-    when 'block'
+    when :block
       unless opponent.discard.type == :unstoppable
         @discard << c[0]
         player.delete_cards(c[0])
@@ -1089,7 +1089,7 @@ class Brawl
         increment_turn
         return
       end
-    when 'insurance'
+    when :insurance
       bees = if player.bees then -1 else 0 end
       ensuing_health = player.health + opponent.discard.health + bees
       unless ensuing_health < 1 and not player.deflector
@@ -1463,7 +1463,7 @@ class BrawlPlugin < Plugin
     @games.delete(channel)
   end
 
-  def stop_game(m)
+  def stop_game(m, plugin=nil)
     @games.delete(m.channel)
     m.reply "#{BRAWL} stopped."
   end
