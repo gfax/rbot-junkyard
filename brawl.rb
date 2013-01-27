@@ -501,8 +501,8 @@ class Brawl
     unless player.nil?
       return "#{player}: #{player.health}"
     end
-    string = "Health left -"
-    @players.each do |p|
+    string = "Roster -"
+    players.each do |p|
       string << "- #{p}: #{p.health} "
     end
     return string
@@ -510,8 +510,8 @@ class Brawl
 
   def p_order
     string = p_turn
-    string << " Playing order: "
-    string << players.join(', ')
+    string << " "
+    string << p_health
     return string
   end
 
@@ -579,12 +579,13 @@ class Brawl
 
   def bot_inventory(player)
     # Make an inventory of what the bot has.
-    c_hash = { :surgery => [], :insurance => [], :grab => [], :dodge => [], :counter => [],
-               :unstoppable => [], :attack => [], :power => [], :support => []
+    c_hash = { :support => [], :surgery => [],
+               :counter => [], :dodge => [], :grab => [], :insurance => [],
+               :unstoppable => [], :attack => [], :power => []
              }
     player.cards.each do |c|
       case c.id
-      when :surgery, :insurance, :grab, :dodge
+      when :dodge, :grab, :insurance, :surgery
         c_hash[c.id] << c
       else
         c_hash[c.type] << c
@@ -592,6 +593,7 @@ class Brawl
         c_hash[c.type].reverse! if c.type == :support
       end
     end
+    say "b1"
     c_hash
   end
 
@@ -1222,7 +1224,7 @@ class Brawl
       say p_health(player)
       check_health(player)
       # Turn will increment when they are dropped.
-      return if players.health < 1
+      return if player.health < 1
     end
     if player.skips > 0
       say "#{player} misses a turn."
@@ -1348,7 +1350,7 @@ class BrawlPlugin < Plugin
       "c/cards - show cards and health, d/discard - discard, " +
       "drop - remove yourself from the game, drop bot - drop me," +
       "pa/pass - pass, p/play - play cards, s/score - show score, " +
-      "t/turn - show current turn and playing order"
+      "t/turn - show current turn/order/health"
     when /drop(ping)?/
       "Type 'drop' to drop from the game, or " +
       "'drop bot' to drop the bot from the game."
@@ -1486,7 +1488,6 @@ class BrawlPlugin < Plugin
         m.reply retort.sample
       end
       @bot.notice m.sourcenick, g.p_cards(p)
-      m.reply g.p_health
     when /^(di?|discard)\b/
       return unless g.has_turn?(m.source)
       a = msg.split(' ')
