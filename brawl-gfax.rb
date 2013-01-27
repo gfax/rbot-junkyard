@@ -5,7 +5,7 @@
 # Author:: Lite <degradinglight@gmail.com>
 # Copyright:: (C) 2012 gfax.ch
 # License:: GPL
-# Version:: 2013-01-26
+# Version:: 2013-01-27
 #
 
 class Brawl
@@ -497,7 +497,7 @@ class Brawl
     if opponent.discard.id == :slot_machine
       slots.each { |n| ensuing_health -= n }
     end
-    return true unless ensuing_health < 1 and not player.deflector
+    return true if ensuing_health < 1 and not player.deflector
     return false
   end
 
@@ -596,47 +596,77 @@ class Brawl
     increment_turn
   end
 
+  def bot_inventory(player)
+    # Make an inventory of what the bot has.
+    c_hash = { :surgery => [], :insurance => [], :grab => [], :dodge => [], :counter => [],
+               :unstoppable => [], :attack => [], :power => [], :support => []
+             }
+    player.cards.each do |c|
+      case c.id
+      when :surgery, :insurance, :grab, :dodge
+        c_hash[c.id] << c
+      else
+        c_hash[c.type] << c
+        c_hash[c.type].sort! {|x,y| x.health  <=> y.health }
+        c_hash[c.type].reverse! if c.type == :support
+      end
+    end
+    c_hash
+  end
+
   def bot_move
     p = players.first
     return unless p.user == @bot.nick
     a = [] # array to pass to play_move
     # For now, just make the bot pick on a random player.
     n = rand(players.length)
-    while players[n] == p
-      n = rand(players.length)
-    end
+    n = rand(players.length) while players[n] == p
     a << players[n].user.to_s
-    # Iterate up or down the array depending on health.
-    if p.health <= MAX_HP/2
-      n = 0
-      c_array = p.cards
-    else
-      n = p.cards.length + 1
-      c_array = p.cards.reverse
-    end
-    c_array.each do |c|
-      if p.health <= MAX_HP/2
+    # Pick the best card to play.
+    c_hash = bot_inventory(p)
+    card = if p.health == 1 and c_hash[:surgery].any?
+             c_hash[:surgery].first
+           elsif p.bees and c_hash[:support].any?
+             c_hash[:support].first
+           elsif c_hash[:unstoppable].any?
+             c_hash[:unstoppable].first
+           elsif c_hash[:attack].any?
+             c_hash[:attack].first
+           elsif p.health < (MAX_HP - 1) and c_hash[:support].any?
+             c_hash[:support].first
+           elsif c_hash[:power].any?
+             c_hash[:power].first
+           else nil
+           end
+    # Find out which card in the deck this is,
+    # if we have indeed found a suitable card.
+    unless card.nil?
+      n = 1
+      p.cards.each do |c|
+        break if c.name == card.name
         n += 1
-      else
-        n -= 1
       end
-      case c.type
-      when :support, :unstoppable, :attack
-        next if c.id == :surgery and p.health != 1
-        a << n
-        break
-      else next
+      a << n
+      if card.name == :garbage_man and p.cards.length > 1
+        # Throw a random card at the player
+        # just for the heck of it!
+        n2 = rand(p.cards.length)
+        n2 = rand(p.cards.length) while n == n2
+        a << n2
       end
     end
+    # Play the card or otherwise discard.
     if a.length > 1
       say "p #{a.join(' ')}"
       play_move(a)
     else
-      say "d #{a.join(' ')}"
       a = Array.new(p.cards.length) { |i| i + 1 }
-      a.shift # Don't discard the first card in hand.
+      # Don't discard the first card in the hand if we can help it.
+      a.shift unless a.length < 2
+      say "d #{a.join(' ')}"
       discard(a)
     end
+    @bot.timer.add_once(2) { bot_move } if card.type == :power
   end
 
   def bot_counter
@@ -644,34 +674,69 @@ class Brawl
     players.each do |player|
       p = player if player.user == @bot.nick
     end
-    # Return if the bot's not playing
-    # or it's not his turn.
+    # Return if the bot's not playing or it's not his turn.
     return if p.nil?
+    return if p.discard
     return unless p == attacked or p.grabbed
-    a, n = [], 0
-    p.cards.each do |c|
-      n += 1
-      next unless c.type == :counter
-      case c.id
-      when :dodge
-        unless p.grabbed
-          a << n
-          break
+    a, o = [], players.first
+    # Pick the best card to play.
+    c_hash = bot_inventory(p)
+    say 'c1'
+    if valid_insurance?(p, o) and c_hash[:insurance].any?
+      say 'c2a'
+      card = c_hash[:insurance].first
+    elsif p.bees and c_hash[:grab].any? and c_hash[:support].any?
+      say 'c2b'
+      card = c_hash[:grab].first
+      card2 = c_hash[:support].first
+    elsif not p.grabbed and c_hash[:dodge].any?
+      say 'c2c'
+      card = c_hash[:dodge].first
+    elsif p.health <= (MAX_HP/2) and c_hash[:grab].any? and c_hash[:support].any?
+      say 'c2d'
+      card = c_hash[:grab].first
+      card2 = c_hash[:support].first
+    elsif p.health <= (MAX_HP/2) and c_hash[:counter].any?
+      say 'c2e'
+      card = c_hash[:counter].first
+    elsif c_hash[:counter].any?
+      say 'c2f'
+      card = if o.discard.health <= -3
+               c_hash[:counter].first
+             else
+               case rand(2)
+               when 0 then c_hash[:counter].first
+               else nil
+               end
+             end
+    else
+      say 'c2g'
+      card = nil
+    end
+    # Find out which card in the deck this is,
+    # if we have indeed found a suitable card.
+    unless card.nil?
+      n = 1
+      p.cards.each do |c|
+        break if c.name == card.name
+        n += 1
+      end
+      a << n
+      if card.name == :grab
+        n = 1
+        p.cards.each do |c|
+          break if c.name == card2.name
+          n += 1
         end
-      when :grab
-        next
-      when :insurance
-        next
-      else
-        next if p.health > (MAX_HP / 2) + 1
         a << n
-        break
       end
     end
+    # Play the card or otherwise discard.
     if a.length > 0
-      say "(playing #{p.cards[n]})"
+      say "p #{n}"
       play_counter(p, a)
     else
+      say "pa"
       pass(p)
     end
   end
@@ -870,7 +935,7 @@ class Brawl
         temp_deck << c
         p.delete_cards(c)
       end
-      c << c.shift
+      temp_deck << temp_deck.shift
       n = 0
       temp_deck.each do |e|
         @players[n].cards << e
@@ -1098,7 +1163,7 @@ class Brawl
       notify opponent, p_cards(opponent)
       @bot.timer.add_once(2) { bot_counter }
       return
-    when 'dodge'
+    when :dodge
       if player.grabbed
         notify player, "You can't dodge. #{opponent.user} already " +
                        "grabbed you! Got any other counters?"
@@ -1119,6 +1184,7 @@ class Brawl
         say "#{player} jumps out of the way and passes " +
             "#{opponent.user}'s attack onto #{players[n]}!"
         @attacked = players[n]
+        @bot.timer.add_once(2) { bot_counter } 
       end
       return
     when :block
