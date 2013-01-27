@@ -955,14 +955,15 @@ class Brawl
       say card.string % { :p => player }
       notify(player, p_cards(player)) unless player == players.first
     when :reverse
-      @players = @players.reverse#!
-      (players.length-1).times do
-        @players << @player.shift
-      end
       say card.string % { :p => player }
       if players.length == 2 and player != players.first
         increment_turn
         return
+      elsif players.length > 2
+        @players = @players.reverse #!
+        (players.length-1).times do
+          @players << @player.shift
+        end
       end
     end
     # In the rare event the current player has
@@ -1220,6 +1221,8 @@ class Brawl
       say "#{player} is stung by THE BEES."
       say p_health(player)
       check_health(player)
+      # Turn will increment when they are dropped.
+      return if players.health < 1
     end
     if player.skips > 0
       say "#{player} misses a turn."
