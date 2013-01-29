@@ -5,7 +5,7 @@
 # Author:: Lite <degradinglight@gmail.com>
 # Copyright:: (C) 2012 gfax.ch
 # License:: GPL
-# Version:: 2013-01-27
+# Version:: 2013-01-29
 #
 
 class Brawl
@@ -612,7 +612,6 @@ class Brawl
         c_hash[c.type].reverse! if c.type == :support
       end
     end
-    say "b1"
     c_hash
   end
 
@@ -630,6 +629,8 @@ class Brawl
              c_hash[:surgery].first
            elsif p.bees and c_hash[:support].any?
              c_hash[:support].first
+           elsif c_hash[:grab].any? and c_hash[:unstoppable].any? and c_hash[:attack].any?
+             c_hash[:grab].any?
            elsif c_hash[:unstoppable].any?
              c_hash[:unstoppable].first
            elsif c_hash[:attack].any?
@@ -645,15 +646,20 @@ class Brawl
     unless card.nil?
       n = 1
       p.cards.each do |c|
-        break if c.name == card.name
+        break if c.id == card.id
         n += 1
       end
       a << n
-      if card.name == :garbage_man and p.cards.length > 1
+      n2 = rand(p.cards.length)
+      if card.id == :garbage_man and p.cards.length > 1
         # Throw a random card at the player
         # just for the heck of it!
-        n2 = rand(p.cards.length)
         n2 = rand(p.cards.length) while n == n2
+        a << n2
+      elsif card.id == :grab
+        until p.cards[n2].type == :unstoppable or p.cards[n2].type == :attack
+          n2 = rand(p.cards.length)
+        end
         a << n2
       end
     end
@@ -680,10 +686,15 @@ class Brawl
     return if p.nil?
     return if p.discard
     return unless p == attacked or p.grabbed
-    a, o = [], players.first
+    o = if p.user == players.first.user
+          attacked
+        else
+          players.first
+        end
     # Pick the best card to play.
+    a = [] # hash of cards to play
     c_hash = bot_inventory(p)
-    say 'c1'
+      say "#{p.cards.join(', ')}"
     if valid_insurance?(p, o) and c_hash[:insurance].any?
       say 'c2a'
       card = c_hash[:insurance].first
@@ -720,14 +731,14 @@ class Brawl
     unless card.nil?
       n = 1
       p.cards.each do |c|
-        break if c.name == card.name
+        break if c.id == card.id
         n += 1
       end
       a << n
-      if card.name == :grab
+      if card.id == :grab
         n = 1
         p.cards.each do |c|
-          break if c.name == card2.name
+          break if c.id == card2.id
           n += 1
         end
         a << n
@@ -873,6 +884,7 @@ class Brawl
   def play_counter(player, a)
     c = []
     a.uniq!
+    a.delete_at(0) if get_player(a[0])
     a.each do |e|
       n = e.to_i
       if n < 1
@@ -1147,7 +1159,7 @@ class Brawl
       elsif c[1].type == :counter or c[1].type == :power
         notify player, "You can't play a #{c[1].type} card when grabbing."
         return
-      elsif c[1].id == :white_wedding
+      elsif c[1].id == :surgery
         unless player.health == 1
           notify player, "You can only use that card with 1 health."
           return
@@ -1482,8 +1494,8 @@ class BrawlPlugin < Plugin
       "#{p}Whirlwind#{cl} - Every player shifts the cards " +
       "in their hands over to the player beside them."
     when /you('?re|r)(( ?you('?re|r))?( ?grand(father|pa))?)?/, /grand(father|pa)/
-      "#{p}You're Your Grandfather#{cl} - Time is " +
-      "moving backwards! REVERSE playing order."
+      "#{p}You're Your Grandfather#{cl} - Time is moving backwards! REVERSE " +
+      "playing order, (or just skip opponent's turn if a 2-player game.)"
     else
       "Brawl help topics: commands, objective, stats, " +
       "#{Bold}Rules:#{Bold} attacking, attacked, cards, grabbing"
@@ -1648,7 +1660,7 @@ end
 plugin = BrawlPlugin.new
 
 plugin.map 'brawl bot',
-  :private => false, :action => :add_bot
+  :private => false, :action => :add_bot, :auth_path => 'brawlbot'
 plugin.map 'brawl cancel',
   :private => false, :action => :stop_game
 plugin.map 'brawl end',
@@ -1661,3 +1673,4 @@ plugin.map 'brawl top',
   :private => false, :action => :show_stats, :defaults => { :x => false }
 plugin.map 'brawl',
   :private => false, :action => :create_game
+plugin.default_auth('brawlbot', false)
