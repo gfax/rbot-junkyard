@@ -1070,6 +1070,7 @@ class Junkyard
         @discard |= player.garbage
         opponent.cards |= player.garbage
         player.delete_cards(player.garbage)
+        deal(player, player.garbage.length)
         player.garbage = nil
       when :meal_steal
         h, temp_deck = player.health, []
