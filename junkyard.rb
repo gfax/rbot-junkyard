@@ -345,7 +345,7 @@ class Junkyard
   end
 
   def start_game
-    @players = @players.shuffle#!
+    @players.shuffle!
     @started = true
     say p_turn
     players.each do |p|
@@ -919,24 +919,6 @@ class Junkyard
       end
       say p_health
       check_health
-    when :windy
-      say card.string % { :p => player }
-      temp_deck = []
-      players.each do |p|
-        c = p.cards[rand(p.cards.length)]
-        temp_deck << c
-        p.delete_cards(c)
-      end
-      temp_deck << temp_deck.shift
-      n = 0
-      temp_deck.each do |e|
-        @players[n].cards << e
-        n += 1
-      end
-    when :toolbox
-      n = if player.cards.length > 8 then 0 else 8 - player.cards.length end
-      deal(player, n)
-      say card.string % { :p => player, :n => n }
     when :multiball
       player.multiball = true
       say card.string % { :p => player }
@@ -952,6 +934,10 @@ class Junkyard
       n = rand(players.length)
       players[n].bees = true
       say card.string % { :p => player, :o => players[n] }
+    when :toolbox
+      n = if player.cards.length > 8 then 0 else 8 - player.cards.length end
+      deal(player, n)
+      say card.string % { :p => player, :n => n }
     when :whirlwind
       temp_deck = []
       players.each do |p| 
@@ -964,17 +950,35 @@ class Junkyard
         n += 1
       end
       say card.string % { :p => player }
-      notify(player, p_cards(player)) unless player == players.first
+      players.each do |p|
+        notify p, p_cards(p) unless p == player
+      end
+    when :windy
+      say card.string % { :p => player }
+      temp_deck = []
+      players.each do |p|
+        c = p.cards[rand(p.cards.length)]
+        temp_deck << c
+        p.delete_cards(c)
+      end
+      temp_deck << temp_deck.shift
+      n = 0
+      temp_deck.each do |e|
+        @players[n].cards << e
+        notify players[n], p_cards(players[n]) unless players[n] == player
+        n += 1
+      end
     when :reverse
       say card.string % { :p => player }
       if players.length == 2 and player != players.first
         increment_turn
         return
       elsif players.length > 2
-        @players = @players.reverse #!
-        (players.length-1).times do
-          @players << @player.shift
+        tmp = @players.reverse
+        (tmp.length-1).times do
+          tmp << tmp.shift
         end
+        @players = tmp
       end
     end
     # In the rare event the current player has
