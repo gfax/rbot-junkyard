@@ -10,7 +10,7 @@
 
 class Junkyard
 
-  TITLE = Bold + "Brawl!" + Bold
+  TITLE = Bold + "Junkyard" + Bold
   MAX_HP = 10
   COLORS = { :attack => Bold + Irc.color(:lightgray,:black),
              :counter => Bold + Irc.color(:green,:black),
@@ -36,36 +36,31 @@ class Junkyard
         @type = :counter
         @string = "%{p} grabs %{o}. Respond or pass, %{o}."
       when :pillow
-        @name = 'Wet Pillow'
         @type = :counter
         @health = 2
-        @string = "The wet pillow descends from heaven to shield %{p}."
+        @string = "%{p} holds up a pillow in defense."
       when :insurance
-        @name = 'Credit Feed'
         @type = :counter
         @health = 5
-        @string = "%{p} feeds me some credits and " +
+        @string = "%{p} uses health insurance and " +
                   "is restored to #{@health} health!"
       when :wrench
-        @name = 'Roach Approach'
         @type = :attack
-        @string = "%{p} psychologically devastates %{o} with a Roach approach."
+        @string = "%{p} throw a wrench in %{o}'s gears."
         @skips = 2
       when :eye_poke
-        @name = 'Broken Heart'
         @type = :attack
         @health = -2
-        @string = "%{o} watches Jurassic Bark. :'("
+        @string = "%{p} pokes out %{o}'s eye. ;("
         @skips = 1
       when :gutpunch
         @type = :attack
         @health = -2
-        @string = "A wild TODD appears and gutpunches %{o}."
+        @string = "%{p} punches %{o} in the guts."
       when :nose_bleed
-        @name = 'Chihiro'
         @type = :attack
         @health = -3
-        @string = "Chihiro claws %{o} in an excited rage. She pees a little."
+        @string = "%{p} pops %{o} in the nose, spraying blood everywhere."
         @skips = 1
       when :neck_punch
         @type = :attack
@@ -74,40 +69,30 @@ class Junkyard
       when :kickball
         @type = :attack
         @health = -4
-        innuendo = [ 'toolbox', 'junk', 'private belongings', 
-                     'particle accelerator', 'anodes', 'anchors',
-                     'Jimmy Deans', 'coat rack', 'balls'
-                   ]
-        @string = "%{p} delivers %{o}'s #{innuendo.sample} a swift kick."
+        @string = "%{p} delivers %{o}'s private belongings a swift kick."
       when :uppercut
-        @name = 'Touch'
         @type = :attack
         @health = -5
-        @string = "%{o} receives a touch from LordKaT."
+        @string = "%{o} receives an uppercut from %{p}."
       when :slot_machine
         @type = :attack
         @string = "Next time stick to the pachinkos, %{o}."
       when :trip
-        @name = 'Looke Out'
         @type = :unstoppable
-        @string = "%{o} catches word of Looke coming " +
-                  "to town and decides to wait around."
+        @string = "%{p} trips %{o}."
         @skips = 1
       when :trout_slap
-        @name = 'Danger Zone'
         @type = :unstoppable
         @health = -1
-        @string = "%{p} leaves Danger Zone on repeat and " +
-                  "forever ruins %{o}'s last.fm profile."
+        @string = "%{p} slaps %{o} around a bit with a large trout."
       when :a_gun
         @type = :unstoppable
         @health = -2
         @string = "%{p} shoots %{o} in the FACE."
       when :tire_iron
-        @name = 'Rocket Lawn Chair'
         @type = :unstoppable
         @health = -3
-        @string = "%{p} blows up %{o} with a Rocket Lawn Chair."
+        @string = "%{p} whacks %{o} upside the head with a tire iron."
       when :flipper
         @type = :unstoppable
         case rand(2)
@@ -122,28 +107,24 @@ class Junkyard
         @type = :unstoppable
         @string = "%{p} dumps a bunch of garbage cards on %{o}."
       when :meal_steal
-        @name = 'Heal Steal'
         @type = :unstoppable
-        @string = "%{p} rummages through %{o}'s hand for DDP and peelz."
+        @string = "%{p} rummages through %{o}'s lunchbox for soup and subs."
       when :soup
-        @name = 'DDP'
         @type = :support
         @health = 1
-        @string = "%{p} takes a sip of DDP, relaxes."
+        @string = "%{p} sips on some soup and relaxes."
       when :sub
-        @name = 'Peelz'
         @type = :support
         @health = 2
-        @string = "%{p} peel'd up!"
+        @string = "%{p} eats a sub!"
       when :armor
         @type = :support
         @health = 5
         @string = "%{p} buckles on some armor."
       when :surgery
-        @name = 'White Wedding'
         @type = :support
         @health = MAX_HP - 1
-        @string = "It's a nice day to... START AGAIN!!! HEALTH RESTORED!!!"
+        @string = "%{p} undergoes surgery and is completely restored!"
       when :deflector
         @type = :power
         @string = "%{p} raises a deflector shield!"
@@ -153,7 +134,6 @@ class Junkyard
         @health = -6
         @string = "%{p} randomly inflicts 6 damage on %{o}. What a dick!"
       when :earthquake
-        @name = "Fireball"
         @type = :power
         @health = -1
         @string = "%{p} drops a fireball on everyone."
@@ -163,9 +143,8 @@ class Junkyard
         @string = "%{p} turns up the ceiling fan too high and blows up " +
                   "a gust! Every player passes a random card forward."
       when :toolbox
-        @name = 'Loot Bag'
         @type = :power
-        @string = "%{p} loots %{n} cards from the deck."
+        @string = "%{p} pulls %{n} cards from the deck."
       when :multiball
         @name = 'Multi-ball'
         @type = :power
@@ -180,7 +159,6 @@ class Junkyard
         @type = :power
         @string = "FEEL THE POWER OF THE WIND"
       when :reverse
-        @name = 'You\'re Your Grandfather'
         @type = :power
         @string = "%{p} reverses the table!"
       else
@@ -398,7 +376,7 @@ class Junkyard
     p = Player.new(user)
     @players << p
     if user == manager
-      say "#{p} starts a #{TITLE} Type 'j' to join."
+      say "#{p} starts a game of #{TITLE} Type 'j' to join."
     else
       say "#{p} joins the #{TITLE}"
     end
@@ -434,18 +412,14 @@ class Junkyard
                "Better luck next time, %{p} ...fgt.",
                "%{p} has gone upstream with the salmon.",
                "%{p} left the stage.",
-               "%{p} is broken beyond repair. Nice work, ANDY.",
                "%{p} perished.",
-               "%{p} paid the ultimate price.",
-               "Fatal racing crash. Car flipped about 2,457 times. " +
-               "No survivors. %{p} was killed on impact. R.I.P."
+               "%{p} paid the ultimate price."
              ]
       bot_died = [ "has seen better days",
                    "lived a better life than all you fools.",
                    "gives his last regards to Chanserv.",
                    "goes to meet that ol' pi in the sky.",
                    "wills his pancake collection to #{players.first.user}",
-                   "lost the Brawl! ...but wins the war.",
                    "is invincible!",
                    "died the most honorable death.",
                    "can't feel his legs, but only because he has none."
@@ -1138,7 +1112,7 @@ class Junkyard
     if player.discard.type == :support or player.discard.id == :meal_steal
       if player.discard.id == :meal_steal
         if temp_deck.length > 0
-          say "#{player} steals and chugs #{temp_deck.join(', ')}!!"
+          say "#{player} steals and consumes #{temp_deck.join(', ')}!!"
           bee_recover(player)
         end
       end
@@ -1220,8 +1194,8 @@ class Junkyard
       bees = if player.bees then -1 else 0 end
       ensuing_health = player.health + opponent.discard.health + bees
       unless ensuing_health < 1 and not player.deflector
-        notify player, "You can only credit feed as " +
-                       "a last resort before death."
+        notify player, "You can only use your insurance " +
+                       "as a last resort before death."
         return
       end
     end
@@ -1363,7 +1337,7 @@ class JunkyardPlugin < Plugin
     when 'attacking'
       "When it's a player's turn they can play an #{a}Attack#{cl}/" +
       "#{u}Unstoppable#{cl} card to attack a player, or a #{s}Support#{cl} " +
-      "card (like peels if you wish to heal). Instead of attacking " +
+      "card (like subs if you wish to heal). Instead of attacking " +
       "when it's their turn, a player can discard cards they " +
       "don't want. If they have no playable cards, they must discard."
     when 'attacked'
@@ -1414,78 +1388,73 @@ class JunkyardPlugin < Plugin
       "#{c}Grab#{cl} - Play this as a counter so you can attack back. " +
       "This cannot be dodged. Also note this can be played before " +
       "an attack to disguise your type of attack."
-    when /wet( pillow)?/, 'pillow'
-      "#{c}Wet Pillow#{cl} - Reduces opponent's attack by 2 points."
-    when /credit( feed)?/, 'feed'
-      "#{c}Credit Feed#{cl} - Can only be used against a " +
+    when 'pillow'
+      "#{c}Pillow#{cl} - Reduces opponent's attack by 2 points."
+    when 'insurance'
+      "#{c}Insurance#{cl} - Can only be used against a " +
       "blockable killing blow. Resets you to 5 health points."
-    when /roach( approach)?/, 'approach'
-      "#{a}Roach Approach#{cl} (-0) - This does no damage, " +
-      "but your opponent must spend 2 turns in therapy."
-    when /broken( heart)?/, /jurr*ass*ic( ?bark)?/, 'heart', 'bark'
-      "#{a}Broken Heart#{cl} (-2) - Opponent must watch " +
-      "Jurassic Bark, lose 2 health, and a turn."
+    when 'wrench'
+      "#{a}Wrench#{cl} (-0) - Throw a wrench in your opponents' " +
+      "machinery. He must spend 2 turns finding what jammed his gears." 
+    when /eye( ?poke)?/, 'poke'
+      "#{a}Eye Poke#{cl} (-2) - Opponent loses 2 health and is blinded for 1 turn."
     when /gut( ?punch)?/, 'punch'
-      "#{a}Gutpunch#{cl} (-2) - Basic TODD-inspired technique."
-    when 'chihiro'
-      "#{a}Chihiro#{cl} (-3) - Chihiro claws your opponent in an excited " +
-      "rage. She pees a little. Opponent loses a turn to clean it up."
+      "#{a}Gutpunch#{cl} (-2) - Basic attack."
+    when /nose ?(bleed)?/
+      "#{a}Nose Bleed#{cl} (-3) - Opponent loses a turn to clean it up."
     when /neck( ?punch)?/
       "#{a}Neck Punch#{cl} (-3) - Slightly more powerful " +
       "attack directed at the neck of your opponent."
     when /kick( ?ball)?/
       "#{a}Kickball#{cl} (-4) - Major damage due to a swift kick " +
       "in the balls. Can be used on players that don't have balls."
-    when 'touch'
-      "#{a}Touch#{cl} (-5) - LordKaT appears to deliver an ultimate attack."
-    when /looke( ?out)?/
-      "#{u}Looke Out#{cl} (-0) - Looke's in town! He Says he's going " +
-      "to visit. Opponent loses a turn to wait for him. (He never comes.)"
-    when /danger( ?zone)?/, 'zone'
-      "#{u}Danger Zone#{cl} (-1) - Roach scrobbles Danger Zone 570 times " +
-      "on your opponent's computer and now their music libraries are SUPER."
+    when /upper ?cut/
+      "#{a}Uppercut#{cl} (-5) - Ultimate damage."
+    when 'trip'
+      "#{u}Trip#{cl} (-0) - Trip your opponent when they least suspect it, causing them to lose 1 turn."
+    when /trout( ?slap)?/, 'slap'
+      "#{u}Trout Slap#{cl} (-1) - An mIRC-inspired attack. Slap your opponent with a trout."
     when /(a ?)?gun/
       "#{u}A Gun#{cl} (-2) - Can't dodge a gun. Simple as that."
-    when /rocket(( ?lawn)? ?chair)?/, 'lawn', 'chair'
-      "#{u}Rocket Lawn Chair#{cl} (-3) - Still not as good as shotgun."
-    when /flippers?/
-      "#{u}Flipper#{cl} (-0) - Opponent drops " +
-      "all their cards and draws new ones."
+    when /tire( ?iron)?/, 'iron'
+      "#{u}Tire Iron#{cl} (-3) - Beat your defenseless opponent senseless."
+    when 'crane'
+      "#{u}Crane#{cl} (-0) - Pick up all of your " +
+      "opponent's cards and drop them in the discard."
     when /garbage( ?man)?/, 'man'
       "#{u}Garbage Man#{cl} (-0) - Give a player all your cards " +
       "you don't want. The opponent won't get any new cards until " +
       "they manage to get their hand below 5 cards again."
     when /heal( ?steal)?/, 'steal'
       "#{u}Heal Steal#{cl} (+0 to +#{MAX_HP-1}) - Steal all of an " +
-      "opponent's DDP and peels, if he has any, and use them on yourself."
+      "opponent's soup and subs, if he has any, and use them on yourself."
     when /slot( ?machine)?/, 'machine'
       "#{u}Slot Machine#{cl} (-0 to -9) - Spits out three " +
       "random attack values from 0 to 3. Attack does the " +
       "sum of the three numbers. Can't be blocked."
-    when 'ddp'
-      "#{s}DDP#{cl} (+1) - Take a sip. Relax. Gain health."
-    when /peel(s|z)/
-      "#{s}Peelz#{cl} (+2) - Heal yourself by 2 points, up to a " +
-      "maximum of #{MAX_HP}. Can be played instead of attacking."
+    when 'soup'
+      "#{s}Soup#{cl} (+1) - Take a sip. Relax. Gain health."
+    when 'sub'
+      "#{s}Sub#{cl} (+2) - Heal yourself by 2 " +
+      "points, up to a maximum of #{MAX_HP}."
     when 'armor'
       "#{s}Armor#{cl} (+5) - Adds 5 extra points to your " +
       "health on top of your maximum. Your main HP will " +
       "be protected until the armor is depleted."
-    when /white( ?wedding)?/, 'wedding'
-      "#{s}White Wedding#{cl} (#{MAX_HP-1}) - It's a nice day " +
-      "to... START AGAIN!!!! HEALTH RESTORED!!! (can only " +
-      "be used if you have exactly 1 health remaining)"
+    when /s(e|u)rg(e|u)ry/
+        "#{s}Surgery#{cl} (#{MAX_HP-1}) - Used only when " +
+        "a player has 1 health. Resets health to #{MAX_HP}."
     when /deflect(ed|or|ing|s)?/
       "#{p}Deflector#{cl} - Next attack played against you " +
       "automatically attacks a random player that isn't you."
-    when /f+/
-      "#{p}FFFFFF#{cl} - Inflicts 6 damage " +
-      "to a random player (including you)."
+    when /avalanche?/
+      "#{p}Avalanche#{cl} - A scrap pile avalanches! (Inflicts" +
+      "6 damage to any random player, including you!)."
     when /it\'?s(( ?getting)? ?windy)?/, 'getting', 'windy'
       "#{p}It's Getting Windy#{cl} - All players choose " +
       "a random card from the player previous to them."
-    when /loot( bag)?/, 'bag'
-      "#{p}Loot Bag#{cl} - Player draws until he has 8 cards in his hand."
+    when /tool( ?box)?/, 'box'
+      "#{p}Toolbox#{cl} - Player draws until he has 8 cards in his hand."
     when /multi-?( ?ball)?/, 'ball'
       "#{p}Multi-ball#{cl} - Take an extra turn after your turn."
     when /shifty( ?business)?/, 'business'
@@ -1497,9 +1466,9 @@ class JunkyardPlugin < Plugin
     when 'whirlwind'
       "#{p}Whirlwind#{cl} - Every player shifts the cards " +
       "in their hands over to the player beside them."
-    when /you('?re|r)(( ?you('?re|r))?( ?grand(father|pa))?)?/, /grand(father|pa)/
-      "#{p}You're Your Grandfather#{cl} - Time is moving backwards! REVERSE " +
-      "playing order, (or just skip opponent's turn if a 2-player game.)"
+    when 'reverse'
+      "#{p}Reverse#{cl} - REVERSE playing order, (or " +
+      "just skip opponent's turn if a 2-player game.)"
     else
       "#{TITLE} help topics: commands, objective, stats, " +
       "#{Bold}Rules:#{Bold} attacking, attacked, cards, grabbing"
@@ -1521,9 +1490,7 @@ class JunkyardPlugin < Plugin
     when /^(ca?|cards?)\b/
       if p.nil?
         retort = 
-          [ "Don't make me take you and this " +
-            "#{TITLE} outside, #{m.source.nick}.",
-            "Sorry, #{m.source.nick}, this is between me and the guys.",
+          [ "Sorry, #{m.source.nick}, this is between me and the guys.",
             "What do you need, #{m.source.nick}?"
           ]
         m.reply retort.sample
@@ -1582,10 +1549,10 @@ class JunkyardPlugin < Plugin
     if @games.key?(m.channel)
       user = @games[m.channel].manager
       if m.source == user
-        m.reply "...you already started a #{TITLE}"
+        m.reply "...you already started a game of #{TITLE}"
         return
       else
-        m.reply "#{user} already started a #{TITLE}"
+        m.reply "#{user} already started a game of #{TITLE}"
         return
       end
     end
@@ -1663,18 +1630,18 @@ end
 
 plugin = JunkyardPlugin.new
 
-plugin.map 'brawl bot',
+plugin.map 'junkyard bot',
   :private => false, :action => :add_bot, :auth_path => 'bot'
-plugin.map 'brawl cancel',
+plugin.map 'junkyard cancel',
   :private => false, :action => :stop_game
-plugin.map 'brawl end',
+plugin.map 'junkyard end',
   :private => false, :action => :stop_game
-plugin.map 'brawl stat[s] [:x [:y]]',
+plugin.map 'junkyard stat[s] [:x [:y]]',
   :action => :show_stats
-plugin.map 'brawl stop',
+plugin.map 'junkyard stop',
   :private => false, :action => :stop_game
-plugin.map 'brawl top',
+plugin.map 'junkyard top',
   :private => false, :action => :show_stats, :defaults => { :x => false }
-plugin.map 'brawl',
+plugin.map 'junkyard',
   :private => false, :action => :create_game
 plugin.default_auth('bot', false)
