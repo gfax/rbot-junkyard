@@ -1,16 +1,23 @@
 # coding: UTF-8
 #
-# :title: Brawl!
+# :title: Junkyard
 #
 # Author:: Lite <degradinglight@gmail.com>
 # Copyright:: (C) 2012 gfax.ch
 # License:: GPL
-# Version:: 2013-01-29
+# Version:: 2013-01-30
 #
 
-class Brawl
+class Junkyard
 
+  TITLE = Bold + "Junkyard" + Bold
   MAX_HP = 10
+  COLORS = { :attack => Bold + Irc.color(:lightgray,:black),
+             :counter => Bold + Irc.color(:green,:black),
+             :power => Bold + Irc.color(:brown,:black),
+             :support => Bold + Irc.color(:teal,:black),
+             :unstoppable => Bold + Irc.color(:yellow,:black),
+           }
 
   class Card
 
@@ -37,9 +44,9 @@ class Brawl
         @health = 5
         @string = "%{p} uses health insurance and " +
                   "is restored to #{@health} health!"
-      when :humiliation
+      when :wrench
         @type = :attack
-        @string = "%{p} psychologically devastates %{o} with deep humiliation."
+        @string = "%{p} throw a wrench in %{o}'s gears."
         @skips = 2
       when :eye_poke
         @type = :attack
@@ -78,7 +85,6 @@ class Brawl
         @type = :unstoppable
         @health = -1
         @string = "%{p} slaps %{o} around a bit with a large trout."
-        @skips = -1
       when :a_gun
         @type = :unstoppable
         @health = -2
@@ -100,17 +106,17 @@ class Brawl
       when :garbage_man
         @type = :unstoppable
         @string = "%{p} dumps a bunch of garbage cards on %{o}."
-      when :heal_steal
+      when :meal_steal
         @type = :unstoppable
-        @string = "%{p} rummages through %{o}'s hand for soup and pills."
+        @string = "%{p} rummages through %{o}'s lunchbox for soup and subs."
       when :soup
         @type = :support
         @health = 1
         @string = "%{p} sips on some soup and relaxes."
-      when :pills
+      when :sub
         @type = :support
         @health = 2
-        @string = "%{p} popped some pills!"
+        @string = "%{p} eats a sub!"
       when :armor
         @type = :support
         @health = 5
@@ -122,12 +128,12 @@ class Brawl
       when :deflector
         @type = :power
         @string = "%{p} raises a deflector shield!"
-      when :ffffff
+      when :avalanche
         @name = 'FFFFFF'
         @type = :power
         @health = -6
         @string = "%{p} randomly inflicts 6 damage on %{o}. What a dick!"
-      when :fireball
+      when :earthquake
         @type = :power
         @health = -1
         @string = "%{p} drops a fireball on everyone."
@@ -136,9 +142,9 @@ class Brawl
         @type = :power
         @string = "%{p} turns up the ceiling fan too high and blows up " +
                   "a gust! Every player passes a random card forward."
-      when :loot_bag
+      when :toolbox
         @type = :power
-        @string = "%{p} loots %{n} cards from the deck."
+        @string = "%{p} pulls %{n} cards from the deck."
       when :multiball
         @name = 'Multi-ball'
         @type = :power
@@ -165,23 +171,20 @@ class Brawl
     end
 
     def to_s
-      color = case type
-              when :counter
-                Irc.color(:green,:black)
-              when :attack
-                Irc.color(:yellow,:black)
-              when :unstoppable
-                Irc.color(:olive,:black)
-              when :support
-                Irc.color(:teal,:black)
-              when :power
-                Irc.color(:brown,:black)
-              end
+      color = COLORS[type]
       hs = if health.zero? then ''
            elsif health < 0 then Irc.color(:red) + health.to_s
            else Irc.color(:blue) + '+' + health.to_s
            end
-      Bold + color + " #{name} #{hs}" + NormalText
+      ss = if skips.zero?
+             ''
+           elsif hs == ''
+             Irc.color(:purple) + skips.to_s
+           else 
+             Irc.color(:white) + '/' +
+             Irc.color(:purple) + skips.to_s
+           end
+      color + " #{name} #{hs}#{ss}" + NormalText
     end
 
   end
@@ -238,13 +241,10 @@ class Brawl
   end
 
 
-  BRAWL = Bold + "Brawl!" + Bold
-
   attr_reader :attacked, :channel, :deck, :discard, :dropouts,
               :manager, :players, :registry, :slots, :started
 
   def initialize(plugin, channel, registry, manager)
-    debug "BRAWL STARTED"
     @channel = channel
     @plugin = plugin
     @bot = plugin.bot
@@ -281,7 +281,7 @@ class Brawl
     end
     7.times do
       @deck << Card.new(:kickball)
-      @deck << Card.new(:pills)
+      @deck << Card.new(:sub)
     end
     6.times do
       @deck << Card.new(:dodge)
@@ -301,19 +301,19 @@ class Brawl
       @deck << Card.new(:nose_bleed)
       @deck << Card.new(:insurance)
       @deck << Card.new(:trip)
-      @deck << Card.new(:heal_steal)
-      @deck << Card.new(:humiliation)
+      @deck << Card.new(:meal_steal)
+      @deck << Card.new(:wrench)
       @deck << Card.new(:slot_machine)
       @deck << Card.new(:surgery)
     end
     1.times do
       @deck << Card.new(:armor)
+      @deck << Card.new(:avalanche)
       @deck << Card.new(:deflector)
-      @deck << Card.new(:ffffff)
-      @deck << Card.new(:fireball)
+      @deck << Card.new(:earthquake)
       @deck << Card.new(:flipper)
       @deck << Card.new(:garbage_man)
-      @deck << Card.new(:loot_bag)
+      @deck << Card.new(:toolbox)
       @deck << Card.new(:multiball)
       @deck << Card.new(:tire_iron)
       @deck << Card.new(:shifty_business)
@@ -376,13 +376,13 @@ class Brawl
     p = Player.new(user)
     @players << p
     if user == manager
-      say "#{p} starts a #{BRAWL} Type 'j' to join."
+      say "#{p} starts a game of #{TITLE} Type 'j' to join."
     else
-      say "#{p} joins the #{BRAWL}"
+      say "#{p} joins the #{TITLE}"
     end
     deal(p, 5)
     if players.length == 2
-      countdown = @bot.config['brawl.countdown']
+      countdown = @bot.config['junkyard.countdown']
       @bot.timer.add_once(countdown) { start_game }
       say "Game will start in #{Bold}#{countdown}#{Bold} seconds."
     end
@@ -412,18 +412,14 @@ class Brawl
                "Better luck next time, %{p} ...fgt.",
                "%{p} has gone upstream with the salmon.",
                "%{p} left the stage.",
-               "%{p} is broken beyond repair. Nice work, ANDY.",
                "%{p} perished.",
-               "%{p} paid the ultimate price.",
-               "Fatal racing crash. Car flipped about 2,457 times. " +
-               "No survivors. %{p} was killed on impact. R.I.P."
+               "%{p} paid the ultimate price."
              ]
       bot_died = [ "has seen better days",
                    "lived a better life than all you fools.",
                    "gives his last regards to Chanserv.",
                    "goes to meet that ol' pi in the sky.",
                    "wills his pancake collection to #{players.first.user}",
-                   "lost the Brawl! ...but wins the war.",
                    "is invincible!",
                    "died the most honorable death.",
                    "can't feel his legs, but only because he has none."
@@ -727,7 +723,8 @@ class Brawl
     end
     # Play the card or otherwise discard.
     if a.length > 0
-      say "p #{n}"
+      n2 = '' if n2.nil?
+      say "p #{n} #{n2}"
       play_counter(p, a)
     else
       say "pa"
@@ -907,14 +904,14 @@ class Brawl
     when :deflector
       player.deflector = card
       say card.string % { :p => player }
-    when :ffffff
+    when :avalanche
       victim = players[rand(players.length)]
       victim.health += card.health
       player.damage += card.health.abs
       say card.string % { :p => player, :o => victim }
       say p_health(victim)
       check_health(victim)
-    when :fireball
+    when :earthquake
       say card.string % { :p => player }
       players.each do |p|
         p.health += card.health
@@ -936,7 +933,7 @@ class Brawl
         @players[n].cards << e
         n += 1
       end
-    when :loot_bag
+    when :toolbox
       n = if player.cards.length > 8 then 0 else 8 - player.cards.length end
       deal(player, n)
       say card.string % { :p => player, :n => n }
@@ -1074,10 +1071,10 @@ class Brawl
         opponent.cards |= player.garbage
         player.delete_cards(player.garbage)
         player.garbage = nil
-      when :heal_steal
+      when :meal_steal
         h, temp_deck = player.health, []
         opponent.cards.each do |e|
-          if e.id == :soup or e.id == :pills
+          if e.id == :soup or e.id == :sub
             temp_deck << e
             h += e.health
           end
@@ -1112,10 +1109,10 @@ class Brawl
       end
     end
     # Announce health
-    if player.discard.type == :support or player.discard.id == :heal_steal
-      if player.discard.id == :heal_steal
+    if player.discard.type == :support or player.discard.id == :meal_steal
+      if player.discard.id == :meal_steal
         if temp_deck.length > 0
-          say "#{player} steals and chugs #{temp_deck.join(', ')}!!"
+          say "#{player} steals and consumes #{temp_deck.join(', ')}!!"
           bee_recover(player)
         end
       end
@@ -1316,10 +1313,10 @@ class Brawl
 end
 
 
-class BrawlPlugin < Plugin
+class JunkyardPlugin < Plugin
 
-  BRAWL = Bold + "Brawl!" + Bold
-  MAX_HP = Brawl::MAX_HP
+  TITLE = Junkyard::TITLE
+  MAX_HP = Junkyard::MAX_HP
 
   attr :games
 
@@ -1329,18 +1326,18 @@ class BrawlPlugin < Plugin
   end
 
   def help(plugin, topic='')
-    cl = NormalText
-    p = Bold + Irc.color(:brown,:black)
-    u = Bold + Irc.color(:olive,:black)
-    s = Bold + Irc.color(:teal,:black)
-    c = Bold + Irc.color(:green,:black)
-    a = Bold + Irc.color(:yellow,:black)
     prefix = @bot.config['core.address_prefix'].first
+    cl = NormalText
+    a = Junkyard::COLORS[:attack]
+    c = Junkyard::COLORS[:counter]
+    p = Junkyard::COLORS[:power]
+    s = Junkyard::COLORS[:support]
+    u = Junkyard::COLORS[:unstoppable]
     case topic.downcase
     when 'attacking'
       "When it's a player's turn they can play an #{a}Attack#{cl}/" +
       "#{u}Unstoppable#{cl} card to attack a player, or a #{s}Support#{cl} " +
-      "card (like pills if you wish to heal). Instead of attacking " +
+      "card (like subs if you wish to heal). Instead of attacking " +
       "when it's their turn, a player can discard cards they " +
       "don't want. If they have no playable cards, they must discard."
     when 'attacked'
@@ -1396,9 +1393,9 @@ class BrawlPlugin < Plugin
     when 'insurance'
       "#{c}Insurance#{cl} - Can only be used against a " +
       "blockable killing blow. Resets you to 5 health points."
-    when 'humiliation'
-      "#{a}Humiliation#{cl} (-0) - This does no damage, " +
-      "but your opponent must spend 2 turns in therapy."
+    when 'wrench'
+      "#{a}Wrench#{cl} (-0) - Throw a wrench in your opponents' " +
+      "machinery. He must spend 2 turns finding what jammed his gears." 
     when /eye( ?poke)?/, 'poke'
       "#{a}Eye Poke#{cl} (-2) - Opponent loses 2 health and is blinded for 1 turn."
     when /gut( ?punch)?/, 'punch'
@@ -1421,25 +1418,25 @@ class BrawlPlugin < Plugin
       "#{u}A Gun#{cl} (-2) - Can't dodge a gun. Simple as that."
     when /tire( ?iron)?/, 'iron'
       "#{u}Tire Iron#{cl} (-3) - Beat your defenseless opponent senseless."
-    when /flippers?/
-      "#{u}Flipper#{cl} (-0) - Opponent drops " +
-      "all their cards and draws new ones."
+    when 'crane'
+      "#{u}Crane#{cl} (-0) - Pick up all of your " +
+      "opponent's cards and drop them in the discard."
     when /garbage( ?man)?/, 'man'
       "#{u}Garbage Man#{cl} (-0) - Give a player all your cards " +
       "you don't want. The opponent won't get any new cards until " +
       "they manage to get their hand below 5 cards again."
     when /heal( ?steal)?/, 'steal'
       "#{u}Heal Steal#{cl} (+0 to +#{MAX_HP-1}) - Steal all of an " +
-      "opponent's soup and pills, if he has any, and use them on yourself."
+      "opponent's soup and subs, if he has any, and use them on yourself."
     when /slot( ?machine)?/, 'machine'
       "#{u}Slot Machine#{cl} (-0 to -9) - Spits out three " +
       "random attack values from 0 to 3. Attack does the " +
       "sum of the three numbers. Can't be blocked."
     when 'soup'
       "#{s}Soup#{cl} (+1) - Take a sip. Relax. Gain health."
-    when 'pills'
-      "#{s}Pills#{cl} (+2) - Heal yourself by 2 points, up to a " +
-      "maximum of #{MAX_HP}. Can be played instead of attacking."
+    when 'sub'
+      "#{s}Sub#{cl} (+2) - Heal yourself by 2 " +
+      "points, up to a maximum of #{MAX_HP}."
     when 'armor'
       "#{s}Armor#{cl} (+5) - Adds 5 extra points to your " +
       "health on top of your maximum. Your main HP will " +
@@ -1450,14 +1447,14 @@ class BrawlPlugin < Plugin
     when /deflect(ed|or|ing|s)?/
       "#{p}Deflector#{cl} - Next attack played against you " +
       "automatically attacks a random player that isn't you."
-    when /f+/
-      "#{p}FFFFFF#{cl} - Inflicts 6 damage " +
-      "to a random player (including you)."
+    when /avalanche?/
+      "#{p}Avalanche#{cl} - A scrap pile avalanches! (Inflicts" +
+      "6 damage to any random player, including you!)."
     when /it\'?s(( ?getting)? ?windy)?/, 'getting', 'windy'
       "#{p}It's Getting Windy#{cl} - All players choose " +
       "a random card from the player previous to them."
-    when /loot( bag)?/, 'bag'
-      "#{p}Loot Bag#{cl} - Player draws until he has 8 cards in his hand."
+    when /tool( ?box)?/, 'box'
+      "#{p}Toolbox#{cl} - Player draws until he has 8 cards in his hand."
     when /multi-?( ?ball)?/, 'ball'
       "#{p}Multi-ball#{cl} - Take an extra turn after your turn."
     when /shifty( ?business)?/, 'business'
@@ -1471,16 +1468,16 @@ class BrawlPlugin < Plugin
       "in their hands over to the player beside them."
     when 'reverse'
       "#{p}Reverse#{cl} - REVERSE playing order, (or " +
-      "just skip opponent's turn if a 2-player game.)
+      "just skip opponent's turn if a 2-player game.)"
     else
-      "Brawl help topics: commands, objective, stats, " +
+      "#{TITLE} help topics: commands, objective, stats, " +
       "#{Bold}Rules:#{Bold} attacking, attacked, cards, grabbing"
     end
   end
 
-  Config.register Config::IntegerValue.new('brawl.countdown',
+  Config.register Config::IntegerValue.new('junkyard.countdown',
     :default => 20, :validate => Proc.new{|v| v > 2},
-    :desc => "Number of seconds before starting a game of Brawl.")
+    :desc => "Number of seconds before starting a game of Junkyard.")
 
   def message(m)
     return unless @games.key?(m.channel) or m.plugin
@@ -1493,9 +1490,7 @@ class BrawlPlugin < Plugin
     when /^(ca?|cards?)\b/
       if p.nil?
         retort = 
-          [ "Don't make me take you and this " +
-            "#{BRAWL} outside, #{m.source.nick}.",
-            "Sorry, #{m.source.nick}, this is between me and the guys.",
+          [ "Sorry, #{m.source.nick}, this is between me and the guys.",
             "What do you need, #{m.source.nick}?"
           ]
         m.reply retort.sample
@@ -1544,7 +1539,7 @@ class BrawlPlugin < Plugin
 
   def add_bot(m, plugin)
     unless @games.key?(m.channel)
-      @games[m.channel] = Brawl.new(self, m.channel, self.registry, m.source)
+      @games[m.channel] = Junkyard.new(self, m.channel, self.registry, m.source)
     end
     g = @games[m.channel]
     g.add_player(@bot.nick)
@@ -1554,14 +1549,14 @@ class BrawlPlugin < Plugin
     if @games.key?(m.channel)
       user = @games[m.channel].manager
       if m.source == user
-        m.reply "...you already started a #{BRAWL}"
+        m.reply "...you already started a game of #{TITLE}"
         return
       else
-        m.reply "#{user} already started a #{BRAWL}"
+        m.reply "#{user} already started a game of #{TITLE}"
         return
       end
     end
-    @games[m.channel] = Brawl.new(self, m.channel, self.registry, m.source)
+    @games[m.channel] = Junkyard.new(self, m.channel, self.registry, m.source)
   end
 
   # Called from within the game.
@@ -1571,7 +1566,7 @@ class BrawlPlugin < Plugin
 
   def stop_game(m, plugin=nil)
     @games.delete(m.channel)
-    m.reply "#{BRAWL} stopped."
+    m.reply "#{TITLE} stopped."
   end
 
   def show_stats(m, params)
@@ -1585,11 +1580,11 @@ class BrawlPlugin < Plugin
     xd = x.downcase
     unless @registry.has_key? xd
       if x =~ /^#/
-        m.reply "No one has played #{BRAWL} in #{x}."
+        m.reply "No one has played #{TITLE} in #{x}."
       elsif x == m.source.nick
-        m.reply "You haven't played #{BRAWL}"
+        m.reply "You haven't played #{TITLE}"
       else
-        m.reply "#{x} hasn't played #{BRAWL}"
+        m.reply "#{x} hasn't played #{TITLE}"
       end
       return
     end
@@ -1633,20 +1628,20 @@ class BrawlPlugin < Plugin
 end
 
 
-plugin = BrawlPlugin.new
+plugin = JunkyardPlugin.new
 
-plugin.map 'brawl bot',
-  :private => false, :action => :add_bot, :auth_path => 'brawlbot'
-plugin.map 'brawl cancel',
+plugin.map 'junkyard bot',
+  :private => false, :action => :add_bot, :auth_path => 'bot'
+plugin.map 'junkyard cancel',
   :private => false, :action => :stop_game
-plugin.map 'brawl end',
+plugin.map 'junkyard end',
   :private => false, :action => :stop_game
-plugin.map 'brawl stat[s] [:x [:y]]',
+plugin.map 'junkyard stat[s] [:x [:y]]',
   :action => :show_stats
-plugin.map 'brawl stop',
+plugin.map 'junkyard stop',
   :private => false, :action => :stop_game
-plugin.map 'brawl top',
+plugin.map 'junkyard top',
   :private => false, :action => :show_stats, :defaults => { :x => false }
-plugin.map 'brawl',
+plugin.map 'junkyard',
   :private => false, :action => :create_game
-plugin.default_auth('brawlbot', false)
+plugin.default_auth('bot', false)
