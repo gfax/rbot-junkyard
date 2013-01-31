@@ -1630,18 +1630,18 @@ end
 
 plugin = JunkyardPlugin.new
 
-plugin.map 'junkyard bot',
+plugin.map 'junk bot',
   :private => false, :action => :add_bot, :auth_path => 'bot'
-plugin.map 'junkyard cancel',
+plugin.map 'junk cancel',
   :private => false, :action => :stop_game
-plugin.map 'junkyard end',
+plugin.map 'junk end',
   :private => false, :action => :stop_game
-plugin.map 'junkyard stat[s] [:x [:y]]',
+plugin.map 'junk stat[s] [:x [:y]]',
   :action => :show_stats
-plugin.map 'junkyard stop',
+plugin.map 'junk stop',
   :private => false, :action => :stop_game
-plugin.map 'junkyard top',
+plugin.map 'junk top',
   :private => false, :action => :show_stats, :defaults => { :x => false }
-plugin.map 'junkyard',
+plugin.map 'junk',
   :private => false, :action => :create_game
 plugin.default_auth('bot', false)
