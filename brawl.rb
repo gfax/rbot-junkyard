@@ -5,7 +5,7 @@
 # Author:: Lite <degradinglight@gmail.com>
 # Copyright:: (C) 2012 gfax.ch
 # License:: GPL
-# Version:: 2013-01-30
+# Version:: 2013-02-01
 #
 
 class Junkyard
@@ -18,6 +18,36 @@ class Junkyard
              :support => Bold + Irc.color(:teal,:black),
              :unstoppable => Bold + Irc.color(:yellow,:black),
            }
+  # Custom death messages:
+  DIED = [ "%{p}'s soul has passed on.",
+           "%{p} died.",
+           "R.I.P. %{p}. Too soon.",
+           "%{p} fell victim to HURT disease.",
+           "%{p} expired.",
+           "%{p} has been summoned by the Eternal Judge.",
+           "%{p}: Loser even unto death.",
+           "%{p}'s ded.",
+           "%{p} was discharged from mortality.",
+           "%{p} has foregone the finer things in life, like winning.",
+           "Better luck next time, %{p} ...fgt.",
+           "%{p} has gone upstream with the salmon.",
+           "%{p} left the stage.",
+           "%{p} is broken beyond repair. Nice work, ANDY.",
+           "%{p} perished.",
+           "%{p} paid the ultimate price.",
+           "Fatal racing crash. Car flipped about 2,457 times. " +
+           "No survivors. %{p} was killed on impact. R.I.P."
+         ]
+  BOT_DIED = [ "has seen better days",
+               "lived a better life than all you fools.",
+               "gives his last regards to Chanserv.",
+               "goes to meet that ol' pi in the sky.",
+               "wills his pancake collection to %{r}",
+               "lost the Brawl! ...but wins the war.",
+               "is invincible!",
+               "died the most honorable death.",
+               "can't feel his legs, but only because he has none."
+              ]
 
   class Card
 
@@ -378,7 +408,7 @@ class Junkyard
 
   def add_player(user)
     if p = get_player(user)
-      if p == @bot.nick
+      if p.user == @bot.nick
         say "I'm already in the game, moron."
       else
         say "You're already in the game, #{p}."
@@ -410,7 +440,19 @@ class Junkyard
     end
   end
 
-  def drop_player(player, killed=false)
+  def drop_player(dropper, player, killed=true)
+    unless dropper == false or dropper.user == manager or dropper == player
+      say "Only the game manager is allowed to drop others, #{dropper}."
+      return
+    end
+    if dropper
+      # If the manager drops the only other player, end the game.
+      if dropper.user == manager and dropper != player and players.length < 3
+        say "#{player} has been removed from the game. #{TITLE} stopped."
+        @plugin.remove_game(channel)
+        return
+      end
+    end
     if attacked
       attacked.discard = nil
       attacked.grabbed = nil
@@ -421,39 +463,10 @@ class Junkyard
     if killed
       player.damage = 0
       update_user_stats(player, 0)
-      died = [ "%{p}'s soul has passed on.",
-               "%{p} died.",
-               "R.I.P. %{p}. Too soon.",
-               "%{p} fell victim to HURT disease.",
-               "%{p} expired.",
-               "%{p} has been summoned by the Eternal Judge.",
-               "%{p}: Loser even unto death.",
-               "%{p}'s ded.",
-               "%{p} was discharged from mortality.",
-               "%{p} has foregone the finer things in life, like winning.",
-               "Better luck next time, %{p} ...fgt.",
-               "%{p} has gone upstream with the salmon.",
-               "%{p} left the stage.",
-               "%{p} is broken beyond repair. Nice work, ANDY.",
-               "%{p} perished.",
-               "%{p} paid the ultimate price.",
-               "Fatal racing crash. Car flipped about 2,457 times. " +
-               "No survivors. %{p} was killed on impact. R.I.P."
-             ]
-      bot_died = [ "has seen better days",
-                   "lived a better life than all you fools.",
-                   "gives his last regards to Chanserv.",
-                   "goes to meet that ol' pi in the sky.",
-                   "wills his pancake collection to #{players.first.user}",
-                   "lost the Brawl! ...but wins the war.",
-                   "is invincible!",
-                   "died the most honorable death.",
-                   "can't feel his legs, but only because he has none."
-                 ]
       if player.user == @bot.nick
-        @bot.action channel, bot_died.sample
+        @bot.action channel, BOT_DIED.sample % { :r => players.first.user }
       else
-        say died.sample % { :p => player }
+        say DIED.sample % { :p => player }
       end
     else
       say "#{player} has been removed from the game."
@@ -538,16 +551,17 @@ class Junkyard
   end
 
   def p_turn
-    return "It's #{players.first}'s turn."
+    return "It's #{players.first}'s turn." if attacked.nil?
+    return "Respond to #{players.first.user} or pass, #{attacked}."
   end
 
   def check_health(player=nil)
     unless player.nil?
-      drop_player(player, true) if player.health < 1
+      drop_player(false, player) if player.health < 1
       return
     end
     players.each do |p|
-      drop_player(p, true) if p.health < 1
+      drop_player(false, p) if p.health < 1
     end
   end
 
@@ -1387,10 +1401,10 @@ class JunkyardPlugin < Plugin
       "a turn. Play these cards at the beginning of anyone's turn. " +
       "Use #{prefix}help #{plugin} <card> for card-specific info."
     when /commands?/
-      "c/cards - show cards and health, d/discard - discard, " +
-      "drop - remove yourself from the game, drop bot - drop me," +
-      "pa/pass - pass, p/play - play cards, s/score - show score, " +
-      "t/turn - show current turn/order/health"
+      "c/cards - show cards and health, d/discard - discard, drop " +
+      "<me>/<bot>/<nick> - remove yourself/#{@bot.nick}/player from " +
+      "the game, pa/pass - pass, p/play - play cards, s/score - show " +
+      "score, t/turn - show current turn/order/health"
     when /drop(ping)?/
       "Type 'drop' to drop from the game, or " +
       "'drop bot' to drop the bot from the game."
@@ -1519,6 +1533,8 @@ class JunkyardPlugin < Plugin
     return unless @games.key?(m.channel) or m.plugin
     g = @games[m.channel]
     msg = m.message.downcase
+    a = msg.split(' ')
+    a.delete_at(0) # [ "p", "frank", "2", "4" ] => [ "frank", "2", "4" ]
     p = g.get_player(m.source.nick)
     case msg
     when /^(jo?|join)\b/
@@ -1536,20 +1552,13 @@ class JunkyardPlugin < Plugin
       @bot.notice m.sourcenick, g.p_cards(p)
     when /^(di?|discard)\b/
       return unless g.has_turn?(m.source)
-      a = msg.split(' ')
       g.discard(a)
-    when /^drop bot\b/, "drop #{@bot.nick.downcase}"
-      return unless b = g.get_player(@bot.nick)
-      if g.players.length > 2
-        g.drop_player(b) if g.started
-      else
-        stop_game(m)
-      end
     when /^drop\b/
       return if p.nil?
-      if g.started
-        g.drop_player(p)
-      end
+      a[0] = p if a[0] == 'me'
+      a[0] = @bot.nick if a[0] == 'bot'
+      return unless g.started and g.get_player(a[0])
+      g.drop_player(p, a[0], false)
     when /^(pa|pass)\b/
       return unless g.attacked
       if g.attacked == p or p.grabbed
@@ -1560,13 +1569,11 @@ class JunkyardPlugin < Plugin
     when /^(pl?|play)\b/
       return if p.nil?
       return unless g.started
-      request = msg.split(' ')
-      return if request.length < 2
-      request.delete_at(0) # => [ "frank", "2", "4" ]
+      return if a.length.zero?
       if g.has_turn?(m.source)
-        g.play_move(request)
+        g.play_move(a)
       else
-        g.play_counter(p, request)
+        g.play_counter(p, a)
       end
     when /^(od?|order)\b/, /^(tu?|turn)\b/
       m.reply g.p_order if g.started
@@ -1603,7 +1610,11 @@ class JunkyardPlugin < Plugin
   end
 
   def stop_game(m, plugin=nil)
-    @games.delete(m.channel)
+    if @games[m.channel].nil?
+      m.reply "There is no #{TITLE} here."
+      return
+    end
+    remove_game(m.channel)
     m.reply "#{TITLE} stopped."
   end
 
@@ -1682,4 +1693,20 @@ plugin.map 'brawl top',
   :private => false, :action => :show_stats, :defaults => { :x => false }
 plugin.map 'brawl',
   :private => false, :action => :create_game
+
+plugin.map 'junk bot',
+  :private => false, :action => :add_bot, :auth_path => 'bot'
+plugin.map 'junk cancel',
+  :private => false, :action => :stop_game
+plugin.map 'junk end',
+  :private => false, :action => :stop_game
+plugin.map 'junk stat[s] [:x [:y]]',
+  :action => :show_stats
+plugin.map 'junk stop',
+  :private => false, :action => :stop_game
+plugin.map 'junk top',
+  :private => false, :action => :show_stats, :defaults => { :x => false }
+plugin.map 'junk',
+  :private => false, :action => :create_game
+
 plugin.default_auth('bot', false)
