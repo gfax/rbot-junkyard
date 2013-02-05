@@ -5,7 +5,7 @@
 # Author:: Lite <degradinglight@gmail.com>
 # Copyright:: (C) 2012 gfax.ch
 # License:: GPL
-# Version:: 2013-02-01
+# Version:: 2013-02-05
 #
 
 class Junkyard
@@ -17,6 +17,9 @@ class Junkyard
              :power => Bold + Irc.color(:brown,:black),
              :support => Bold + Irc.color(:teal,:black),
              :unstoppable => Bold + Irc.color(:yellow,:black),
+             :skips => Irc.color(:purple),
+             :- => Irc.color(:red),
+             :+ => Irc.color(:blue)
            }
   # Custom death messages:
   DIED = [ "%{p}'s soul has passed on.",
@@ -44,36 +47,36 @@ class Junkyard
                "can't feel his legs, but only because he has none."
               ]
   CARDS = {
-      :block {
+      :block => {
         :type => :counter,
         :string => "%{p} blocks %{o}'s %{c}.",
         :regex => 'block',
         :help => "Block a basic attack card when played against you. Can be " +
                  "used against a grab to nullify the grab's proceeding attack."
-      }
-      :dodge {
+      },
+      :dodge => {
         :type => :counter,
         :string => "%{p} dodges %{o}'s %{c}.",
         :regex => 'dodge',
         :help => "Similar to a block, but the attack is passed" +
                  "onto the next player. Cannot counter a grab."
-      }
-      :grab {
+      },
+      :grab => {
         :type => :counter,
         :string => "%{p} grabs %{o}. Respond or pass, %{o}.",
         :regex => 'grab',
         :help => "Play this as a counter so you can attack back. This " +
                  "cannot be dodged. Also note this can be played before " +
                  "an attack to disguise your type of attack."
-      }
-      :pillow {
+      },
+      :pillow => {
         :type => :counter,
         :health => 2,
         :string => "%{p} holds up a pillow in defense.",
         :regex => 'pillow',
         :help => "Reduces opponent's attack by 2 points."
-      }
-      :insurance {
+      },
+      :insurance => {
         :type => :counter,
         :health => 5,
         :string => "%{p} uses health insurance and " +
@@ -81,174 +84,174 @@ class Junkyard
         :regex => 'insurance',
         :help => "Can only be used against a " +
                  "blockable killing blow. Resets you to 5 health points."
-      }
-      :wrench {
+      },
+      :wrench => {
         :type => :attack,
         :string => "%{p} throw a wrench in %{o}'s gears.",
         :skips => 2,
         :regex => 'wrench',
         :help => "Throw a wrench in your opponents' machinery. " +
                  "He must spend 2 turns finding what jammed his gears." 
-      }
-      :eye_poke {
+      },
+      :eye_poke => {
         :type => :attack,
         :health => -2,
         :string => "%{p} pokes out %{o}'s eye. ;(",
         :skips => 1,
         :regex => [ /eye( ?poke)?/, 'poke' ],
         :help => "Opponent loses 2 health and is blinded for 1 turn."
-      }
-      :gutpunch {
+      },
+      :gutpunch => {
         :type => :attack,
         :health => -2,
         :string => "%{p} punches %{o} in the guts.",
         :regex => [ /gut( ?punch)?/, 'punch' ],
         :help => "Basic attack."
-      }
-      :nose_bleed {
+      },
+      :nose_bleed => {
         :type => :attack,
         :health => -3,
         :string => "%{p} pops %{o} in the nose, spraying blood everywhere.",
         :skips => 1,
-        :regex => /nose ?(bleed)?/,
+        :regex => [ /nose ?(bleed)?/ ],
         :help => "Opponent loses a turn to clean it up."
-      }
-      :neck_punch {
+      },
+      :neck_punch => {
         :type => :attack,
         :health => -3,
         :string => "%{p} delivers %{o} a punch in the neck.",
-        :regex => /neck( ?punch)?/,
+        :regex => [ /neck( ?punch)?/ ],
         :help => "Slightly more powerful attack " +
                  "directed at the neck of your opponent."
-      }
-      :kickball {
+      },
+      :kickball => {
         :type => :attack,
         :health => -4,
         :string => "%{p} delivers %{o}'s private belongings a swift kick.",
-        :regex => /kick( ?ball)?/,
+        :regex => [ /kick( ?ball)?/ ],
         :help => "Major damage due to a swift kick in the balls. " +
                  "Can be used on players that don't have balls."
-      }
-      :uppercut {
+      },
+      :uppercut => {
         :type => :attack,
         :health => -5,
         :string => "%{o} receives an uppercut from %{p}.",
-        :regex => /upper ?cut/,
+        :regex => [ /upper ?cut/ ],
         :help => "Ultimate attack."
-      }
-      :slot_machine {
+      },
+      :slot_machine => {
         :type => :attack,
         :string => "Next time stick to the pachinkos, %{o}.",
         :regex => [ /slot( ?machine)?/, 'machine' ],
         :help => "Spits out three random attack values from 0 " +
                  "to 3. Attack does the sum of the three numbers."
-      }
-      :trip {
+      },
+      :trip => {
         :type => :unstoppable,
         :string => "%{p} trips %{o}.",
         :skips => 1,
-        :regex => /^trip/,
+        :regex => [ /^trip/ ],
         :help => "Trip your opponent when he least " +
                  "suspects it, causing him to lose 1 turn."
-      }
-      :trout_slap {
+      },
+      :trout_slap => {
         :type => :unstoppable,
         :health => -1,
         :string => "%{p} slaps %{o} around a bit with a large trout.",
         :regex => [ /trout( ?slap)?/, 'slap' ],
         :help => "An mIRC-inspired attack. Slap your opponent with a trout."
-      }
-      :a_gun {
+      },
+      :a_gun => {
         :type => :unstoppable,
         :health => -2,
         :string => "%{p} shoots %{o} in the FACE.",
-        :regex => /(a ?)?gun/,
+        :regex => [ /(a ?)?gun/ ],
         :help => "Can't dodge a gun. Simple as that."
-      }
-      :tire_iron {
+      },
+      :tire_iron => {
         :type => :unstoppable,
         :health => -3,
         :string => "%{p} whacks %{o} upside the head with a tire iron.",
         :regex => [ /tire( ?iron)?/, 'iron' ],
         :help => "Beat your defenseless opponent senseless."
-      }
-      :bulldozer {
+      },
+      :bulldozer => {
         :type => :unstoppable,
         :string => "%{p} bulldozes all the cards out of %{o}'s hand.",
         :regex => [ /bull( ?dozer)?/, 'dozer' ],
         :help => "Pick up all of your " +
                  "opponent's cards and drop them in the discard."
-      }
-      :garbage_man {
+      },
+      :garbage_man => {
         :type => :unstoppable,
         :string => "%{p} dumps a bunch of garbage cards on %{o}.",
         :regex => [ /garbage( ?man)?/, 'man' ],
         :help => "Give a player all your cards " +
                  "you don't want. The opponent won't get any new cards until " +
                  "they manage to get their hand below 5 cards again."
-      }
-      :meal_steal {
+      },
+      :meal_steal => {
         :type => :unstoppable,
         :string => "%{p} rummages through %{o}'s lunchbox for soup and subs.",
         :regex => [ /meal( ?steal)?/, 'steal' ],
         :help => "Steal all of an opponent's soup and subs, " +
                  "if he has any, and use them on yourself."
-      }
-      :soup {
+      },
+      :soup => {
         :type => :support,
         :health => 1,
         :string => "%{p} sips on some soup and relaxes.",
         :regex => 'soup',
         :help => "Take a sip. Relax. Gain health."
-      }
-      :sub {
+      },
+      :sub => {
         :type => :support,
         :health => 2,
         :string => "%{p} eats a sub!",
         :regex => 'sub',
         :help => "Heal yourself by 2 " +
                  "points, up to a maximum of #{MAX_HP}."
-      }
-      :armor {
+      },
+      :armor => {
         :type => :support,
         :health => 5,
         :string => "%{p} buckles on some armor.",
         :regex => 'armor',
-        :help => "Adds 5 extra points to your health on top of your maximum. "
+        :help => "Adds 5 extra points to your health on top of your maximum. " +
                  "Your main HP will be protected until the armor is depleted."
-      }
-      :surgery {
+      },
+      :surgery => {
         :type => :support,
         :health => MAX_HP - 1,
         :string => "%{p} undergoes surgery and is completely restored!",
-        :regex => /s(e|u)rg(e|u)ry/,
+        :regex => [ /s(e|u)rg(e|u)ry/ ],
         :help => "Used only when a player has 1 " +
                  "health. Resets health to #{MAX_HP}."
-      }
-      :deflector {
+      },
+      :deflector => {
         :type => :power,
         :string => "%{p} raises a deflector shield!",
-        :regex => /deflect(ed|or|ing|s)?/,
+        :regex => [ /deflect(ed|or|ing|s)?/ ],
         :help => "Next attack played against you automatically " +
                  "attacks a random player that isn't you."
-      }
-      :avalanche {
+      },
+      :avalanche => {
         :type => :power,
         :health => -6,
         :string => "%{p} randomly inflicts 6 damage on %{o}. What a dick!",
-        :regex => /avalanche?/,
+        :regex => [ /avalanche?/ ],
         :help => "A scrap pile avalanches! 6 damage to " +
                  "any random player, including yourself!."
-      }
-      :earthquake {
+      },
+      :earthquake => {
         :type => :power,
         :health => -1,
         :string => "%{p} shakes everybody up with an earthquake!",
         :regex =>  [ /earth(( |-)?quake)?/, 'earthquake' ],
         :help => "An earthquake shakes the entire " +
                  "#{TITLE}. 1 damage to everyone"
-      }
-      :windy {
+      },
+      :windy => {
         :type => :power,
         :name => 'It\'s Getting Windy',
         :string => "%{p} turns up the ceiling fan too high and blows up " +
@@ -256,42 +259,42 @@ class Junkyard
         :regex => [ /it\'?s(( ?getting)? ?windy)?/, 'getting', 'windy' ],
         :help => "All players choose a random card " +
                  "from the player previous to them."
-      }
-      :toolbox {
+      },
+      :toolbox => {
         :type => :power,
         :string => "%{p} pulls %{n} cards from the deck.",
         :regex => [ /tool( ?box)?/, 'box' ],
         :help => "Player draws until he has 8 cards in his hand."
-      }
-      :multiball {
+      },
+      :multiball => {
         :type => :power,
         :name => 'Multi-ball',
         :string => "%{p} lites multi-ball.",
         :regex => [ /multi-?( ?ball)?/, 'ball' ],
         :help => "Take an extra turn after your turn."
-      }
-      :shifty_business {
+      },
+      :shifty_business => {
         :type => :power,
         :string => "%{p} swaps hands with %{o}!",
         :regex => [ /shifty( ?business)?/, 'business' ],
         :help => "Swap hand cards with a random player."
-      }
-      :the_bees {
+      },
+      :the_bees => {
         :type => :power,
         :string => "%{p} drops the bee cage on %{o}'s head...",
-        :regex => [ /the( ?be*s*)?/, /be*s*/ ],
+        :regex => [ /the( ?be+s)?/, /be+s/ ],
         :help => "Random player is stung by bees and must do " +
                  "their best Nicholas Cage impression. 1 damage " +
                  "every turn until victim uses a support card."
-      }
-      :whirlwind {
+      },
+      :whirlwind => {
         :type => :power,
         :string => "FEEL THE POWER OF THE WIND",
         :regex => 'whirlwind',
         :help => "Every player shifts their hand cards " +
                  "over to the player in front of them."
-      }
-      :reverse {
+      },
+      :reverse => {
         :type => :power,
         :string => "%{p} reverses the table!",
         :regex => 'reverse',
@@ -305,15 +308,16 @@ class Junkyard
     attr_reader :id, :name, :health, :skips, :string, :type
 
     def initialize(id)
-      @id = CARDS[id]
-      #if CARDS[id].nil?
-      #  raise 'Invalid card name.'
-      #  return
-      #end
+      @id = id
+      if CARDS[id].nil?
+        raise 'Invalid card name.'
+        return
+      end
       @type = CARDS[id][:type]
       @name = CARDS[id][:name]
       @health = CARDS[id][:health]
       @skips = CARDS[id][:skips]
+      @string = CARDS[id][:string]
       @name = id.to_s.split('_').each{|w| w.capitalize!}.join(' ') if @name.nil?
       @health = 0 if @health.nil?
       @skips = 0 if @skips.nil?
@@ -322,16 +326,16 @@ class Junkyard
     def to_s
       color = COLORS[type]
       hs = if health.zero? then ''
-           elsif health < 0 then Irc.color(:red) + health.to_s
-           else Irc.color(:blue) + '+' + health.to_s
+           elsif health < 0 then COLORS[:-] + health.to_s
+           else COLORS[:+] + '+' + health.to_s
            end
       ss = if skips.zero?
              ''
            elsif hs == ''
-             Irc.color(:purple) + skips.to_s
+             COLORS[:skips] + skips.to_s
            else 
              Irc.color(:white) + '/' +
-             Irc.color(:purple) + skips.to_s
+             COLORS[:skips] + skips.to_s
            end
       color + " #{name} #{hs}#{ss}" + NormalText
     end
@@ -525,7 +529,7 @@ class Junkyard
     p = Player.new(user)
     @players << p
     if user == manager
-      say "#{p} starts a game of #{TITLE} Type 'j' to join."
+      say "#{p} starts a #{TITLE} Type 'j' to join."
     else
       say "#{p} joins the #{TITLE}"
     end
@@ -960,7 +964,7 @@ class Junkyard
         opponent.grabbed = true
         say c[0].string % { :p => player, :o => opponent }
         notify opponent, p_cards(opponent)
-        @bot.timer.add_once(2) { bot_counter }
+        bot_counter
         return
       else
         notify player, "That's not an attack card."
@@ -1156,7 +1160,7 @@ class Junkyard
         say "#{player} plays #{player.discard}. Respond or pass, #{opponent}."
         notify opponent, p_cards(opponent)
         @attacked = opponent 
-        @bot.timer.add_once(2) { bot_counter }
+        bot_counter
         return
       end
       damage = 0
@@ -1296,7 +1300,7 @@ class Junkyard
       @discard |= [ c[0], c[1] ]
       player.delete_cards([c[0], c[1]])
       notify opponent, p_cards(opponent)
-      @bot.timer.add_once(2) { bot_counter }
+      bot_counter
       return
     when :dodge
       if player.grabbed
@@ -1319,7 +1323,7 @@ class Junkyard
         say "#{player} jumps out of the way and passes " +
             "#{opponent.user}'s attack onto #{players[n]}!"
         @attacked = players[n]
-        @bot.timer.add_once(2) { bot_counter } 
+        bot_counter
       end
       return
     when :block
@@ -1336,7 +1340,7 @@ class Junkyard
       bees = if player.bees then -1 else 0 end
       ensuing_health = player.health + opponent.discard.health + bees
       unless ensuing_health < 1 and not player.deflector
-        notify player, "You can only use your insurance " +
+        notify player, "You can only use that card " +
                        "as a last resort before death."
         return
       end
@@ -1468,80 +1472,127 @@ class JunkyardPlugin < Plugin
   end
 
   def help(plugin, topic='')
+    # Extract help information from CARDS hash.
+    id, card = nil, nil
+    Junkyard::CARDS.each_pair do |key, value|
+      a = value[:regex]
+      a = a.split if a.kind_of? String
+      a.each do |r|
+        if r.kind_of? String
+          if topic.downcase == r
+            id, card = key, value
+            break
+          end
+        else
+          if topic.downcase =~ r
+            id, card = key, value
+            break
+          end
+        end
+      end
+    end
+    # Format and return card information.
+    unless card.nil?
+      color = Junkyard::COLORS[card[:type]]
+      name = if card[:name]
+               card[:name]
+             else
+                id.to_s.split('_').each{|w| w.capitalize!}.join(' ')
+             end
+      health = if card[:health] then " (#{card[:health]} health)" else '' end
+      skips = if card[:skips]
+                s = if card[:skips] > 1 then 's' else '' end
+                " (miss #{card[:skips]} turn#{s})"
+              else
+                ''
+              end
+      help = card[:help]
+      return color + name + NormalText + health + skips + " - " + help
+    end
+    # Check other help topics for information.
     prefix = @bot.config['core.address_prefix'].first
-    cl = NormalText
+    b, cl = Bold, NormalText
     a = Junkyard::COLORS[:attack]
     c = Junkyard::COLORS[:counter]
     p = Junkyard::COLORS[:power]
     s = Junkyard::COLORS[:support]
     u = Junkyard::COLORS[:unstoppable]
-    card = nil
-    Junkyard::CARDS.each_pair do |h|
-      next unless h[:regex]
-      h[:regex].to_a.each do |r|
-        if topic.downcase =~ r
-          card = h
-          break
-        end
-      end
-    end
-    unless card.nil?
-    # SOMETHING SOMETHING SOMETHING
-    end
     case topic.downcase
     when 'attacking'
-      "When it's a player's turn they can play an #{a}Attack#{cl}/" +
-      "#{u}Unstoppable#{cl} card to attack a player, or a #{s}Support#{cl} " +
-      "card (like subs if you wish to heal). Instead of attacking " +
-      "when it's their turn, a player can discard cards they " +
-      "don't want. If they have no playable cards, they must discard."
-    when 'attacked'
-      "#{c}Counter#{cl} cards are played by the person being attacked to " +
-      "negate or mitigate the damage they receive. If they counter " +
-      "an attack with a Grab they must also play an Attack, Support, " +
-      "or Unstoppable card face down along with it. If they have " +
-      "no counter, they can pass and accept fate."
+      "#{b}You're Attacking:#{b} When it's your turn to play, you can play " +
+      "an #{a}Attack#{cl} or #{u}Unstoppable#{cl} card to attack a player, " +
+      "or a #{s}Support#{cl} card if you wish to heal. Instead of attacking " +
+      "when it's their turn, a player can discard cards they don't want. If " +
+      "they have no playable cards, they must discard. After discarding " +
+      "or playing an attack, your turn is over."
+    when /attack(ed)?/
+      "#{b}You're Attacked:#{b} #{c}Counter#{cl} cards are played to negate " +
+      "or mitigate the damage you receive when being attacked. If you " +
+      "counter an attack with a grab you must also play an #{a}Attack#{cl}, " +
+      "#{s}Support#{cl}, or #{u}Unstoppable#{cl} card face down along with " +
+      "it. Grabs do not block attacks, but they offer a chance to " +
+      "counterattack or heal immediately after you are attacked. Your " +
+      "opponent must respond to your grab by countering your hidden card or " +
+      "by passing and accepting fate."
+    when /bots?/
+      "#{b}Bot Matches:#{b} #{prefix}#{plugin} bot to start a game with " +
+      "#{@bot.nick}. Type the same command mid-game to have #{@bot.nick} " +
+      "join a game in progress.#{unless @bot.config['junkyard.bot'] then
+      ' This feature is currently disabled on this rbot\'s config.'
+      else '' end}"
     when /cards?/
-      "Players have 5 cards in their hand. There are 5 types of cards: " +
-      "#{a}Attack Cards#{cl} are played on your turn against other players. " +
-      "#{u}Unstoppable Cards#{cl} are as well, but cannot be blocked by the " +
-      "opponent. #{s}Support Cards#{cl} heal you. #{c}Counter Cards#{cl} " +
-      "counter attacks against you. #{p}Power Cards#{cl} either" +
-      "affect all players or a random player. They do not consume " +
-      "a turn. Play these cards at the beginning of anyone's turn. " +
+      "#{b}Cards:#{b} Players have 5 cards in their hand. There are 5 types " +
+      "of cards: #{a}Attack#{cl} cards are played against other players on " +
+      "your turn. #{u}Unstoppable#{cl} cards are as well, but cannot be " +
+      "blocked by the opponent. #{s}Support#{cl} cards heal you. " +
+      "#{c}Counter#{cl} cards counter attacks against you. #{p}Power#{cl} " +
+      "cards either affect all players or a random player. They do not " +
+      "consume a turn. Play these cards at the beginning of anyone's turn. " +
       "Use #{prefix}help #{plugin} <card> for card-specific info."
-    when /commands?/
-      "c/cards - show cards and health, d/discard - discard, drop " +
-      "<me>/<bot>/<nick> - remove yourself/#{@bot.nick}/player from " +
-      "the game, pa/pass - pass, p/play - play cards, s/score - show " +
+    when /command/
+      "#{b}Commands:#{b} c/cards - show cards and health, d/discard - " +
+      "discard, drop <me>/<bot>/<nick> - remove yourself/#{@bot.nick}/player " +
+      "from the game, pa/pass - pass, p/play - play cards, s/score - show " +
       "score, t/turn - show current turn/order/health"
     when /drop(ping)?/
-      "Type 'drop' to drop from the game, or " +
-      "'drop bot' to drop the bot from the game."
-    when 'grabbing'
-      "Although a Counter card, Grab can be played on a player's turn. " +
-      "They must play their intended attack/unstoppable/support card " +
-      "underneath the grab. The attacked player doesn't get to see " +
-      "what card is attacking them until they respond with a counter " +
-      "or pass. Players can't dodge when being grabbed. If the card " +
-      "that grabbed them turns out to be an unstoppable " +
-      "attack, their counter card is wasted."
-    when /objectives?/
-      "Every player has #{MAX_HP} health. Play cards against an " +
-      "opponent to take away their health. Be the last player standing."
-    when /stat(s?|istics?)/, /tops?/
-      "#{prefix}#{plugin} stats nick (network-wide stats) - " +
-      "#{prefix}#{plugin} stats #channel nick (channel-specific stats) - " +
-      "#{prefix}#{plugin} top (top 5 players)"
+      "#{b}Dropping:#{b} Type 'drop' to drop from the game, or 'drop bot' to " +
+      "drop the bot from the game. Only the game manager (the player that " +
+      "started the game,) can drop other players."
+    when /grabbing/
+      "#{b}Grabbing: #{b}Although a Counter card, you can Grab other " +
+      "players on your own turn. You must lay your intended " +
+      "#{a}Attack#{cl}, #{u}Unstoppable#{cl}, or #{s}Support#{cl} card with " +
+      "the grab. The attacked player doesn't get to see what card is " +
+      "attacking them until they respond with counter or pass. Players " +
+      "can't dodge when being grabbed. If the card that grabbed them turns " +
+      "out to be an #{u}Unstoppable#{cl} attack, any counter card they " +
+      "played is wasted and discarded."
+    when /objective/
+      "#{b}Objective:#{b} Every player has #{MAX_HP} health. " +
+      "Play cards against an opponent to take away their health. " +
+      "Be the last player standing."
+    when /play(ing)?/
+      "#{b}Playing:#{b} Type 'p' or 'play' to play a card number from your " +
+      "hand. Example: 'p Frank 4' to attack Frank with your 4th card. " +
+      "You only need to specify a username when there are more than 2 " +
+      "players playing the game."
+    when /stat(istic)?/, /top/
+      "#{b}Stats:#{b} #{prefix}#{plugin} stats <nick> - network-wide stats, " +
+      "#{prefix}#{plugin} stats #channel <nick> - channel-specific stats, " +
+      "#{prefix}#{plugin} top - top 5 players"
     else
-      "#{TITLE} help topics: commands, objective, stats, " +
-      "#{Bold}Rules:#{Bold} attacking, attacked, cards, grabbing"
+      "#{TITLE} help topics:#{ @bot.config['junkyard.bot'] ? ' bot,' : '' } " +
+      "commands, play, objective, stats; #{b}Rules:#{b} attacking, " +
+      "attacked, cards, grabbing"
     end
   end
 
   Config.register Config::IntegerValue.new('junkyard.countdown',
     :default => 20, :validate => Proc.new{|v| v > 2},
     :desc => "Number of seconds before starting a game of Junkyard.")
+  Config.register Config::BooleanValue.new('junkyard.bot',
+    :default => true,
+    :desc => "Enables or disables the AI.")
 
   def message(m)
     return unless @games.key?(m.channel) or m.plugin
@@ -1595,6 +1646,10 @@ class JunkyardPlugin < Plugin
   end
 
   def add_bot(m, plugin)
+    unless @bot.config['junkyard.bot']
+      m.reply "Playing against #{@bot.nick} is disabled."
+      return
+    end
     unless @games.key?(m.channel)
       @games[m.channel] = Junkyard.new(self, m.channel, self.registry, m.source)
     end
@@ -1606,10 +1661,10 @@ class JunkyardPlugin < Plugin
     if @games.key?(m.channel)
       user = @games[m.channel].manager
       if m.source == user
-        m.reply "...you already started a game of #{TITLE}"
+        m.reply "...you already started a #{TITLE}"
         return
       else
-        m.reply "#{user} already started a game of #{TITLE}"
+        m.reply "#{user} already started a #{TITLE}"
         return
       end
     end
@@ -1692,7 +1747,6 @@ end
 plugin = JunkyardPlugin.new
 
 [ 'brawl', 'junk', 'junkyard' ].each do |scope|
-
   plugin.map "#{scope} bot",
     :private => false, :action => :add_bot, :auth_path => 'bot'
   plugin.map "#{scope} cancel",
@@ -1707,7 +1761,7 @@ plugin = JunkyardPlugin.new
     :private => false, :action => :show_stats, :defaults => { :x => false }
   plugin.map "#{scope}",
     :private => false, :action => :create_game
-
 end
 
+plugin.default_auth('*', false)
 plugin.default_auth('bot', false)
