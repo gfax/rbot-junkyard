@@ -182,13 +182,13 @@ class Junkyard
         :help => "Pick up all of your " +
                  "opponent's cards and drop them in the discard."
       },
-      :garbage_man => {
+      :crane => {
         :type => :unstoppable,
         :string => "%{p} dumps a bunch of garbage cards on %{o}.",
-        :regex => [ /garbage( ?man)?/, 'man' ],
-        :help => "Give a player all your cards " +
-                 "you don't want. The opponent won't get any new cards until " +
-                 "they manage to get their hand below 5 cards again."
+        :regex => 'crane',
+        :help => "Pick up all your cards you don't want and dump them on an " +
+                 "opponent. The opponent won't get any new cards until " +
+                 "he manages to get his hand below 5 cards again."
       },
       :meal_steal => {
         :type => :unstoppable,
@@ -465,7 +465,7 @@ class Junkyard
       @deck << Card.new(:deflector)
       @deck << Card.new(:earthquake)
       @deck << Card.new(:bulldozer)
-      @deck << Card.new(:garbage_man)
+      @deck << Card.new(:crane)
       @deck << Card.new(:toolbox)
       @deck << Card.new(:multiball)
       @deck << Card.new(:tire_iron)
@@ -769,7 +769,7 @@ class Junkyard
       end
       a << n
       n2 = rand(p.cards.length)
-      if card.id == :garbage_man and p.cards.length > 1
+      if card.id == :crane and p.cards.length > 1
         # Throw a random card at the player
         # just for the heck of it!
         n2 = rand(p.cards.length) while n == n2
@@ -956,7 +956,7 @@ class Junkyard
         @discard |= [ c[0], c[1] ]
         player.discard = c[1]
         do_slots(player)
-        if player.discard.id == :garbage_man
+        if player.discard.id == :crane
           player.garbage = c[2..-1]
         end
         player.delete_cards([c[0], c[1]])
@@ -984,7 +984,7 @@ class Junkyard
     end
     @discard << c[0]
     player.discard = c[0]
-    if player.discard.id == :garbage_man
+    if player.discard.id == :crane
       player.garbage = c[1..-1]
     end
     player.delete_cards(c[0])
@@ -1211,7 +1211,7 @@ class Junkyard
             opponent.delete_cards(c)
           end
         end
-      when :garbage_man
+      when :crane
         @discard |= player.garbage
         opponent.cards |= player.garbage
         player.delete_cards(player.garbage)
@@ -1263,7 +1263,7 @@ class Junkyard
         end
       end
       say p_health(player)
-    elsif player.discard.id != :garbage_man and player.discard.id != :bulldozer
+    elsif player.discard.id != :crane and player.discard.id != :bulldozer
       say p_health(opponent)
       check_health(opponent)
     end
@@ -1288,7 +1288,7 @@ class Junkyard
           notify player, "You can only use that card with 1 health."
           return
         end
-      elsif c[1].id == :garbage_man
+      elsif c[1].id == :crane
         player.garbage = c[2..-1]
       end
       do_move(opponent, player, wait=false)
@@ -1478,16 +1478,10 @@ class JunkyardPlugin < Plugin
       a = value[:regex]
       a = a.split if a.kind_of? String
       a.each do |r|
-        if r.kind_of? String
-          if topic.downcase == r
-            id, card = key, value
-            break
-          end
-        else
-          if topic.downcase =~ r
-            id, card = key, value
-            break
-          end
+        case topic.downcase
+        when r
+          id, card = key, value
+          break
         end
       end
     end
