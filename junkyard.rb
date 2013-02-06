@@ -677,22 +677,22 @@ class Junkyard
     if attacked
       say "You can only discard at the start of your turn."
       return
+    elsif a.length.zero?
+      say "Specify which card(s) you wish to discard."
+      return
     end
-    return if a.length < 1
     c = []
-    a.uniq!
     a.each do |e|
       n = e.to_i
       if n < 1
         notify player, "Specify a card number."
         return
-      end
-      # Numbers are converted into cards.
-      c << player.cards[n-1].dup
-      if e.nil?
+      elsif n > player.cards.length
         notify player, "You don't even have #{n} cards."
         return
       end
+      # Numbers are converted into cards.
+      c << player.cards[n-1].dup
     end
     player.delete_cards(c)
     s = if c.length == 1 then "" else "s" end
@@ -919,7 +919,6 @@ class Junkyard
       end
     end
     c = []
-    a.uniq!
     a.each do |e|
       n = e.to_i
       if n < 1
@@ -1007,7 +1006,6 @@ class Junkyard
 
   def play_counter(player, a)
     c = []
-    a.uniq!
     a.delete_at(0) if get_player(a[0])
     a.each do |e|
       n = e.to_i
@@ -1596,7 +1594,7 @@ class JunkyardPlugin < Plugin
   def message(m)
     return unless @games.key?(m.channel) and m.plugin
     g = @games[m.channel]
-    a = m.message.downcase.split(' ')
+    a = m.message.downcase.split(' ').uniq
     a.delete_at(0) # [ "p", "frank", "2", "4" ] => [ "frank", "2", "4" ]
     p = g.get_player(m.source.nick)
     case m.message.downcase
@@ -1609,8 +1607,7 @@ class JunkyardPlugin < Plugin
       end
       @bot.notice m.sourcenick, g.p_cards(p)
     when /^(di?|discard)\b/
-      return unless g.has_turn?(m.source)
-      g.discard(a)
+      g.discard(a) if g.has_turn?(m.source)
     when /^drop\b/
       return if p.nil?
       a[0] = p if a[0] == 'me'
