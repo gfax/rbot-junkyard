@@ -82,8 +82,8 @@ class Junkyard
         :string => "%{p} uses health insurance and " +
                   "is restored to 5 health!",
         :regex => 'insurance',
-        :help => "Can only be used against a " +
-                 "blockable killing blow. Resets you to 5 health points."
+        :help => "Can only be used against a blockable, " +
+                 "killing blow. Resets you to 5 health points."
       },
       :wrench => {
         :type => :attack,
@@ -93,13 +93,13 @@ class Junkyard
         :help => "Throw a wrench in your opponents' machinery. " +
                  "He must spend 2 turns finding what jammed his gears." 
       },
-      :eye_poke => {
+      :nose_bleed => {
         :type => :attack,
         :health => -2,
-        :string => "%{p} pokes out %{o}'s eye. ;(",
+        :string => "%{p} pops %{o} in the nose, spraying blood everywhere.",
         :skips => 1,
-        :regex => [ /eye( ?poke)?/, 'poke' ],
-        :help => "Opponent loses 2 health and is blinded for 1 turn."
+        :regex => [ /nose( ?bleed)?/, 'bleed' ],
+        :help => "Opponent loses a turn to clean it up."
       },
       :gutpunch => {
         :type => :attack,
@@ -108,14 +108,6 @@ class Junkyard
         :regex => [ /gut( ?punch)?/, 'punch' ],
         :help => "Basic attack."
       },
-      :nose_bleed => {
-        :type => :attack,
-        :health => -3,
-        :string => "%{p} pops %{o} in the nose, spraying blood everywhere.",
-        :skips => 1,
-        :regex => [ /nose ?(bleed)?/ ],
-        :help => "Opponent loses a turn to clean it up."
-      },
       :neck_punch => {
         :type => :attack,
         :health => -3,
@@ -123,6 +115,14 @@ class Junkyard
         :regex => [ /neck( ?punch)?/ ],
         :help => "Slightly more powerful attack " +
                  "directed at the neck of your opponent."
+      },
+      :battery_acid => {
+        :type => :attack,
+        :health => -3,
+        :string => "%{p} throws battery acid in %{o}'s eyes.",
+        :skips => 1,
+        :regex => [ /battery ?(acid)?/, 'acid' ],
+        :help => "Opponent is burned by battery acid and blinded for a turn."
       },
       :kickball => {
         :type => :attack,
@@ -146,13 +146,28 @@ class Junkyard
         :help => "Spits out three random attack values from 0 " +
                  "to 3. Attack does the sum of the three numbers."
       },
-      :trip => {
+      :bulldozer => {
         :type => :unstoppable,
-        :string => "%{p} trips %{o}.",
+        :string => "%{p} bulldozes all the cards out of %{o}'s hand.",
+        :regex => [ /bull( ?dozer)?/, 'dozer' ],
+        :help => "Push all of your opponent's hand cards into " +
+                 "the discard, leaving him vulnerable to attack."
+      },
+      :crane => {
+        :type => :unstoppable,
+        :string => "%{p} dumps a bunch of garbage cards on %{o}.",
+        :regex => 'crane',
+        :help => "Pick up all your cards you don't want and dump them on an " +
+                 "opponent. The opponent won't get any new cards until " +
+                 "he manages to get his hand below 5 cards again."
+      },
+      :tire => {
+        :type => :unstoppable,
+        :string => "%{p} throws a tire around %{o}.",
         :skips => 1,
-        :regex => [ /^trip/ ],
-        :help => "Trip your opponent when he least " +
-                 "suspects it, causing him to lose 1 turn."
+        :regex => [ /tire(d|s)?\b/ ],
+        :help => "Throw a tire around your opponent, impeding " +
+                 "his movement and causing him to lose a turn."
       },
       :trout_slap => {
         :type => :unstoppable,
@@ -172,23 +187,8 @@ class Junkyard
         :type => :unstoppable,
         :health => -3,
         :string => "%{p} whacks %{o} upside the head with a tire iron.",
-        :regex => [ /tire( ?iron)?/, 'iron' ],
+        :regex => [ /tire( |-)?iron/, 'iron' ],
         :help => "Beat your defenseless opponent senseless."
-      },
-      :bulldozer => {
-        :type => :unstoppable,
-        :string => "%{p} bulldozes all the cards out of %{o}'s hand.",
-        :regex => [ /bull( ?dozer)?/, 'dozer' ],
-        :help => "Pick up all of your " +
-                 "opponent's cards and drop them in the discard."
-      },
-      :crane => {
-        :type => :unstoppable,
-        :string => "%{p} dumps a bunch of garbage cards on %{o}.",
-        :regex => 'crane',
-        :help => "Pick up all your cards you don't want and dump them on an " +
-                 "opponent. The opponent won't get any new cards until " +
-                 "he manages to get his hand below 5 cards again."
       },
       :meal_steal => {
         :type => :unstoppable,
@@ -202,15 +202,15 @@ class Junkyard
         :health => 1,
         :string => "%{p} sips on some soup and relaxes.",
         :regex => 'soup',
-        :help => "Take a sip. Relax. Gain health."
+        :help => "Take a sip. Relax. Gain up to #{MAX_HP} health."
       },
       :sub => {
         :type => :support,
         :health => 2,
-        :string => "%{p} eats a sub!",
+        :string => "%{p} eats a sub.",
         :regex => 'sub',
-        :help => "Heal yourself by 2 " +
-                 "points, up to a maximum of #{MAX_HP}."
+        :help => "Heal yourself by 2 points, " +
+                 "up to a maximum of #{MAX_HP}."
       },
       :armor => {
         :type => :support,
@@ -225,15 +225,8 @@ class Junkyard
         :health => MAX_HP - 1,
         :string => "%{p} undergoes surgery and is completely restored!",
         :regex => [ /s(e|u)rg(e|u)ry/ ],
-        :help => "Used only when a player has 1 " +
-                 "health. Resets health to #{MAX_HP}."
-      },
-      :deflector => {
-        :type => :power,
-        :string => "%{p} raises a deflector shield!",
-        :regex => [ /deflect(ed|or|ing|s)?/ ],
-        :help => "Next attack played against you automatically " +
-                 "attacks a random player that isn't you."
+        :help => "Used only when you have 1 health. " +
+                 "Resets health to #{MAX_HP}."
       },
       :avalanche => {
         :type => :power,
@@ -243,28 +236,20 @@ class Junkyard
         :help => "A scrap pile avalanches! 6 damage to " +
                  "any random player, including yourself!."
       },
+      :deflector => {
+        :type => :power,
+        :string => "%{p} raises a deflector shield!",
+        :regex => [ /deflect(ed|or|ing|s)?/ ],
+        :help => "Next attack played against you automatically " +
+                 "attacks a random player that isn't you."
+      },
       :earthquake => {
         :type => :power,
         :health => -1,
         :string => "%{p} shakes everybody up with an earthquake!",
         :regex =>  [ /earth(( |-)?quake)?/, 'earthquake' ],
-        :help => "An earthquake shakes the entire " +
-                 "#{TITLE}. 1 damage to everyone"
-      },
-      :windy => {
-        :type => :power,
-        :name => 'It\'s Getting Windy',
-        :string => "%{p} turns up the ceiling fan too high and blows up " +
-                  "a gust! Every player passes a random card forward.",
-        :regex => [ /it\'?s(( ?getting)? ?windy)?/, 'getting', 'windy' ],
-        :help => "All players choose a random card " +
-                 "from the player previous to them."
-      },
-      :toolbox => {
-        :type => :power,
-        :string => "%{p} pulls %{n} cards from the deck.",
-        :regex => [ /tool( ?box)?/, 'box' ],
-        :help => "Player draws until he has 8 cards in his hand."
+        :help => "An earthquake shakes the entire #{TITLE} " +
+                 "1 damage to everyone, starting with yourself."
       },
       :multiball => {
         :type => :power,
@@ -273,6 +258,13 @@ class Junkyard
         :regex => [ /multi-?( ?ball)?/, 'ball' ],
         :help => "Take an extra turn after your turn."
       },
+      :reverse => {
+        :type => :power,
+        :string => "%{p} reverses the table!",
+        :regex => 'reverse',
+        :help => "REVERSE playing order. Skip " +
+                 "opponent's turn if a 2-player game."
+      }
       :shifty_business => {
         :type => :power,
         :string => "%{p} swaps hands with %{o}!",
@@ -287,6 +279,21 @@ class Junkyard
                  "their best Nicholas Cage impression. 1 damage " +
                  "every turn until victim uses a support card."
       },
+      :toolbox => {
+        :type => :power,
+        :string => "%{p} pulls %{n} cards from the deck.",
+        :regex => [ /tool( ?box)?/, 'box' ],
+        :help => "Player draws until he has 8 cards in his hand."
+      },
+      :windy => {
+        :type => :power,
+        :name => 'It\'s Getting Windy',
+        :string => "%{p} turns up the ceiling fan too high and blows up " +
+                  "a gust! Every player passes a random card forward.",
+        :regex => [ /it\'?s(( ?getting)? ?windy)?/, 'getting', 'windy' ],
+        :help => "All players choose a random card " +
+                 "from the player previous to them."
+      },
       :whirlwind => {
         :type => :power,
         :string => "FEEL THE POWER OF THE WIND",
@@ -294,13 +301,6 @@ class Junkyard
         :help => "Every player shifts their hand cards " +
                  "over to the player in front of them."
       },
-      :reverse => {
-        :type => :power,
-        :string => "%{p} reverses the table!",
-        :regex => 'reverse',
-        :help => "REVERSE playing order. Skip " +
-                 "opponent's turn if a 2-player game."
-      }
   }
   
   class Card
@@ -444,16 +444,16 @@ class Junkyard
       @deck << Card.new(:uppercut)
     end
     3.times do
-      @deck << Card.new(:eye_poke)
+      @deck << Card.new(:nose_bleed)
       @deck << Card.new(:soup)
       @deck << Card.new(:pillow)
     end
     2.times do
       @deck << Card.new(:a_gun)
       @deck << Card.new(:trout_slap)
-      @deck << Card.new(:nose_bleed)
+      @deck << Card.new(:battery_acid)
       @deck << Card.new(:insurance)
-      @deck << Card.new(:trip)
+      @deck << Card.new(:tire)
       @deck << Card.new(:meal_steal)
       @deck << Card.new(:wrench)
       @deck << Card.new(:slot_machine)
@@ -1516,9 +1516,9 @@ class JunkyardPlugin < Plugin
       "#{b}You're Attacking:#{b} When it's your turn to play, you can play " +
       "an #{a}Attack#{cl} or #{u}Unstoppable#{cl} card to attack a player, " +
       "or a #{s}Support#{cl} card if you wish to heal. Instead of attacking " +
-      "when it's their turn, a player can discard cards they don't want. If " +
-      "they have no playable cards, they must discard. After discarding " +
-      "or playing an attack, your turn is over."
+      "when it's your turn, you can discard cards you don't want. If you " +
+      "have no playable cards, you must discard. After discarding or " +
+      "playing an attack, your turn is over."
     when /attack(ed)?/
       "#{b}You're Attacked:#{b} #{c}Counter#{cl} cards are played to negate " +
       "or mitigate the damage you receive when being attacked. If you " +
