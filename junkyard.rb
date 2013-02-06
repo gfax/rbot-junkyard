@@ -22,30 +22,35 @@ class Junkyard
              :+ => Irc.color(:blue)
            }
   # Custom death messages:
-  DIED = [ "%{p}'s soul has passed on.",
-           "%{p} died.",
-           "R.I.P. %{p}. Too soon.",
-           "%{p} fell victim to HURT disease.",
-           "%{p} expired.",
-           "%{p} has been summoned by the Eternal Judge.",
-           "%{p}: Loser even unto death.",
-           "%{p}'s ded.",
-           "%{p} was discharged from mortality.",
-           "%{p} has foregone the finer things in life, like winning.",
-           "Better luck next time, %{p} ...fgt.",
-           "%{p} has gone upstream with the salmon.",
-           "%{p} left the stage.",
-           "%{p} perished.",
-           "%{p} paid the ultimate price."
-         ]
-  BOT_DIED = [ "has seen better days",
-               "lived a better life than all you fools.",
-               "gives his last regards to Chanserv.",
-               "goes to meet that ol' pi in the sky.",
-               "wills his pancake collection to %{r}",
-               "died the most honorable death.",
-               "can't feel his legs, but only because he has none."
-              ]
+  DEATHS = [ "%{p}'s soul has passed on.",
+             "%{p} died.",
+             "R.I.P. %{p}. Too soon.",
+             "%{p} fell victim to HURT disease.",
+             "%{p} expired.",
+             "%{p} has been summoned by the Eternal Judge.",
+             "%{p}: Loser even unto death.",
+             "%{p}'s ded.",
+             "%{p} was discharged from mortality.",
+             "%{p} has foregone the finer things in life, like winning.",
+             "Better luck next time, %{p} ...fgt.",
+             "%{p} has gone upstream with the salmon.",
+             "%{p} left the stage.",
+             "%{p} perished.",
+             "%{p} paid the ultimate price."
+           ]
+  BOT_DEATHS = [ "has seen better days",
+                 "lived a better life than all you fools.",
+                 "gives his last regards to Chanserv.",
+                 "goes to meet that ol' pi in the sky.",
+                 "wills his pancake collection to %{r}",
+                 "died the most honorable death.",
+                 "can't feel his legs, but only because he has none."
+               ]
+  # Things to say to non-players.
+  RETORTS = [ "Sorry, %{p}, this is between me and the guys.",
+              "What do you need, %{p}?"
+            ]
+  # Add to or modify these as you wish.
   CARDS = {
       :block => {
         :type => :counter,
@@ -565,9 +570,9 @@ class Junkyard
       player.damage = 0
       update_user_stats(player, 0)
       if player.user == @bot.nick
-        @bot.action channel, BOT_DIED.sample % { :r => players.first.user }
+        @bot.action channel, BOT_DEATHS.sample % { :r => players.first.user }
       else
-        say DIED.sample % { :p => player }
+        say DEATHS.sample % { :p => player }
       end
     else
       say "#{player} has been removed from the game."
@@ -1600,11 +1605,8 @@ class JunkyardPlugin < Plugin
       g.add_player(m.source)
     when /^(ca?|cards?)\b/
       if p.nil?
-        retort = 
-          [ "Sorry, #{m.source.nick}, this is between me and the guys.",
-            "What do you need, #{m.source.nick}?"
-          ]
-        m.reply retort.sample
+        m.reply Junkyard::RETORTS.sample % { :p => m.source }
+        return
       end
       @bot.notice m.sourcenick, g.p_cards(p)
     when /^(di?|discard)\b/
@@ -1757,5 +1759,4 @@ plugin = JunkyardPlugin.new
     :private => false, :action => :create_game
 end
 
-plugin.default_auth('*', false)
 plugin.default_auth('bot', false)
