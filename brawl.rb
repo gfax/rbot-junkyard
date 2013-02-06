@@ -359,7 +359,7 @@ class Junkyard
         :name => 'Roach Approach',
         :type => :attack,
         :string => "%{p} psychologically devastates " +
-									 "%{o} with a Roach Approach.",
+                   "%{o} with a Roach Approach.",
         :skips => 2,
         :regex => [ /roach/, /approach/ ],
         :help => "This does no damage, but your opponent " +
@@ -462,7 +462,7 @@ class Junkyard
                    "forever ruins %{o}'s last.fm profile.",
         :regex => [ /danger/, 'zone' ],
         :help => "Roach scrobbles Danger Zone 570 times on your opponent's " +
-      					 "computer and now their music libraries are SUPER."
+                 "computer and now their music libraries are SUPER."
       },
       :a_gun => {
         :type => :unstoppable,
@@ -472,7 +472,7 @@ class Junkyard
         :help => "Can't dodge a gun. Simple as that."
       },
       :tire_iron => {
-				:name => 'Rocket Lawn Chair',
+        :name => 'Rocket Lawn Chair',
         :type => :unstoppable,
         :health => -3,
         :string => "%{p} blows up %{o} with a Rocket Lawn Chair.",
@@ -480,7 +480,7 @@ class Junkyard
         :help => "Still not as good as a shotgun."
       },
       :meal_steal => {
-				:name => 'Heal Steal',
+        :name => 'Heal Steal',
         :type => :unstoppable,
         :string => "%{p} rummages through %{o}'s hand for DDP and peelz.",
         :regex => [ /heal/, /steal/ ],
@@ -488,7 +488,7 @@ class Junkyard
                  "if he has any, and use them on yourself."
       },
       :soup => {
-				:name => 'DDP',
+        :name => 'DDP',
         :type => :support,
         :health => 1,
         :string => "%{p} takes a sip of DDP, relaxes.",
@@ -496,7 +496,7 @@ class Junkyard
         :help => "Take a sip. Relax. Gain up to #{MAX_HP} health."
       },
       :sub => {
-				:name => 'Peelz',
+        :name => 'Peelz',
         :type => :support,
         :health => 2,
         :string => "%{p} peel'd up!",
@@ -513,7 +513,7 @@ class Junkyard
                  "Your main HP will be protected until the armor is depleted."
       },
       :surgery => {
-				:name => 'White Wedding',
+        :name => 'White Wedding',
         :type => :support,
         :health => MAX_HP - 1,
         :string => "It's a nice day to... START AGAIN!!! HEALTH RESTORED!!!",
@@ -522,7 +522,7 @@ class Junkyard
                  "Resets health to #{MAX_HP}."
       },
       :avalanche => {
-				:name => 'FFFFFF',
+        :name => 'FFFFFF',
         :type => :power,
         :health => -6,
         :string => "%{p} randomly inflicts 6 damage on %{o}. What a dick!",
@@ -538,7 +538,7 @@ class Junkyard
                  "attacks a random player that isn't you."
       },
       :earthquake => {
-				:name => 'Fireball',
+        :name => 'Fireball',
         :type => :power,
         :health => -1,
         :string => "%{p} drops a fireball on everyone.",
@@ -553,7 +553,7 @@ class Junkyard
         :help => "Take an extra turn after your turn."
       },
       :reverse => {
-				:name => 'You\'re Your Grandfather',
+        :name => 'You\'re Your Grandfather',
         :type => :power,
         :string => "%{p} reverses the table!",
         :regex => [ /you'?re?/, /grand/, 'reverse' ],
@@ -576,7 +576,7 @@ class Junkyard
                  "every turn until victim uses a support card."
       },
       :toolbox => {
-				:name => 'Loot Bag',
+        :name => 'Loot Bag',
         :type => :power,
         :string => "%{p} pulls %{n} cards from the deck.",
         :regex => [ /loot/, 'bag' ],
