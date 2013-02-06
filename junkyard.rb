@@ -291,7 +291,7 @@ class Junkyard
         :type => :power,
         :string => "%{p} pulls %{n} cards from the deck.",
         :regex => [ /tool/, /box/, /bag/ ],
-        :help => "Player draws until he has 8 cards in his hand."
+        :help => "Draw until you have 8 cards in your hand."
       },
       :windy => {
         :name => 'It\'s Getting Windy',
@@ -345,7 +345,7 @@ class Junkyard
              Irc.color(:white) + '/' +
              COLORS[:skips] + skips.to_s
            end
-      color + " #{name} #{hs}#{ss}" + NormalText
+      color + "#{name} #{hs}#{ss}" + NormalText
     end
 
   end
@@ -629,7 +629,7 @@ class Junkyard
   def p_cards(player)
     n = 0
     c = Bold + Irc.color(:white,:black)
-    cards = player.cards.map { |k| n += 1; "#{c}#{n}.\)#{Bold}#{k}"}
+    cards = player.cards.map { |k| n += 1; "#{c}#{n}.\)#{Bold} #{k}"}
     return cards.join(" ")
   end
 
