@@ -971,7 +971,7 @@ class Junkyard
       say "You can only discard at the start of your turn."
       return
     end
-    return if a.length < 2
+    return if a.length < 1
     c = []
     a.uniq!
     a.each do |e|
