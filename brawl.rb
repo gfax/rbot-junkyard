@@ -693,20 +693,20 @@ class Junkyard
   attr_reader :attacked, :channel, :deck, :discard, :dropouts,
               :manager, :players, :registry, :slots, :started, :title
 
-  def initialize(plugin, channel, registry, manager, title)
+  def initialize(plugin, channel, manager, title)
     @channel = channel
     @plugin = plugin
     @bot = plugin.bot
-    @attacked = nil   # player being attacked
-    @deck = []        # card stock
-    @discard = []     # used cards
-    @dropouts = []    # users that aren't allowed to rejoin
-    @manager = manager
-    @players = []     # players currently in game
-    @registry = registry
-    @slots = []
-    @started = nil    # if game started
-    @title = title    # name of the game
+    @attacked = nil     # player being attacked
+    @deck = []          # card stock
+    @discard = []       # used cards
+    @dropouts = []      # users that aren't allowed to rejoin
+    @manager = manager  # user that started the game
+    @players = []       # players currently in game
+    @registry = @plugin.registry
+    @slots = []         # slot machine damage
+    @started = nil      # if game started
+    @title = title      # name of the game
     create_deck
     add_player(manager)
   end
@@ -1949,7 +1949,7 @@ class JunkyardPlugin < Plugin
       return
     end
     unless @games.key?(m.channel)
-      @games[m.channel] = Junkyard.new(self, m.channel, self.registry, m.source, title(m))
+      @games[m.channel] = Junkyard.new(self, m.channel, m.source, title(m))
     end
     g = @games[m.channel]
     g.add_player(@bot.nick)
@@ -1966,7 +1966,7 @@ class JunkyardPlugin < Plugin
         return
       end
     end
-    @games[m.channel] = Junkyard.new(self, m.channel, self.registry, m.source, title(m))
+    @games[m.channel] = Junkyard.new(self, m.channel, m.source, title(m))
   end
 
   # Called from within the game.
@@ -2051,7 +2051,7 @@ plugin = JunkyardPlugin.new
     :private => false, :action => :stop_game
   plugin.map "#{scope} end",
     :private => false, :action => :stop_game
-  plugin.map "#{scope}l stat[s] [:x [:y]]",
+  plugin.map "#{scope} stat[s] [:x [:y]]",
     :action => :show_stats
   plugin.map "#{scope} stop",
     :private => false, :action => :stop_game
