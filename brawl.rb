@@ -102,7 +102,7 @@ class Junkyard
         :skips => 2,
         :regex => [ /wrench/ ],
         :help => "Throw a wrench in your opponents' machinery. " +
-                 "He must spend 2 turns finding what jammed his gears." 
+                 "He must spend 2 turns finding what jammed his gears."
       },
       :nose_bleed => {
         :type => :attack,
@@ -363,7 +363,7 @@ class Junkyard
         :skips => 2,
         :regex => [ /roach/, /approach/ ],
         :help => "This does no damage, but your opponent " +
-                 "must spend 2 turns in therapy." 
+                 "must spend 2 turns in therapy."
       },
       :nose_bleed => {
         :name => 'Broken Heart',
@@ -403,8 +403,8 @@ class Junkyard
         :type => :attack,
         :health => -4,
         :string => "%{p} delivers %{o}'s #{[ 'toolbox', 'junk',
-                   'private belongings', 'particle accelerator', 
-                   'anodes', 'anchors', 'Jimmy Deans', 'coat rack', 
+                   'private belongings', 'particle accelerator',
+                   'anodes', 'anchors', 'Jimmy Deans', 'coat rack',
                    'balls' ].sample} a swift kick.",
         :regex => [ /kick/, /ball/ ],
         :help => "Major damage due to a swift kick in the balls. " +
@@ -599,7 +599,7 @@ class Junkyard
                  "over to the player in front of them."
       }
   }
-  
+
   class Card
 
     attr_reader :id, :name, :health, :skips, :string, :type
@@ -631,7 +631,7 @@ class Junkyard
              ''
            elsif hs == ''
              COLORS[:skips] + skips.to_s
-           else 
+           else
              Irc.color(:white) + '/' +
              COLORS[:skips] + skips.to_s
            end
@@ -1292,7 +1292,7 @@ class Junkyard
     deflecting = if opponent.deflector then true else false end
     do_move(player, opponent)
     if opponent.grabbed == false and deflecting
-      increment_turn 
+      increment_turn
     elsif c[0].type == :support or c[0].type == :unstoppable
       increment_turn
     end
@@ -1379,8 +1379,8 @@ class Junkyard
       say card.string % { :p => player, :n => n }
     when :whirlwind
       temp_deck = []
-      players.each do |p| 
-        temp_deck << p.cards 
+      players.each do |p|
+        temp_deck << p.cards
       end
       temp_deck << temp_deck.shift
       n = 0
@@ -1457,7 +1457,7 @@ class Junkyard
         do_slots(player) # Get some new slots while we wait.
         say "#{player} plays #{player.discard}. Respond or pass, #{opponent}."
         notify opponent, p_cards(opponent)
-        @attacked = opponent 
+        @attacked = opponent
         bot_counter
         return
       end
@@ -1683,7 +1683,7 @@ class Junkyard
       say "#{player} misses a turn."
       player.skips -= 1
       increment_turn
-    else 
+    else
       say p_turn
       notify player, p_cards(player)
       @bot.timer.add_once(2) { bot_move }
@@ -1710,7 +1710,7 @@ class Junkyard
 
   def update_chan_stats(damage)
     if @registry.has_key? channel.name
-      @registry[channel.name] = [ @registry[channel.name][0] + 1, 
+      @registry[channel.name] = [ @registry[channel.name][0] + 1,
                                   @registry[channel.name][1] + damage,
                                   @registry[channel.name][2]
                                 ]
@@ -2004,7 +2004,7 @@ class JunkyardPlugin < Plugin
     if params[:y].nil?
       if x =~ /^#/
         m.reply "#{Bold}#{x}#{Bold} -- " +
-                "(games: #{@registry[xd][0]}, " + 
+                "(games: #{@registry[xd][0]}, " +
                 "total damage: #{@registry[xd][1]})"
         # Make an array of the channel's top players.
         a = @registry[xd][2].dup
