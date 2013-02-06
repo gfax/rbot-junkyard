@@ -323,12 +323,10 @@ class Junkyard
       end
       @type = CARDS[id][:type]
       @name = CARDS[id][:name]
-      @health = CARDS[id][:health]
-      @skips = CARDS[id][:skips]
-      @string = CARDS[id][:string]
       @name = id.to_s.split('_').each{|w| w.capitalize!}.join(' ') if @name.nil?
-      @health = 0 if @health.nil?
-      @skips = 0 if @skips.nil?
+      @health = CARDS[id][:health] || 0
+      @skips = CARDS[id][:skips] || 0
+      @string = CARDS[id][:string]
     end
 
     def to_s
@@ -1042,7 +1040,7 @@ class Junkyard
 
   def do_power(player, card)
     unless attacked.nil?
-      say "You cannot play power cards in the middle of an attack, #{player}."
+      notify player, "You cannot play power cards in the middle of an attack."
       return
     end
     # Deflector isn't discarded until it is used up.
@@ -1596,13 +1594,12 @@ class JunkyardPlugin < Plugin
     :desc => "Enables or disables the AI.")
 
   def message(m)
-    return unless @games.key?(m.channel) or m.plugin
+    return unless @games.key?(m.channel) and m.plugin
     g = @games[m.channel]
-    msg = m.message.downcase
-    a = msg.split(' ')
+    a = m.message.downcase.split(' ')
     a.delete_at(0) # [ "p", "frank", "2", "4" ] => [ "frank", "2", "4" ]
     p = g.get_player(m.source.nick)
-    case msg
+    case m.message.downcase
     when /^(jo?|join)\b/
       g.add_player(m.source)
     when /^(ca?|cards?)\b/
@@ -1622,15 +1619,10 @@ class JunkyardPlugin < Plugin
       g.drop_player(p, a[0], false)
     when /^(pa|pass)\b/
       return unless g.attacked
-      if g.attacked == p or p.grabbed
-        g.pass(p)
-      elsif g.has_turn?(m.source)
-        g.pass(p)
-      end
+      g.pass(p) if g.attacked == p or p.grabbed
     when /^(pl?|play)\b/
-      return if p.nil?
+      return if p.nil? or a.length.zero?
       return unless g.started
-      return if a.length.zero?
       if g.has_turn?(m.source)
         g.play_move(a)
       else
