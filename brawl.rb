@@ -81,6 +81,263 @@ class Junkyard
                  "an attack to disguise your type of attack."
       },
       :pillow => {
+        :type => :counter,
+        :health => 2,
+        :string => "%{p} holds up a pillow in defense.",
+        :regex => [ /pillow/ ],
+        :help => "Reduces opponent's attack by 2 points."
+      },
+      :insurance => {
+        :type => :counter,
+        :health => 5,
+        :string => "%{p} uses health insurance and " +
+                  "is restored to 5 health!",
+        :regex => [ /insurance/ ],
+        :help => "Can only be used against a blockable, " +
+                 "killing blow. Resets you to 5 health points."
+      },
+      :wrench => {
+        :type => :attack,
+        :string => "%{p} throw a wrench in %{o}'s gears.",
+        :skips => 2,
+        :regex => [ /wrench/ ],
+        :help => "Throw a wrench in your opponents' machinery. " +
+                 "He must spend 2 turns finding what jammed his gears." 
+      },
+      :nose_bleed => {
+        :type => :attack,
+        :health => -2,
+        :string => "%{p} pops %{o} in the nose, spraying blood everywhere.",
+        :skips => 1,
+        :regex => [ /nose/, /bleed/ ],
+        :help => "Opponent loses a turn to clean it up."
+      },
+      :gutpunch => {
+        :type => :attack,
+        :health => -2,
+        :string => "%{p} punches %{o} in the guts.",
+        :regex => [ /gut/, 'punch' ],
+        :help => "Basic attack."
+      },
+      :neck_punch => {
+        :type => :attack,
+        :health => -3,
+        :string => "%{p} delivers %{o} a punch in the neck.",
+        :regex => [ /neck/ ],
+        :help => "Slightly more powerful attack " +
+                 "directed at the neck of your opponent."
+      },
+      :battery_acid => {
+        :type => :attack,
+        :health => -3,
+        :string => "%{p} throws battery acid in %{o}'s eyes.",
+        :skips => 1,
+        :regex => [ /battery/, /acid/ ],
+        :help => "Opponent is burned by battery acid and blinded for a turn."
+      },
+      :kickball => {
+        :type => :attack,
+        :health => -4,
+        :string => "%{p} delivers %{o}'s private belongings a swift kick.",
+        :regex => [ /kick/, /ball/ ],
+        :help => "Major damage due to a swift kick in the balls. " +
+                 "Can be used on players that don't have balls."
+      },
+      :uppercut => {
+        :type => :attack,
+        :health => -5,
+        :string => "%{o} receives an uppercut from %{p}.",
+        :regex => [ /upper/ ],
+        :help => "Ultimate attack."
+      },
+      :slot_machine => {
+        :type => :attack,
+        :string => "Next time stick to the pachinkos, %{o}.",
+        :regex => [ /slot/, /machine/ ],
+        :help => "Spits out three random attack values from 0 " +
+                 "to 3. Attack does the sum of the three numbers."
+      },
+      :bulldozer => {
+        :type => :unstoppable,
+        :string => "%{p} bulldozes all the cards out of %{o}'s hand.",
+        :regex => [ /bull/, /dozer/ ],
+        :help => "Push all of your opponent's hand cards into " +
+                 "the discard, leaving him vulnerable to attack."
+      },
+      :crane => {
+        :type => :unstoppable,
+        :string => "%{p} dumps a bunch of garbage cards on %{o}.",
+        :regex => /crane/,
+        :help => "Pick up all your cards you don't want and dump them on an " +
+                 "opponent. The opponent won't get any new cards until " +
+                 "he manages to get his hand below 5 cards again."
+      },
+      :tire => {
+        :type => :unstoppable,
+        :string => "%{p} throws a tire around %{o}.",
+        :skips => 1,
+        :regex => [ /tire(d|s)?\b/ ],
+        :help => "Throw a tire around your opponent, impeding " +
+                 "his movement and causing him to lose a turn."
+      },
+      :trout_slap => {
+        :type => :unstoppable,
+        :health => -1,
+        :string => "%{p} slaps %{o} around a bit with a large trout.",
+        :regex => [ /trout/, /slap/ ],
+        :help => "An mIRC-inspired attack. Slap your opponent with a trout."
+      },
+      :a_gun => {
+        :type => :unstoppable,
+        :health => -2,
+        :string => "%{p} shoots %{o} in the FACE.",
+        :regex => [ /(a ?)?gun/ ],
+        :help => "Can't dodge a gun. Simple as that."
+      },
+      :tire_iron => {
+        :type => :unstoppable,
+        :health => -3,
+        :string => "%{p} whacks %{o} upside the head with a tire iron.",
+        :regex => [ /tire( |-)?iron/, 'iron' ],
+        :help => "Beat your defenseless opponent senseless."
+      },
+      :meal_steal => {
+        :type => :unstoppable,
+        :string => "%{p} rummages through %{o}'s lunchbox for soup and subs.",
+        :regex => [ /meal/, /steal/ ],
+        :help => "Steal all of an opponent's soup and subs, " +
+                 "if he has any, and use them on yourself."
+      },
+      :soup => {
+        :type => :support,
+        :health => 1,
+        :string => "%{p} sips on some soup and relaxes.",
+        :regex => /soup/,
+        :help => "Take a sip. Relax. Gain up to #{MAX_HP} health."
+      },
+      :sub => {
+        :type => :support,
+        :health => 2,
+        :string => "%{p} eats a sub.",
+        :regex => 'sub',
+        :help => "Heal yourself by 2 points, " +
+                 "up to a maximum of #{MAX_HP}."
+      },
+      :armor => {
+        :type => :support,
+        :health => 5,
+        :string => "%{p} buckles on some armor.",
+        :regex => 'armor',
+        :help => "Adds 5 extra points to your health on top of your maximum. " +
+                 "Your main HP will be protected until the armor is depleted."
+      },
+      :surgery => {
+        :type => :support,
+        :health => MAX_HP - 1,
+        :string => "%{p} undergoes surgery and is completely restored!",
+        :regex => [ /s(e|u)rg(e|u)r/ ],
+        :help => "Used only when you have 1 health. " +
+                 "Resets health to #{MAX_HP}."
+      },
+      :avalanche => {
+        :type => :power,
+        :health => -6,
+        :string => "%{p} randomly inflicts 6 damage on %{o}. What a dick!",
+        :regex => [ /avalanch/ ],
+        :help => "A scrap pile avalanches! 6 damage to " +
+                 "any random player, including yourself!."
+      },
+      :deflector => {
+        :type => :power,
+        :string => "%{p} raises a deflector shield!",
+        :regex => [ /deflect/ ],
+        :help => "Next attack played against you automatically " +
+                 "attacks a random player that isn't you."
+      },
+      :earthquake => {
+        :type => :power,
+        :health => -1,
+        :string => "%{p} shakes everybody up with an earthquake!",
+        :regex =>  [ /earth/, /quake/ ],
+        :help => "An earthquake shakes the entire #{TITLE} " +
+                 "1 damage to everyone, starting with yourself."
+      },
+      :multiball => {
+        :name => 'Multi-ball',
+        :type => :power,
+        :string => "%{p} lites multi-ball.",
+        :regex => [ /multi/ ],
+        :help => "Take an extra turn after your turn."
+      },
+      :reverse => {
+        :type => :power,
+        :string => "%{p} reverses the table!",
+        :regex => [ /reverse/ ],
+        :help => "REVERSE playing order. Skip " +
+                 "opponent's turn if a 2-player game."
+      },
+      :shifty_business => {
+        :type => :power,
+        :string => "%{p} swaps hands with %{o}!",
+        :regex => [ /shift/, /business/ ],
+        :help => "Swap hand cards with a random player."
+      },
+      :the_bees => {
+        :name => 'THE BEES',
+        :type => :power,
+        :string => "%{p} drops the bee cage on %{o}'s head...",
+        :regex => [ /the/, /be+s/ ],
+        :help => "Random player is stung by bees and must do " +
+                 "their best Nicholas Cage impression. 1 damage " +
+                 "every turn until victim uses a support card."
+      },
+      :toolbox => {
+        :type => :power,
+        :string => "%{p} pulls %{n} cards from the deck.",
+        :regex => [ /tool/, /box/, /bag/ ],
+        :help => "Draw until you have 8 cards in your hand."
+      },
+      :windy => {
+        :name => 'It\'s Getting Windy',
+        :type => :power,
+        :string => "%{p} turns up the ceiling fan too high and blows up " +
+                  "a gust! Every player passes a random card forward.",
+        :regex => [ /it\'?s\b/, /getting/, /windy/ ],
+        :help => "All players choose a random card " +
+                 "from the player previous to them."
+      },
+      :whirlwind => {
+        :type => :power,
+        :string => "FEEL THE POWER OF THE WIND",
+        :regex => [ /whirl( |-)?wind/ ],
+        :help => "Every player shifts their hand cards " +
+                 "over to the player in front of them."
+      }
+  }
+  GCARDS = {
+      :block => {
+        :type => :counter,
+        :string => "%{p} blocks %{o}'s %{c}.",
+        :regex => 'block',
+        :help => "Block a basic attack card when played against you. Can be " +
+                 "used against a grab to nullify the grab's proceeding attack."
+      },
+      :dodge => {
+        :type => :counter,
+        :string => "%{p} dodges %{o}'s %{c}.",
+        :regex => [ /dodg/ ],
+        :help => "Similar to a block, but the attack is passed" +
+                 "onto the next player. Cannot counter a grab."
+      },
+      :grab => {
+        :type => :counter,
+        :string => "%{p} grabs %{o}. Respond or pass, %{o}.",
+        :regex => 'grab',
+        :help => "Play this as a counter so you can attack back. This " +
+                 "cannot be dodged. Also note this can be played before " +
+                 "an attack to disguise your type of attack."
+      },
+      :pillow => {
         :name => 'Wet Pillow',
         :type => :counter,
         :health => 2,
@@ -286,8 +543,7 @@ class Junkyard
         :health => -1,
         :string => "%{p} drops a fireball on everyone.",
         :regex =>  [ /fire/ ],
-        :help => "An earthquake shakes the entire #{TITLE} " +
-                 "1 damage to everyone, starting with yourself."
+        :help => "1 damage to everyone, starting with yourself."
       },
       :multiball => {
         :name => 'Multi-ball',
@@ -324,7 +580,7 @@ class Junkyard
         :type => :power,
         :string => "%{p} pulls %{n} cards from the deck.",
         :regex => [ /loot/, 'bag' ],
-        :help => "Player draws until he has 8 cards in his hand."
+        :help => "Draw until you have 8 cards in your hand."
       },
       :windy => {
         :name => 'It\'s Getting Windy',
@@ -348,17 +604,18 @@ class Junkyard
 
     attr_reader :id, :name, :health, :skips, :string, :type
 
-    def initialize(id)
+    def initialize(channel, id)
       @id = id
-      if CARDS[id].nil?
+      cards = if channel.name == '#gfax' then GCARDS else CARDS end
+      if cards[id].nil?
         raise 'Invalid card name.'
         return
       end
-      @type = CARDS[id][:type]
-      @name = CARDS[id][:name]
-      @health = CARDS[id][:health]
-      @skips = CARDS[id][:skips]
-      @string = CARDS[id][:string]
+      @type = cards[id][:type]
+      @name = cards[id][:name]
+      @health = cards[id][:health]
+      @skips = cards[id][:skips]
+      @string = cards[id][:string]
       @name = id.to_s.split('_').each{|w| w.capitalize!}.join(' ') if @name.nil?
       @health = 0 if @health.nil?
       @skips = 0 if @skips.nil?
@@ -378,7 +635,7 @@ class Junkyard
              Irc.color(:white) + '/' +
              COLORS[:skips] + skips.to_s
            end
-      color + " #{name} #{hs}#{ss}" + NormalText
+      color + "#{name} #{hs}#{ss}" + NormalText
     end
 
   end
@@ -436,9 +693,9 @@ class Junkyard
 
 
   attr_reader :attacked, :channel, :deck, :discard, :dropouts,
-              :manager, :players, :registry, :slots, :started
+              :manager, :players, :registry, :slots, :started, :title
 
-  def initialize(plugin, channel, registry, manager)
+  def initialize(plugin, channel, registry, manager, title)
     @channel = channel
     @plugin = plugin
     @bot = plugin.bot
@@ -451,6 +708,7 @@ class Junkyard
     @registry = registry
     @slots = []
     @started = nil    # if game started
+    @title = title    # name of the game
     create_deck
     add_player(manager)
   end
@@ -467,54 +725,54 @@ class Junkyard
 
   def create_deck
     10.times do
-      @deck << Card.new(:gutpunch)
-      @deck << Card.new(:neck_punch)
+      @deck << Card.new(channel, :gutpunch)
+      @deck << Card.new(channel, :neck_punch)
     end
     8.times do
-      @deck << Card.new(:grab)
+      @deck << Card.new(channel, :grab)
     end
     7.times do
-      @deck << Card.new(:kickball)
-      @deck << Card.new(:sub)
+      @deck << Card.new(channel, :kickball)
+      @deck << Card.new(channel, :sub)
     end
     6.times do
-      @deck << Card.new(:dodge)
+      @deck << Card.new(channel, :dodge)
     end
     5.times do
-      @deck << Card.new(:block)
-      @deck << Card.new(:uppercut)
+      @deck << Card.new(channel, :block)
+      @deck << Card.new(channel, :uppercut)
     end
     3.times do
-      @deck << Card.new(:nose_bleed)
-      @deck << Card.new(:soup)
-      @deck << Card.new(:pillow)
+      @deck << Card.new(channel, :nose_bleed)
+      @deck << Card.new(channel, :soup)
+      @deck << Card.new(channel, :pillow)
     end
     2.times do
-      @deck << Card.new(:a_gun)
-      @deck << Card.new(:trout_slap)
-      @deck << Card.new(:battery_acid)
-      @deck << Card.new(:insurance)
-      @deck << Card.new(:tire)
-      @deck << Card.new(:meal_steal)
-      @deck << Card.new(:wrench)
-      @deck << Card.new(:slot_machine)
-      @deck << Card.new(:surgery)
+      @deck << Card.new(channel, :a_gun)
+      @deck << Card.new(channel, :trout_slap)
+      @deck << Card.new(channel, :battery_acid)
+      @deck << Card.new(channel, :insurance)
+      @deck << Card.new(channel, :tire)
+      @deck << Card.new(channel, :meal_steal)
+      @deck << Card.new(channel, :wrench)
+      @deck << Card.new(channel, :slot_machine)
+      @deck << Card.new(channel, :surgery)
     end
     1.times do
-      @deck << Card.new(:armor)
-      @deck << Card.new(:avalanche)
-      @deck << Card.new(:deflector)
-      @deck << Card.new(:earthquake)
-      @deck << Card.new(:bulldozer)
-      @deck << Card.new(:crane)
-      @deck << Card.new(:toolbox)
-      @deck << Card.new(:multiball)
-      @deck << Card.new(:tire_iron)
-      @deck << Card.new(:shifty_business)
-      @deck << Card.new(:the_bees)
-      @deck << Card.new(:whirlwind)
-      @deck << Card.new(:windy)
-      @deck << Card.new(:reverse)
+      @deck << Card.new(channel, :armor)
+      @deck << Card.new(channel, :avalanche)
+      @deck << Card.new(channel, :deflector)
+      @deck << Card.new(channel, :earthquake)
+      @deck << Card.new(channel, :bulldozer)
+      @deck << Card.new(channel, :crane)
+      @deck << Card.new(channel, :toolbox)
+      @deck << Card.new(channel, :multiball)
+      @deck << Card.new(channel, :tire_iron)
+      @deck << Card.new(channel, :shifty_business)
+      @deck << Card.new(channel, :the_bees)
+      @deck << Card.new(channel, :whirlwind)
+      @deck << Card.new(channel, :windy)
+      @deck << Card.new(channel, :reverse)
     end
     @deck.shuffle!
   end
@@ -570,9 +828,9 @@ class Junkyard
     p = Player.new(user)
     @players << p
     if user == manager
-      say "#{p} starts a #{TITLE} Type 'j' to join."
+      say "#{p} starts a #{title} Type 'j' to join."
     else
-      say "#{p} joins the #{TITLE}"
+      say "#{p} joins the #{title}"
     end
     deal(p, 5)
     if players.length == 2
@@ -590,7 +848,7 @@ class Junkyard
     if dropper
       # If the manager drops the only other player, end the game.
       if dropper.user == manager and dropper != player and players.length < 3
-        say "#{player} has been removed from the game. #{TITLE} stopped."
+        say "#{player} has been removed from the game. #{title} stopped."
         @plugin.remove_game(channel)
         return
       end
@@ -662,7 +920,7 @@ class Junkyard
   def p_cards(player)
     n = 0
     c = Bold + Irc.color(:white,:black)
-    cards = player.cards.map { |k| n += 1; "#{c}#{n}.\)#{Bold}#{k}"}
+    cards = player.cards.map { |k| n += 1; "#{c}#{n}.\)#{Bold} #{k}"}
     return cards.join(" ")
   end
 
@@ -1514,7 +1772,11 @@ class JunkyardPlugin < Plugin
   def help(plugin, topic='')
     # Extract help information from CARDS hash.
     id, card = nil, nil
-    Junkyard::CARDS.each_pair do |key, value|
+    cards = if m.channel.name == '#gfax'
+              Junkyard::GCARDS
+            else Junkyard::CARDS
+            end
+    cards.each_pair do |key, value|
       a = value[:regex]
       a = a.split if a.kind_of? String
       a.each do |r|
@@ -1615,7 +1877,7 @@ class JunkyardPlugin < Plugin
       "#{prefix}#{plugin} stats #channel <nick> - channel-specific stats, " +
       "#{prefix}#{plugin} top - top 5 players"
     else
-      "#{TITLE} help topics:#{ @bot.config['junkyard.bot'] ? ' bot,' : '' } " +
+      "#{title(m)} help topics:#{ @bot.config['junkyard.bot'] ? ' bot,' : '' } " +
       "commands, play, objective, stats; #{b}Rules:#{b} attacking, " +
       "attacked, cards, grabbing"
     end
@@ -1676,13 +1938,17 @@ class JunkyardPlugin < Plugin
     end
   end
 
+  def title(m)
+    if m.channel.name == '#gfax' then Bold + 'Brawl!' + Bold else TITLE end
+  end
+
   def add_bot(m, plugin)
     unless @bot.config['junkyard.bot']
       m.reply "Playing against #{@bot.nick} is disabled."
       return
     end
     unless @games.key?(m.channel)
-      @games[m.channel] = Junkyard.new(self, m.channel, self.registry, m.source)
+      @games[m.channel] = Junkyard.new(self, m.channel, self.registry, m.source, title(m))
     end
     g = @games[m.channel]
     g.add_player(@bot.nick)
@@ -1692,14 +1958,14 @@ class JunkyardPlugin < Plugin
     if @games.key?(m.channel)
       user = @games[m.channel].manager
       if m.source == user
-        m.reply "...you already started a #{TITLE}"
+        m.reply "...you already started a #{title(m)}"
         return
       else
-        m.reply "#{user} already started a #{TITLE}"
+        m.reply "#{user} already started a #{title(m)}"
         return
       end
     end
-    @games[m.channel] = Junkyard.new(self, m.channel, self.registry, m.source)
+    @games[m.channel] = Junkyard.new(self, m.channel, self.registry, m.source, title(m))
   end
 
   # Called from within the game.
@@ -1709,11 +1975,11 @@ class JunkyardPlugin < Plugin
 
   def stop_game(m, plugin=nil)
     if @games[m.channel].nil?
-      m.reply "There is no #{TITLE} here."
+      m.reply "There is no #{title(m)} here."
       return
     end
     remove_game(m.channel)
-    m.reply "#{TITLE} stopped."
+    m.reply "#{title(m)} stopped."
   end
 
   def show_stats(m, params)
@@ -1727,11 +1993,11 @@ class JunkyardPlugin < Plugin
     xd = x.downcase
     unless @registry.has_key? xd
       if x =~ /^#/
-        m.reply "No one has played #{TITLE} in #{x}."
+        m.reply "No one has played #{title(m)} in #{x}."
       elsif x == m.source.nick
-        m.reply "You haven't played #{TITLE}"
+        m.reply "You haven't played #{title(m)}"
       else
-        m.reply "#{x} hasn't played #{TITLE}"
+        m.reply "#{x} hasn't played #{title(m)}"
       end
       return
     end
