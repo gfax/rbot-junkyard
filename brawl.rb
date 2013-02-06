@@ -167,7 +167,7 @@ class Junkyard
       :crane => {
         :type => :unstoppable,
         :string => "%{p} dumps a bunch of garbage cards on %{o}.",
-        :regex => /crane/,
+        :regex => [ /crane/ ],
         :help => "Pick up all your cards you don't want and dump them on an " +
                  "opponent. The opponent won't get any new cards until " +
                  "he manages to get his hand below 5 cards again."
@@ -212,7 +212,7 @@ class Junkyard
         :type => :support,
         :health => 1,
         :string => "%{p} sips on some soup and relaxes.",
-        :regex => /soup/,
+        :regex => [ /soup/ ],
         :help => "Take a sip. Relax. Gain up to #{MAX_HP} health."
       },
       :sub => {
@@ -439,7 +439,7 @@ class Junkyard
         :name => 'Garbage Man',
         :type => :unstoppable,
         :string => "%{p} dumps a bunch of garbage cards on %{o}.",
-        :regex => [/garbage/, /man/ ],
+        :regex => [ /garbage/, /man/ ],
         :help => "Pick up all your cards you don't want and dump them on an " +
                  "opponent. The opponent won't get any new cards until " +
                  "he manages to get his hand below 5 cards again."
@@ -1772,11 +1772,7 @@ class JunkyardPlugin < Plugin
   def help(plugin, topic='')
     # Extract help information from CARDS hash.
     id, card = nil, nil
-    cards = if m.channel.name == '#gfax'
-              Junkyard::GCARDS
-            else Junkyard::CARDS
-            end
-    cards.each_pair do |key, value|
+    Junkyard::CARDS.each_pair do |key, value|
       a = value[:regex]
       a = a.split if a.kind_of? String
       a.each do |r|
@@ -1784,6 +1780,19 @@ class JunkyardPlugin < Plugin
         when r
           id, card = key, value
           break
+        end
+      end
+    end
+    if card.nil?
+      Junkyard::GCARDS.each_pair do |key, value|
+        a = value[:regex]
+        a = a.split if a.kind_of? String
+        a.each do |r|
+          case topic.downcase
+          when r
+            id, card = key, value
+            break
+          end
         end
       end
     end
@@ -1877,7 +1886,7 @@ class JunkyardPlugin < Plugin
       "#{prefix}#{plugin} stats #channel <nick> - channel-specific stats, " +
       "#{prefix}#{plugin} top - top 5 players"
     else
-      "#{title(m)} help topics:#{ @bot.config['junkyard.bot'] ? ' bot,' : '' } " +
+      "#{TITLE} help topics:#{ @bot.config['junkyard.bot'] ? ' bot,' : '' } " +
       "commands, play, objective, stats; #{b}Rules:#{b} attacking, " +
       "attacked, cards, grabbing"
     end

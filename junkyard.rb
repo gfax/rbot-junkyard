@@ -163,7 +163,7 @@ class Junkyard
       :crane => {
         :type => :unstoppable,
         :string => "%{p} dumps a bunch of garbage cards on %{o}.",
-        :regex => /crane/,
+        :regex => [ /crane/ ],
         :help => "Pick up all your cards you don't want and dump them on an " +
                  "opponent. The opponent won't get any new cards until " +
                  "he manages to get his hand below 5 cards again."
@@ -208,7 +208,7 @@ class Junkyard
         :type => :support,
         :health => 1,
         :string => "%{p} sips on some soup and relaxes.",
-        :regex => /soup/,
+        :regex => [ /soup/ ],
         :help => "Take a sip. Relax. Gain up to #{MAX_HP} health."
       },
       :sub => {
