@@ -47,7 +47,9 @@ class Junkyard
                  "can't feel his legs, but only because he has none."
                ]
   # Things to say to non-players.
-  RETORTS = [ "Sorry, %{p}, this is between me and the guys.",
+  RETORTS = [ "Don't make me take you behind the tool shed, %{p}.",
+              "You don't have any cards, %{p}. I wonder why that is.",
+              "Sorry, %{p}, this is between me and the guys.",
               "What do you need, %{p}?"
             ]
   # Add to or modify these as you wish.

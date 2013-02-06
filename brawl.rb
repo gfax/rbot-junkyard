@@ -46,14 +46,13 @@ class Junkyard
                  "gives his last regards to Chanserv.",
                  "goes to meet that ol' pi in the sky.",
                  "wills his pancake collection to %{r}",
-                 "lost the Brawl! ...but wins the war.",
                  "is invincible!",
                  "died the most honorable death.",
                  "can't feel his legs, but only because he has none."
                ]
   # Things to say to non-players.
-  RETORTS = [ "Don't make me take you and this " +
-              "#{TITLE} outside, %{p}.",
+  RETORTS = [ "Don't make me take you behind the tool shed, %{p}.",
+              "You don't have any cards, %{p}. I wonder why that is.",
               "Sorry, %{p}, this is between me and the guys.",
               "What do you need, %{p}?"
             ]
@@ -140,7 +139,8 @@ class Junkyard
         :string => "Chihiro claws %{o} in an excited rage. She pees a little.",
         :skips => 1,
         :regex => [ /chihir/ ],
-        :help => "Chihiro claws your opponent in an excited rage. She pees a little. Opponent loses a turn to clean it up."
+        :help => "Chihiro claws your opponent in an excited rage. She " +
+                 "pees a little. Opponent loses a turn to clean it up."
       },
       :kickball => {
         :type => :attack,
