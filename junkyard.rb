@@ -510,7 +510,10 @@ class Junkyard
     players.each do |p|
       notify p, p_cards(p)
     end
-    bot_move
+    Thread.new do
+      sleep(@bot.config['junkyard.bot_delay'])
+      bot_move
+    end
   end
 
   def add_player(user)
@@ -723,11 +726,12 @@ class Junkyard
     # Make an inventory of what the bot has.
     c_hash = { :support => [], :surgery => [],
                :counter => [], :dodge => [], :grab => [], :insurance => [],
-               :unstoppable => [], :attack => [], :power => []
+               :unstoppable => [], :attack => [], :power => [],
+               :deflector => [], :multiball => [], :toolbox => []
              }
     player.cards.each do |c|
       case c.id
-      when :dodge, :grab, :insurance, :surgery
+      when :dodge, :grab, :insurance, :surgery, :deflector, :multiball, :toolbox
         c_hash[c.id] << c
       else
         c_hash[c.type] << c
@@ -748,7 +752,11 @@ class Junkyard
     a << players[n].user.to_s
     # Pick the best card to play.
     c_hash = bot_inventory(p)
-    card = if p.health == 1 and c_hash[:surgery].any?
+    card = if c_hash[:deflector].any? or c_hash[:multiball].any?
+             c_hash[:deflector].first || c_hash[:multiball].first
+           elsif c_hash[:toolbox].any?
+             c_hash[:toolbox].first
+           elsif p.health == 1 and c_hash[:surgery].any?
              c_hash[:surgery].first
            elsif p.bees and c_hash[:support].any?
              c_hash[:support].first
@@ -788,16 +796,17 @@ class Junkyard
     end
     # Play the card or otherwise discard.
     if a.length > 1
-      say "p #{a.join(' ')}"
       play_move(a)
     else
       a = Array.new(p.cards.length) { |i| i + 1 }
       # Don't discard the first card in the hand if we can help it.
       a.shift unless a.length < 2
-      say "d #{a.join(' ')}"
       discard(a)
     end
-    @bot.timer.add_once(2) { bot_move } if card.type == :power
+    Thread.new do
+      sleep(@bot.config['junkyard.bot_delay'])
+      bot_move if card.type == :power
+    end
   end
 
   def bot_counter
@@ -817,26 +826,19 @@ class Junkyard
     # Pick the best card to play.
     a = [] # hash of cards to play
     c_hash = bot_inventory(p)
-      say "#{p.cards.join(', ')}"
     if valid_insurance?(p, o) and c_hash[:insurance].any?
-      say 'c2a'
       card = c_hash[:insurance].first
     elsif p.bees and c_hash[:grab].any? and c_hash[:support].any?
-      say 'c2b'
       card = c_hash[:grab].first
       card2 = c_hash[:support].first
     elsif not p.grabbed and c_hash[:dodge].any?
-      say 'c2c'
       card = c_hash[:dodge].first
     elsif p.health <= (MAX_HP/2) and c_hash[:grab].any? and c_hash[:support].any?
-      say 'c2d'
       card = c_hash[:grab].first
       card2 = c_hash[:support].first
     elsif p.health <= (MAX_HP/2) and c_hash[:counter].any?
-      say 'c2e'
       card = c_hash[:counter].first
     elsif c_hash[:counter].any?
-      say 'c2f'
       card = if o.discard.health <= -3
                c_hash[:counter].first
              else
@@ -845,8 +847,23 @@ class Junkyard
                else nil
                end
              end
+    elsif c_hash[:grab].any? and c_hash[:unstoppable].any?
+      case rand(4)
+      when 0..2
+        card = c_hash[:grab].first
+        card2 = c_hash[:unstoppable].first
+      else 
+        card = nil
+      end
+    elsif c_hash[:grab].any? and c_hash[:attack].any?
+      case rand(4)
+      when 0..2
+        card = c_hash[:grab].first
+        card2 = c_hash[:attack].first
+      else
+        card = nil
+      end
     else
-      say 'c2g'
       card = nil
     end
     # Find out which card in the deck this is,
@@ -869,11 +886,8 @@ class Junkyard
     end
     # Play the card or otherwise discard.
     if a.length > 0
-      n2 = '' if n2.nil?
-      say "p #{n} #{n2}"
       play_counter(p, a)
     else
-      say "pa"
       pass(p)
     end
   end
@@ -968,7 +982,10 @@ class Junkyard
         opponent.grabbed = true
         say c[0].string % { :p => player, :o => opponent }
         notify opponent, p_cards(opponent)
-        bot_counter
+        Thread.new do
+          sleep(2)
+          bot_counter
+        end
         return
       else
         notify player, "That's not an attack card."
@@ -1163,7 +1180,10 @@ class Junkyard
         say "#{player} plays #{player.discard}. Respond or pass, #{opponent}."
         notify opponent, p_cards(opponent)
         @attacked = opponent
-        bot_counter
+        Thread.new do
+          sleep(2)
+          bot_counter
+        end
         return
       end
       damage = 0
@@ -1303,7 +1323,10 @@ class Junkyard
       @discard |= [ c[0], c[1] ]
       player.delete_cards([c[0], c[1]])
       notify opponent, p_cards(opponent)
-      bot_counter
+      Thread.new do
+        sleep(2)
+        bot_counter
+      end
       return
     when :dodge
       if player.grabbed
@@ -1326,7 +1349,10 @@ class Junkyard
         say "#{player} jumps out of the way and passes " +
             "#{opponent.user}'s attack onto #{players[n]}!"
         @attacked = players[n]
-        bot_counter
+        Thread.new do
+          sleep(2)
+          bot_counter
+        end
       end
       return
     when :block
@@ -1391,7 +1417,10 @@ class Junkyard
     else
       say p_turn
       notify player, p_cards(player)
-      @bot.timer.add_once(2) { bot_move }
+      Thread.new do
+        sleep(@bot.config['junkyard.bot_delay'])
+        bot_move
+      end
     end
   end
 
@@ -1463,6 +1492,16 @@ end
 
 
 class JunkyardPlugin < Plugin
+
+  Config.register Config::BooleanValue.new('junkyard.bot',
+    :default => true,
+    :desc => "Enables or disables the AI.")
+  Config.register Config::IntegerValue.new('junkyard.bot_delay',
+    :default => 3, :validate => Proc.new{|v| v.between?(-1,61)},
+    :desc => "Number of seconds for bot to wait before responding.")
+  Config.register Config::IntegerValue.new('junkyard.countdown',
+    :default => 20, :validate => Proc.new{|v| v > 2},
+    :desc => "Number of seconds before starting a game of Junkyard.")
 
   TITLE = Junkyard::TITLE
   MAX_HP = Junkyard::MAX_HP
@@ -1583,13 +1622,6 @@ class JunkyardPlugin < Plugin
       "attacked, cards, grabbing"
     end
   end
-
-  Config.register Config::IntegerValue.new('junkyard.countdown',
-    :default => 20, :validate => Proc.new{|v| v > 2},
-    :desc => "Number of seconds before starting a game of Junkyard.")
-  Config.register Config::BooleanValue.new('junkyard.bot',
-    :default => true,
-    :desc => "Enables or disables the AI.")
 
   def message(m)
     return unless @games.key?(m.channel) and m.plugin
