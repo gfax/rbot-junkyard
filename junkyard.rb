@@ -567,9 +567,7 @@ class Junkyard
       attacked.discard = nil
       attacked.grabbed = nil
     end
-    if player == players.first
-      increment_turn
-    end
+    increment_turn if player == players.first
     if killed
       player.damage = 0
       update_user_stats(player, 0)
@@ -1576,7 +1574,7 @@ class JunkyardPlugin < Plugin
       "join a game in progress.#{unless @bot.config['junkyard.bot'] then
       ' This feature is currently disabled on this rbot\'s config.'
       else '' end}"
-    when /cards?/
+    when /card/
       "#{b}Cards:#{b} Players have 5 cards in their hand. There are 5 types " +
       "of cards: #{a}Attack#{cl} cards are played against other players on " +
       "your turn. #{u}Unstoppable#{cl} cards are as well, but cannot be " +
@@ -1590,7 +1588,7 @@ class JunkyardPlugin < Plugin
       "discard, drop <me>/<bot>/<nick> - remove yourself/#{@bot.nick}/player " +
       "from the game, pa/pass - pass, p/play - play cards, s/score - show " +
       "score, t/turn - show current turn/order/health"
-    when /drop(ping)?/
+    when /drop/
       "#{b}Dropping:#{b} Type 'drop' to drop from the game, or 'drop bot' to " +
       "drop the bot from the game. Only the game manager (the player that " +
       "started the game,) can drop other players."
@@ -1607,12 +1605,12 @@ class JunkyardPlugin < Plugin
       "#{b}Objective:#{b} Every player has #{MAX_HP} health. " +
       "Play cards against an opponent to take away their health. " +
       "Be the last player standing."
-    when /play(ing)?/
+    when /play/
       "#{b}Playing:#{b} Type 'p' or 'play' to play a card number from your " +
       "hand. Example: 'p Frank 4' to attack Frank with your 4th card. " +
       "You only need to specify a username when there are more than 2 " +
       "players playing the game."
-    when /stat(istic)?/, /top/
+    when /stat/, /top/
       "#{b}Stats:#{b} #{prefix}#{plugin} stats <nick> - network-wide stats, " +
       "#{prefix}#{plugin} stats #channel <nick> - channel-specific stats, " +
       "#{prefix}#{plugin} top - top 5 players"
@@ -1641,11 +1639,17 @@ class JunkyardPlugin < Plugin
     when /^(di?|discard)\b/
       g.discard(a) if g.has_turn?(m.source)
     when /^drop\b/
-      return if p.nil?
-      a[0] = p if a[0] == 'me'
-      a[0] = @bot.nick if a[0] == 'bot'
-      return unless g.started and g.get_player(a[0])
-      g.drop_player(p, a[0], false)
+      return unless p and g.started
+      victim = case a[0]
+               when 'me' then p
+               when 'bot' then g.get_player(@bot.nick)
+               else g.get_player(a[0])
+               end
+      unless victim
+        m.reply "#{p}, there is no one playing named '#{a[0]}'."
+        return
+      end
+      g.drop_player(p, victim, false)
     when /^(pa|pass)\b/
       return unless g.attacked
       g.pass(p) if g.attacked == p or p.grabbed
