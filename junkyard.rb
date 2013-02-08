@@ -574,11 +574,11 @@ class Junkyard
     else
       say "#{player} has been removed from the game."
     end
-    if player == attacked
+    if player == attacked and not killed
       # Pass any attacks on before removing player.
       n = 0
       n += 1 until players[n] == player
-      if n.zero?
+      if next_turn(n).zero?
         increment_turn
       else
         players[next_turn(n)].grabbed = true if attacked.grabbed = true

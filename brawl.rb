@@ -865,11 +865,11 @@ class Junkyard
     else
       say "#{player} has been removed from the game."
     end
-    if player == attacked
+    if player == attacked and not killed
       # Pass any attacks on before removing player.
       n = 0
       n += 1 until players[n] == player
-      if n.zero?
+      if next_turn(n).zero?
         increment_turn
       else
         players[next_turn(n)].grabbed = true if attacked.grabbed = true
@@ -1109,7 +1109,6 @@ class Junkyard
   end
 
   def bot_counter
-    say "1"
     p = nil
     players.each do |player|
       p = player if player.user == @bot.nick
@@ -1190,8 +1189,6 @@ class Junkyard
     else
       pass(p)
     end
-    say p.cards.join(', ')
-    say a.join
   end
 
   def play_move(a)
