@@ -5,7 +5,7 @@
 # Author:: Lite <degradinglight@gmail.com>
 # Copyright:: (C) 2012 gfax.ch
 # License:: GPL
-# Version:: 2013-02-05
+# Version:: 2013-02-07
 #
 
 class Junkyard
@@ -854,11 +854,6 @@ class Junkyard
         return
       end
     end
-    if attacked
-      attacked.discard = nil
-      attacked.grabbed = nil
-    end
-    increment_turn if player == players.first
     if killed
       player.damage = 0
       update_user_stats(player, 0)
@@ -869,6 +864,21 @@ class Junkyard
       end
     else
       say "#{player} has been removed from the game."
+    end
+    if player == attacked
+      # Pass any attacks on before removing player.
+      n = 0
+      n += 1 until players[n] == player
+      if n.zero?
+        increment_turn
+      else
+        players[next_turn(n)].grabbed = true if attacked.grabbed = true
+        attacked.discard, attacked.grabbed = nil
+        @attacked = players[next_turn(n)]
+        say p_turn
+      end
+    elsif player == players.first
+      increment_turn
     end
     @discard |= player.cards
     @discard << player.deflector if player.deflector
@@ -1948,7 +1958,7 @@ class JunkyardPlugin < Plugin
     when /^drop\b/
       return unless p and g.started
       victim = case a[0]
-               when 'me' then p
+               when 'me', nil then p
                when 'bot' then g.get_player(@bot.nick)
                else g.get_player(a[0])
                end
