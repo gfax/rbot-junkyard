@@ -918,8 +918,9 @@ class Junkyard
 
   def valid_insurance?(player, opponent)
     bees = if player.bees then -1 else 0 end
-    ensuing_health = player.health + opponent.discard.health + bees
-    if opponent.discard.id == :slot_machine
+    damage = if opponent.discard then opponent.discard.health else 0 end
+    ensuing_health = player.health + damage + bees
+    if opponent.discard and opponent.discard.id == :slot_machine
       slots.each { |n| ensuing_health -= n }
     end
     return true if ensuing_health < 1 and not player.deflector
@@ -1030,7 +1031,7 @@ class Junkyard
              }
     player.cards.each do |c|
       case c.id
-      when :dodge, :grab, :insurance, :surgery, :deflector, :multiball, :toolbox
+      when :deflector, :dodge, :grab, :insurance, :multiball, :surgery, :toolbox
         c_hash[c.id] << c
       else
         c_hash[c.type] << c
@@ -1231,6 +1232,7 @@ class Junkyard
         end
       end
     end
+    # Process card information.
     c = []
     a.each do |e|
       n = e.to_i
@@ -1256,35 +1258,7 @@ class Junkyard
     end
     if c[0].type == :counter
       if c[0].id == :grab
-        if c[1].nil?
-          notify player, "Play an attack when grabbing."
-          return
-        end
-        if c[1].type == :counter or c[1].type == :power
-          notify player, "You can't play a #{c[1].type} card when grabbing."
-          return
-        end
-        if c[1].id == :surgery
-          unless player.health == 1
-            notify player, "You can only use that card with 1 health."
-            return
-          end
-        end
-        @discard |= [ c[0], c[1] ]
-        player.discard = c[1]
-        do_slots(player)
-        if player.discard.id == :crane
-          player.garbage = c[2..-1]
-        end
-        player.delete_cards([c[0], c[1]])
-        @attacked = opponent
-        opponent.grabbed = true
-        say c[0].string % { :p => player, :o => opponent }
-        notify opponent, p_cards(opponent)
-        Thread.new do
-          sleep(2)
-          bot_counter
-        end
+        do_grab(player, opponent, c)
         return
       else
         notify player, "That's not an attack card."
@@ -1350,6 +1324,37 @@ class Junkyard
     end
     opponent = players.first
     do_counter(player, opponent, c)
+  end
+
+  def do_grab(player, opponent, c)
+    if c[1].nil?
+      notify player, "Play an attack when grabbing."
+      return
+    elsif c[1].type == :counter or c[1].type == :power
+      notify player, "You can't play a #{c[1].type} card when grabbing."
+      return
+    elsif c[1].id == :surgery
+      unless player.health == 1
+        notify player, "You can only use that card with 1 health."
+        return
+      end
+    elsif c[1].id == :crane
+      player.garbage = c[2..-1]
+    end
+    do_move(opponent, player, wait=false) if player == attacked
+    return if player.health < 1 # In case a player dies trying to grab.
+    @discard |= [ c[0], c[1] ]
+    player.discard = c[1]
+    do_slots(player)
+    player.delete_cards([c[0], c[1]])
+    @attacked = opponent
+    opponent.grabbed = true
+    say c[0].string % { :p => player, :o => opponent }
+    notify opponent, p_cards(opponent)
+    Thread.new do
+      sleep(2)
+      bot_counter
+    end
   end
 
   def do_power(player, card)
@@ -1599,33 +1604,7 @@ class Junkyard
     end
     case c[0].id
     when :grab
-      if c[1].nil?
-        notify player, "Play an attack when grabbing."
-        return
-      elsif c[1].type == :counter or c[1].type == :power
-        notify player, "You can't play a #{c[1].type} card when grabbing."
-        return
-      elsif c[1].id == :surgery
-        unless player.health == 1
-          notify player, "You can only use that card with 1 health."
-          return
-        end
-      elsif c[1].id == :crane
-        player.garbage = c[2..-1]
-      end
-      do_move(opponent, player, wait=false)
-      return if player.health < 1 # In case player dies mid-grab.
-      player.discard = c[1]
-      opponent.grabbed = true
-      do_slots(player)
-      say c[0].string % { :p => player, :o => opponent }
-      @discard |= [ c[0], c[1] ]
-      player.delete_cards([c[0], c[1]])
-      notify opponent, p_cards(opponent)
-      Thread.new do
-        sleep(2)
-        bot_counter
-      end
+      do_grab(player, opponent, c)
       return
     when :dodge
       if player.grabbed
@@ -1664,10 +1643,7 @@ class Junkyard
         return
       end
     when :insurance
-      valid_insurance?(player, opponent)
-      bees = if player.bees then -1 else 0 end
-      ensuing_health = player.health + opponent.discard.health + bees
-      unless ensuing_health < 1 and not player.deflector
+      unless valid_insurance?(player, opponent)
         notify player, "You can only use that card " +
                        "as a last resort before death."
         return
