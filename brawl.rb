@@ -439,7 +439,7 @@ class Junkyard
         :name => 'Garbage Man',
         :type => :unstoppable,
         :string => "%{p} dumps a bunch of garbage cards on %{o}.",
-        :regex => [ /garbage/, /man/ ],
+        :regex => [ /garbage/, /\bman\b/ ],
         :help => "Pick up all your cards you don't want and dump them on an " +
                  "opponent. The opponent won't get any new cards until " +
                  "he manages to get his hand below 5 cards again."
@@ -1905,7 +1905,7 @@ class JunkyardPlugin < Plugin
       "#{prefix}#{plugin} stats #channel <nick> - channel-specific stats, " +
       "#{prefix}#{plugin} top - top 5 players"
     else
-      "#{TITLE} help topics:#{ @bot.config['junkyard.bot'] ? ' bot,' : '' } " +
+      "#{TITLE} help topics:#{@bot.config['junkyard.bot'] ? ' bot,' : ''} " +
       "commands, play, objective, stats; #{b}Rules:#{b} attacking, " +
       "attacked, cards, grabbing"
     end
@@ -2065,7 +2065,7 @@ plugin = JunkyardPlugin.new
 
 [ 'brawl', 'junk', 'junkyard' ].each do |scope|
   plugin.map "#{scope} bot",
-    :private => false, :action => :add_bot, :auth_path => 'bot'
+    :private => false, :action => :add_bot
   plugin.map "#{scope} cancel",
     :private => false, :action => :stop_game
   plugin.map "#{scope} end",
@@ -2080,4 +2080,4 @@ plugin = JunkyardPlugin.new
     :private => false, :action => :create_game
 end
 
-plugin.default_auth('bot', false)
+plugin.default_auth('*', true)
