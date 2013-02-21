@@ -1043,7 +1043,8 @@ class Junkyard
       notify player, "You can't play a #{c[1].type} card when grabbing."
       return
     elsif c[1].id == :surgery
-      unless player.health == 1
+      dmg = opponent.discard || 0
+      unless player.health + dmg <= 1
         notify player, "You can only use that card with 1 health."
         return
       end
@@ -1478,7 +1479,7 @@ end
 class JunkyardPlugin < Plugin
 
   Config.register Config::BooleanValue.new('junkyard.bot',
-    :default => true,
+    :default => false,
     :desc => "Enables or disables the AI.")
   Config.register Config::IntegerValue.new('junkyard.bot_delay',
     :default => 3, :validate => Proc.new{|v| v.between?(-1,61)},
@@ -1601,7 +1602,7 @@ class JunkyardPlugin < Plugin
       "#{prefix}#{plugin} stats #channel <nick> - channel-specific stats, " +
       "#{prefix}#{plugin} top - top 5 players"
     else
-      "#{TITLE} help topics:#{ @bot.config['junkyard.bot'] ? ' bot,' : '' } " +
+      "#{TITLE} help topics:#{@bot.config['junkyard.bot'] ? ' bot,' : ''} " +
       "commands, play, objective, stats; #{b}Rules:#{b} attacking, " +
       "attacked, cards, grabbing"
     end
@@ -1757,7 +1758,7 @@ plugin = JunkyardPlugin.new
 
 [ 'brawl', 'junk', 'junkyard' ].each do |scope|
   plugin.map "#{scope} bot",
-    :private => false, :action => :add_bot, :auth_path => 'bot'
+    :private => false, :action => :add_bot
   plugin.map "#{scope} cancel",
     :private => false, :action => :stop_game
   plugin.map "#{scope} end",
@@ -1772,4 +1773,4 @@ plugin = JunkyardPlugin.new
     :private => false, :action => :create_game
 end
 
-plugin.default_auth('bot', false)
+plugin.default_auth('*', true)

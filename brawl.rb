@@ -1334,7 +1334,8 @@ class Junkyard
       notify player, "You can't play a #{c[1].type} card when grabbing."
       return
     elsif c[1].id == :surgery
-      unless player.health == 1
+      dmg = opponent.discard || 0
+      unless player.health + dmg <= 1
         notify player, "You can only use that card with 1 health."
         return
       end
@@ -1585,7 +1586,7 @@ class Junkyard
     if player.discard.type == :support or player.discard.id == :meal_steal
       if player.discard.id == :meal_steal
         if temp_deck.length > 0
-          say "#{player} steals and chugs #{temp_deck.join(', ')}!!"
+          say "#{player} steals and consumes #{temp_deck.join(', ')}!!"
           bee_recover(player)
         end
       end
@@ -1769,7 +1770,7 @@ end
 class JunkyardPlugin < Plugin
 
   Config.register Config::BooleanValue.new('junkyard.bot',
-    :default => true,
+    :default => false,
     :desc => "Enables or disables the AI.")
   Config.register Config::IntegerValue.new('junkyard.bot_delay',
     :default => 3, :validate => Proc.new{|v| v.between?(-1,61)},
