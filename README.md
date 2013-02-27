@@ -13,9 +13,11 @@ Drop `junkyard.rb` in your rbot's plugin folder and run `!rescan` to reload your
 http://wiki.gfax.ch/Junkyard
 
 ##TODO
+
 ###Bugs
 * Sometimes attacks don't register when passing (on grabs).
 * Check if player dies from a deflector attack before grabbing them!
+
 ###Features
 * ti command to see amount of time played
 * Achievements:
