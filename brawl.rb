@@ -5,7 +5,7 @@
 # Author:: Lite <degradinglight@gmail.com>
 # Copyright:: (C) 2012 gfax.ch
 # License:: GPL
-# Version:: 2013-02-07
+# Version:: 2013-02-27
 #
 
 class Junkyard
@@ -80,11 +80,11 @@ class Junkyard
                  "cannot be dodged. Also note this can be played before " +
                  "an attack to disguise your type of attack."
       },
-      :pillow => {
+      :mattress => {
         :type => :counter,
         :health => 2,
-        :string => "%{p} holds up a pillow in defense.",
-        :regex => [ /pillow/ ],
+        :string => "%{p} holds up an old mattress in defense.",
+        :regex => [ /mattres/ ],
         :help => "Reduces opponent's attack by 2 points."
       },
       :insurance => {
@@ -337,7 +337,7 @@ class Junkyard
                  "cannot be dodged. Also note this can be played before " +
                  "an attack to disguise your type of attack."
       },
-      :pillow => {
+      :mattress => {
         :name => 'Wet Pillow',
         :type => :counter,
         :health => 2,
@@ -743,7 +743,7 @@ class Junkyard
     3.times do
       @deck << Card.new(channel, :nose_bleed)
       @deck << Card.new(channel, :soup)
-      @deck << Card.new(channel, :pillow)
+      @deck << Card.new(channel, :mattress)
     end
     2.times do
       @deck << Card.new(channel, :a_gun)
@@ -998,26 +998,17 @@ class Junkyard
       c << player.cards[n-1].dup
     end
     player.delete_cards(c)
-    s = if c.length == 1 then "" else "s" end
+    s = if c.length == 1 then '' else 's' end
     say "#{player} discards #{c.length} card#{s}."
     deal(player, c.length)
     increment_turn
   end
 
   def pass(player)
-    unless attacked
-      say "Play or discard."
-      return
-    end
-    if attacked.discard
-      if player == players.first
-        do_move(attacked, players.first, wait=false)
-      end
-    end
-    if players.first.discard
-      if player == attacked
-        do_move(players.first, attacked, wait=false)
-      end
+    if player == players.first
+      do_move(attacked, players.first, wait=false)
+    else
+      do_move(players.first, attacked, wait=false)
     end
     increment_turn
   end
@@ -1503,9 +1494,9 @@ class Junkyard
       else
         damage += player.discard.health
       end
-      # Adjust damage depending if opponent has a pillow.
+      # Adjust damage depending if opponent has a mattress.
       if opponent.discard
-        if opponent.discard.id == :pillow
+        if opponent.discard.id == :mattress
           damage += opponent.discard.health
           damage = 0 if damage > 0
           say opponent.discard.string % { :p => opponent, :o => player }
@@ -1942,7 +1933,7 @@ class JunkyardPlugin < Plugin
       end
       g.drop_player(p, victim, false)
     when /^(pa|pass)\b/
-      return unless g.attacked
+      return unless g.attacked and p
       g.pass(p) if g.attacked == p or p.grabbed
     when /^(pl?|play)\b/
       return if p.nil? or a.length.zero?
