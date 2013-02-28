@@ -1613,17 +1613,17 @@ class JunkyardPlugin < Plugin
     a.delete_at(0) # [ "p", "frank", "2", "4" ] => [ "frank", "2", "4" ]
     p = g.get_player(m.source.nick)
     case m.message.downcase
-    when /^(jo?|join)\b/
+    when /^(jo?|join)( |\z)/
       g.add_player(m.source)
-    when /^(ca?|cards?)\b/
+    when /^(ca?|cards?)( |\z)/
       if p.nil?
         m.reply Junkyard::RETORTS.sample % { :p => m.source }
         return
       end
       @bot.notice m.sourcenick, g.p_cards(p)
-    when /^(di?|discard)\b/
+    when /^(di?|discard)( |\z)/
       g.discard(a) if g.has_turn?(m.source)
-    when /^drop\b/
+    when /^drop( |\z)/
       return unless p and g.started
       victim = case a[0]
                when 'me', nil then p
@@ -1635,10 +1635,10 @@ class JunkyardPlugin < Plugin
         return
       end
       g.drop_player(p, victim, false)
-    when /^(pa|pass)\b/
+    when /^(pa|pass)( |\z)/
       return unless g.attacked and p
       g.pass(p) if g.attacked == p or p.grabbed
-    when /^(pl?|play)\b/
+    when /^(pl?|play)( |\z)/
       return if p.nil? or a.length.zero?
       return unless g.started
       if g.has_turn?(m.source)
@@ -1646,11 +1646,11 @@ class JunkyardPlugin < Plugin
       else
         g.play_counter(p, a)
       end
-    when /^(od?|order)\b/, /^(tu?|turn)\b/
+    when /^(od?|order)( |\z)/, /^(tu?|turn)( |\z)/
       m.reply g.p_order if g.started
-    when /^(sc?|scores?)\b/
+    when /^(sc?|scores?)( |\z)/
       m.reply g.p_damage if g.started
-    when /^ti(me)?\b/  
+    when /^ti(me)?( |\z)/
       if g.started
         m.reply "This game has been going on for #{g.elapsed_time}."
       else
