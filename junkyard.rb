@@ -35,6 +35,7 @@ class Junkyard
              "Better luck next time, %{p} ...fgt.",
              "%{p} has gone upstream with the salmon.",
              "%{p} left the stage.",
+             "%{p} is broken beyond repair.",
              "%{p} perished.",
              "%{p} paid the ultimate price."
            ]
@@ -43,6 +44,7 @@ class Junkyard
                  "gives his last regards to Chanserv.",
                  "goes to meet that ol' pi in the sky.",
                  "wills his pancake collection to %{r}",
+                 "wills his belongings to no one!",
                  "died the most honorable death.",
                  "can't feel his legs, but only because he has none."
                ]
@@ -94,7 +96,7 @@ class Junkyard
       },
       :wrench => {
         :type => :attack,
-        :string => "%{p} throw a wrench in %{o}'s gears.",
+        :string => "%{p} throws a wrench in %{o}'s gears.",
         :skips => 2,
         :regex => [ /wrench/ ],
         :help => "Throw a wrench in your opponents' machinery. " +
@@ -304,7 +306,7 @@ class Junkyard
       },
       :whirlwind => {
         :type => :power,
-        :string => "FEEL THE POWER OF THE WIND",
+        :string => "A whirlwind causes everyone to rotate hand cards!",
         :regex => [ /whirl( |-)?wind/ ],
         :help => "Every player shifts their hand cards " +
                  "over to the player in front of them."
@@ -1272,6 +1274,7 @@ class Junkyard
     # Announce attack
     say player.discard.string % { :p => player, :o => opponent }
     opponent.skips += player.discard.skips
+    opponent.grabbed = false
     # Redemption tokens
     if opponent.discard
       if opponent.discard.id == :insurance

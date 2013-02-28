@@ -98,7 +98,7 @@ class Junkyard
       },
       :wrench => {
         :type => :attack,
-        :string => "%{p} throw a wrench in %{o}'s gears.",
+        :string => "%{p} throws a wrench in %{o}'s gears.",
         :skips => 2,
         :regex => [ /wrench/ ],
         :help => "Throw a wrench in your opponents' machinery. " +
@@ -308,7 +308,7 @@ class Junkyard
       },
       :whirlwind => {
         :type => :power,
-        :string => "FEEL THE POWER OF THE WIND",
+        :string => "A whirlwind causes everyone to rotate hand cards!",
         :regex => [ /whirl( |-)?wind/ ],
         :help => "Every player shifts their hand cards " +
                  "over to the player in front of them."
@@ -576,10 +576,9 @@ class Junkyard
                  "every turn until victim uses a support card."
       },
       :toolbox => {
-        :name => 'Loot Bag',
         :type => :power,
         :string => "%{p} pulls %{n} cards from the deck.",
-        :regex => [ /loot/, 'bag' ],
+        :regex => [ /tool/, 'box', 'bag' ],
         :help => "Draw until you have 8 cards in your hand."
       },
       :windy => {
@@ -1563,6 +1562,7 @@ class Junkyard
     # Announce attack
     say player.discard.string % { :p => player, :o => opponent }
     opponent.skips += player.discard.skips
+    opponent.grabbed = false
     # Redemption tokens
     if opponent.discard
       if opponent.discard.id == :insurance
