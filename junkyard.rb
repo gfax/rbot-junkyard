@@ -450,36 +450,36 @@ class Junkyard
       @deck << Card.new(:uppercut)
     end
     3.times do
+      @deck << Card.new(:mattress)
       @deck << Card.new(:nose_bleed)
       @deck << Card.new(:soup)
-      @deck << Card.new(:mattress)
     end
     2.times do
       @deck << Card.new(:a_gun)
-      @deck << Card.new(:trout_slap)
       @deck << Card.new(:battery_acid)
       @deck << Card.new(:insurance)
-      @deck << Card.new(:tire)
       @deck << Card.new(:meal_steal)
-      @deck << Card.new(:wrench)
       @deck << Card.new(:slot_machine)
       @deck << Card.new(:surgery)
+      @deck << Card.new(:tire)
+      @deck << Card.new(:trout_slap)
+      @deck << Card.new(:wrench)
     end
     1.times do
       @deck << Card.new(:armor)
       @deck << Card.new(:avalanche)
-      @deck << Card.new(:deflector)
-      @deck << Card.new(:earthquake)
       @deck << Card.new(:bulldozer)
       @deck << Card.new(:crane)
-      @deck << Card.new(:toolbox)
+      @deck << Card.new(:deflector)
+      @deck << Card.new(:earthquake)
       @deck << Card.new(:multiball)
-      @deck << Card.new(:tire_iron)
+      @deck << Card.new(:reverse)
       @deck << Card.new(:shifty_business)
       @deck << Card.new(:the_bees)
+      @deck << Card.new(:tire_iron)
+      @deck << Card.new(:toolbox)
       @deck << Card.new(:whirlwind)
       @deck << Card.new(:windy)
-      @deck << Card.new(:reverse)
     end
     @deck.shuffle!
   end

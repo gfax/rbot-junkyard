@@ -741,36 +741,36 @@ class Junkyard
       @deck << Card.new(channel, :uppercut)
     end
     3.times do
+      @deck << Card.new(channel, :mattress)
       @deck << Card.new(channel, :nose_bleed)
       @deck << Card.new(channel, :soup)
-      @deck << Card.new(channel, :mattress)
     end
     2.times do
       @deck << Card.new(channel, :a_gun)
-      @deck << Card.new(channel, :trout_slap)
       @deck << Card.new(channel, :battery_acid)
       @deck << Card.new(channel, :insurance)
-      @deck << Card.new(channel, :tire)
       @deck << Card.new(channel, :meal_steal)
-      @deck << Card.new(channel, :wrench)
       @deck << Card.new(channel, :slot_machine)
       @deck << Card.new(channel, :surgery)
+      @deck << Card.new(channel, :tire)
+      @deck << Card.new(channel, :trout_slap)
+      @deck << Card.new(channel, :wrench)
     end
     1.times do
       @deck << Card.new(channel, :armor)
       @deck << Card.new(channel, :avalanche)
-      @deck << Card.new(channel, :deflector)
-      @deck << Card.new(channel, :earthquake)
       @deck << Card.new(channel, :bulldozer)
       @deck << Card.new(channel, :crane)
-      @deck << Card.new(channel, :toolbox)
+      @deck << Card.new(channel, :deflector)
+      @deck << Card.new(channel, :earthquake)
       @deck << Card.new(channel, :multiball)
-      @deck << Card.new(channel, :tire_iron)
+      @deck << Card.new(channel, :reverse)
       @deck << Card.new(channel, :shifty_business)
       @deck << Card.new(channel, :the_bees)
+      @deck << Card.new(channel, :tire_iron)
+      @deck << Card.new(channel, :toolbox)
       @deck << Card.new(channel, :whirlwind)
       @deck << Card.new(channel, :windy)
-      @deck << Card.new(channel, :reverse)
     end
     @deck.shuffle!
   end
