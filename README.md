@@ -14,10 +14,9 @@ http://wiki.gfax.ch/Junkyard
 
 ##TODO
 
-###Bugs
-* Check if player dies from a deflector attack before grabbing them!
-
-###Features
+* Make it more obvious which card was player in some of the card actions.
+* Bug: Check if player dies from a deflector attack before grabbing them!
+* Option: Players joining mid-game should have an averaged HP instead of 10.
 * Achievements:
  * Bee Bonus: kill someone with bees
  * Close Call Bonus: 1 health left
