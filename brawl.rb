@@ -1339,7 +1339,7 @@ class Junkyard
     player.discard = c[1]
     do_slots(player)
     player.delete_cards([c[0], c[1]])
-    @attacked = opponent
+    @attacked = opponent unless attacked
     opponent.grabbed = true
     say c[0].string % { :p => player, :o => opponent }
     notify opponent, p_cards(opponent)
