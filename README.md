@@ -15,12 +15,14 @@ http://wiki.gfax.ch/Junkyard
 ##TODO
 
 ###Bugs
-* Sometimes attacks don't register when passing (on grabs).
+* Test grab/pass some more (fixed?).
 * Check if player dies from a deflector attack before grabbing them!
 
 ###Features
 * ti command to see amount of time played
 * Achievements:
- * Heal Bonus: healing over 12(?) health points?
  * Bee Bonus: kill someone with bees
+ * Close Call Bonus: 1 health left
  * Deflector Bonus: use deflector multiple times in the same game
+ * Heal Bonus: heal over 12 health points (+1 damage for every 2 health)
+ * "Where's the fight?" Bonus: miss 7 turns or more
