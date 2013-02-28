@@ -5,7 +5,7 @@
 # Author:: Lite <degradinglight@gmail.com>
 # Copyright:: (C) 2012 gfax.ch
 # License:: GPL
-# Version:: 2013-02-27
+# Version:: 2013-02-28
 #
 
 class Junkyard
@@ -415,7 +415,7 @@ class Junkyard
     @players = []       # players currently in game
     @registry = @plugin.registry
     @slots = []         # slot machine damage
-    @started = nil      # if game started
+    @started = nil      # time the game started
     create_deck
     add_player(manager)
   end
@@ -505,11 +505,9 @@ class Junkyard
 
   def start_game
     @players.shuffle!
-    @started = true
+    @started = Time.now
     say p_turn
-    players.each do |p|
-      notify p, p_cards(p)
-    end
+    players.each { |p| notify p, p_cards(p) }
     Thread.new do
       sleep(@bot.config['junkyard.bot_delay'])
       bot_move
@@ -1358,6 +1356,14 @@ class Junkyard
     increment_turn
   end
 
+  def elapsed_time
+    if started
+      Utils.secs_to_string(Time.now-started).gsub(/\[|\]|"/,'')
+    else
+      nil
+    end
+  end
+
   def increment_turn
     return if players.length < 2
     unless attacked.nil?
@@ -1406,13 +1412,13 @@ class Junkyard
   end
 
   def end_game
-    p = players[0]
+    p = players.first
+    b_string = ' ' # achievements bonuses
     if p.health >= MAX_HP
       p.damage += p.health
-      say "#{p} wins! Health bonus: +#{p.health}, Damage done: #{p.damage}"
-    else
-      say "#{p} wins! Damage done: #{p.damage}"
+      b_string << "Health bonus: +#{p.health} "
     end
+    say "#{p} wins after #{elapsed_time}!#{b_string}Damage done: #{p.damage}"
     update_chan_stats(p.damage)
     update_user_stats(p)
     @plugin.remove_game(channel)
@@ -1565,7 +1571,8 @@ class JunkyardPlugin < Plugin
       "#{b}Commands:#{b} c/cards - show cards and health, d/discard - " +
       "discard, drop <me>/<bot>/<nick> - remove yourself/#{@bot.nick}/player " +
       "from the game, pa/pass - pass, p/play - play cards, s/score - show " +
-      "score, t/turn - show current turn/order/health"
+      "score, t/turn - show current turn/order/health, ti/time - " +
+      "time elapsed since game started"
     when /drop/
       "#{b}Dropping:#{b} Type 'drop' to drop from the game, or 'drop bot' to " +
       "drop the bot from the game. Only the game manager (the player that " +
@@ -1643,6 +1650,12 @@ class JunkyardPlugin < Plugin
       m.reply g.p_order if g.started
     when /^(sc?|scores?)\b/
       m.reply g.p_damage if g.started
+    when /^ti(me)?\b/  
+      if g.started
+        m.reply "This game has been going on for #{g.elapsed_time}."
+      else
+        m.reply TITLE + " hasn't started yet."
+      end
     end
   end
 

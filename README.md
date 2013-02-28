@@ -15,11 +15,9 @@ http://wiki.gfax.ch/Junkyard
 ##TODO
 
 ###Bugs
-* Test grab/pass some more (fixed?).
 * Check if player dies from a deflector attack before grabbing them!
 
 ###Features
-* ti command to see amount of time played
 * Achievements:
  * Bee Bonus: kill someone with bees
  * Close Call Bonus: 1 health left
