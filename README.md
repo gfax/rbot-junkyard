@@ -14,7 +14,7 @@ http://wiki.gfax.ch/Junkyard
 
 ##TODO
 
-* Make it more obvious which card was player in some of the card actions.
+* Request: add a cd command to show current discard
 * Bug: Check if player dies from a deflector attack before grabbing them!
 * Option: Players joining mid-game should have an averaged HP instead of 10.
 * Achievements:

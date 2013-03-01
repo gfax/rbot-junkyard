@@ -164,7 +164,7 @@ class Junkyard
       },
       :crane => {
         :type => :unstoppable,
-        :string => "%{p} dumps a bunch of garbage cards on %{o}.",
+        :string => "%{p}'s crane dumps some garbage cards on %{o}.",
         :regex => [ /crane/ ],
         :help => "Pick up all your cards you don't want and dump them on an " +
                  "opponent. The opponent won't get any new cards until " +
@@ -240,7 +240,7 @@ class Junkyard
       :avalanche => {
         :type => :power,
         :health => -6,
-        :string => "%{p} randomly inflicts 6 damage on %{o}. What a dick!",
+        :string => "%{p} causes an avalanche to fall on %{o}!",
         :regex => [ /avalanch/ ],
         :help => "A scrap pile avalanches! 6 damage to " +
                  "any random player, including yourself!."
@@ -1149,7 +1149,7 @@ class Junkyard
     end
     # In the rare event the current player has
     # no more cards, pass to the next player.
-    increment_turn if players.first.cards.length == 0
+    increment_turn if players.first.cards.length.zero?
     notify player, p_cards(player)
   end
 
