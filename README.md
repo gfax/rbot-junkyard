@@ -14,12 +14,6 @@ http://wiki.gfax.ch/Junkyard
 
 ##TODO
 
-* Request: add a cd command to show current discard
 * Bug: Check if player dies from a deflector attack before grabbing them!
 * Option: Players joining mid-game should have an averaged HP instead of 10.
-* Achievements:
- * Bee Bonus: kill someone with bees
- * Close Call Bonus: 1 health left
- * Deflector Bonus: use deflector multiple times in the same game
- * Heal Bonus: heal over 12 health points (+1 damage for every 2 health)
- * "Where's the fight?" Bonus: miss 7 turns or more
+* Bee Bonus: kill someone with bees
