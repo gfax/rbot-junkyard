@@ -1735,7 +1735,7 @@ class Junkyard
     p = players.first
     b_string = ' '
     # Brutality bonus:
-    if p.damage >= 20
+    if p.damage >= 30
       p.bonuses += 1
       p.damage += MAX_HP
       b_string << "Brutality bonus: +#{MAX_HP}. "
