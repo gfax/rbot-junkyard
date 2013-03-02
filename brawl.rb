@@ -1931,17 +1931,17 @@ class JunkyardPlugin < Plugin
       "#{b}Cards:#{b} Players have 5 cards in their hand. There are 5 types " +
       "of cards: #{a}Attack#{cl} cards are played against other players on " +
       "your turn. #{u}Unstoppable#{cl} cards are as well, but cannot be " +
-      "blocked by the opponent. #{s}Support#{cl} cards heal you. " +
+      "countered by the opponent. #{s}Support#{cl} cards heal you. " +
       "#{c}Counter#{cl} cards counter attacks against you. #{p}Power#{cl} " +
       "cards either affect all players or a random player. They do not " +
       "consume a turn. Play these cards at the beginning of anyone's turn. " +
       "Use #{prefix}help #{plugin} <card> for card-specific info."
     when /command/
-      "#{b}Commands:#{b} c/cards - show cards and health, d/discard - " +
-      "discard, drop <me>/<bot>/<nick> - remove yourself/#{@bot.nick}/player " +
-      "from the game, pa/pass - pass, p/play - play cards, s/score - show " +
-      "score, t/turn - show current turn/order/health, ti/time - " +
-      "time elapsed since game started"
+      "#{b}Commands:#{b} c/cards - show cards, cd - current discard, " +
+      "d/discard - discard cards, drop <me>/<bot>/<nick> - remove " +
+      "yourself/#{@bot.nick}/player from the game, pa/pass - pass, " +
+      "p/play - play cards, s/score - show score, t/turn - show current " +
+      "turn/order/health, ti/time - time elapsed since game started"
     when /drop/
       "#{b}Dropping:#{b} Type 'drop' to drop from the game, or 'drop bot' to " +
       "drop the bot from the game. Only the game manager (the player that " +
@@ -1952,9 +1952,9 @@ class JunkyardPlugin < Plugin
       "#{a}Attack#{cl}, #{u}Unstoppable#{cl}, or #{s}Support#{cl} card with " +
       "the grab. The attacked player doesn't get to see what card is " +
       "attacking them until they respond with counter or pass. Players " +
-      "can't dodge when being grabbed. If the card that grabbed them turns " +
-      "out to be an #{u}Unstoppable#{cl} attack, any counter card they " +
-      "played is wasted and discarded."
+      "can't dodge when being grabbed. If the card you played while " +
+      "grabbing them turns out to be an #{u}Unstoppable#{cl} attack, any " +
+      "counter card they play will be nullified and discarded."
     when /objective/
       "#{b}Objective:#{b} Every player has #{MAX_HP} health. " +
       "Play cards against an opponent to take away their health. " +
