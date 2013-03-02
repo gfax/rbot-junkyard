@@ -5,7 +5,7 @@
 # Author:: Lite <degradinglight@gmail.com>
 # Copyright:: (C) 2012 gfax.ch
 # License:: GPL
-# Version:: 2013-02-28
+# Version:: 2013-03-01
 #
 
 class Junkyard
@@ -22,22 +22,23 @@ class Junkyard
              :+ => Irc.color(:blue)
            }
   # Custom death messages:
-  DEATHS = [ "%{p}'s soul has passed on.",
-             "%{p} died.",
+  DEATHS = [ "Better luck next time, %{p}.",
              "R.I.P. %{p}. Too soon.",
+             "%{p} died.",
              "%{p} fell victim to HURT disease.",
              "%{p} expired.",
              "%{p} has been summoned by the Eternal Judge.",
+             "%{p} has gone upstream with the salmon.",
+             "%{p} is broken beyond repair.",
+             "%{p} left the stage.",
              "%{p}: Loser even unto death.",
-             "%{p}'s ded.",
+             "%{p} paid the ultimate price.",
+             "%{p} perished.",
+             "%{p} shuffles off this mortal coil.",
              "%{p} was discharged from mortality.",
              "%{p} has foregone the finer things in life, like winning.",
-             "Better luck next time, %{p} ...fgt.",
-             "%{p} has gone upstream with the salmon.",
-             "%{p} left the stage.",
-             "%{p} is broken beyond repair.",
-             "%{p} perished.",
-             "%{p} paid the ultimate price."
+             "%{p}'s ded.",
+             "%{p}'s soul has passed on."
            ]
   BOT_DEATHS = [ "has seen better days",
                  "lived a better life than all you fools.",

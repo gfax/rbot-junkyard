@@ -5,7 +5,7 @@
 # Author:: Lite <degradinglight@gmail.com>
 # Copyright:: (C) 2012 gfax.ch
 # License:: GPL
-# Version:: 2013-02-28
+# Version:: 2013-03-01
 #
 
 class Junkyard
@@ -22,22 +22,23 @@ class Junkyard
              :+ => Irc.color(:blue)
            }
   # Custom death messages:
-  DEATHS = [ "%{p}'s soul has passed on.",
-             "%{p} died.",
+  DEATHS = [ "Better luck next time, %{p}.",
              "R.I.P. %{p}. Too soon.",
+             "%{p} died.",
              "%{p} fell victim to HURT disease.",
              "%{p} expired.",
              "%{p} has been summoned by the Eternal Judge.",
+             "%{p} has gone upstream with the salmon.",
+             "%{p} is broken beyond repair. Nice work, ANDY.",
+             "%{p} left the stage.",
              "%{p}: Loser even unto death.",
-             "%{p}'s ded.",
+             "%{p} paid the ultimate price.",
+             "%{p} perished.",
+             "%{p} shuffles off this mortal coil.",
              "%{p} was discharged from mortality.",
              "%{p} has foregone the finer things in life, like winning.",
-             "Better luck next time, %{p} ...fgt.",
-             "%{p} has gone upstream with the salmon.",
-             "%{p} left the stage.",
-             "%{p} is broken beyond repair. Nice work, ANDY.",
-             "%{p} perished.",
-             "%{p} paid the ultimate price.",
+             "%{p}'s ded.",
+             "%{p}'s soul has passed on.",
              "Fatal racing crash. Car flipped about 2,457 times. " +
              "No survivors. %{p} was killed on impact. R.I.P."
            ]
@@ -900,17 +901,37 @@ class Junkyard
     return nil
   end
 
-  def has_turn?(src)
-    return false unless started
-    return true if src == players.first.user
-    return false
+  def current_discard
+    return TITLE + " hasn't started yet." unless started
+    d_string = "Current discard is %{c}"
+    g_string = "%{o} has been grabbed by %{p}. " +
+               "Current discard is #{Bold}face down#{Bold}."
+    if attacked
+      if attacked.grabbed
+        return g_string % { :o => attacked.user, :p => players.first }
+      elsif players.first.grabbed
+        return g_string % { :o => players.first.user, :p => attacked }
+      elsif players.first.discard
+        return d_string % { :c => players.first.discard.to_s }
+      else
+        return d_string % { :c => attacked.discard.to_s }
+      end
+    end
+    return "#{players.first} hasn't attacked yet."
   end
 
   def bee_recover(player)
     if player.bees
       say "#{player} recovers from bee allergies."
+      @discard << player.bees
       player.bees = false
     end
+  end
+
+  def has_turn?(src)
+    return false unless started
+    return true if src == players.first.user
+    return false
   end
 
   def valid_insurance?(player, opponent)
@@ -1351,13 +1372,10 @@ class Junkyard
       notify player, "You cannot play power cards in the middle of an attack."
       return
     end
-    # Deflector isn't discarded until it is used up.
-    @discard << card unless card.id == :deflector
+    # Bees/Deflector are discarded when used up.
+    @discard << card unless card.id == :deflector or card.id == :the_bees
     player.delete_cards(card)
     case card.id
-    when :deflector
-      player.deflector = card
-      say card.string % { :p => player }
     when :avalanche
       victim = players[rand(players.length)]
       victim.health += card.health
@@ -1365,6 +1383,9 @@ class Junkyard
       say card.string % { :p => player, :o => victim }
       say p_health(victim)
       check_health(victim)
+    when :deflector
+      player.deflector = card
+      say card.string % { :p => player }
     when :earthquake
       say card.string % { :p => player }
       players.each do |p|
@@ -1386,7 +1407,7 @@ class Junkyard
       notify(player, p_cards(player)) unless player == players.first
     when :the_bees
       n = rand(players.length)
-      players[n].bees = true
+      players[n].bees = card
       say card.string % { :p => player, :o => players[n] }
     when :toolbox
       n = if player.cards.length > 8 then 0 else 8 - player.cards.length end
@@ -1464,6 +1485,7 @@ class Junkyard
       opponent.deflector = false
       @attacked = players[n]
       opponent = players[n]
+      opponent.grabbed = false
       wait = false
     end
     case player.discard.type
@@ -1562,7 +1584,6 @@ class Junkyard
     # Announce attack
     say player.discard.string % { :p => player, :o => opponent }
     opponent.skips += player.discard.skips
-    opponent.grabbed = false
     # Redemption tokens
     if opponent.discard
       if opponent.discard.id == :insurance
@@ -1919,6 +1940,8 @@ class JunkyardPlugin < Plugin
     case m.message.downcase
     when /^(jo?|join)( |\z)/
       g.add_player(m.source)
+    when 'cd'
+      @bot.say m.channel, g.current_discard
     when /^(ca?|cards?)( |\z)/
       if p.nil?
         m.reply Junkyard::RETORTS.sample % { :p => m.source }
@@ -1935,7 +1958,7 @@ class JunkyardPlugin < Plugin
                else g.get_player(a[0])
                end
       unless victim
-        m.reply "#{p}, there is no one playing named '#{a[0]}'."
+        m.reply "There is no one playing named '#{a[0]}'."
         return
       end
       g.drop_player(p, victim, false)
@@ -1951,9 +1974,9 @@ class JunkyardPlugin < Plugin
         g.play_counter(p, a)
       end
     when /^(od?|order)( |\z)/, /^(tu?|turn)( |\z)/
-      m.reply g.p_order if g.started
+      @bot.say m.channel, g.p_order if g.started
     when /^(sc?|scores?)( |\z)/
-      m.reply g.p_damage if g.started
+      @bot.say m.channel, g.p_damage if g.started
     when /^ti(me)?( |\z)/
       if g.started
         m.reply "This game has been going on for #{g.elapsed_time}."
