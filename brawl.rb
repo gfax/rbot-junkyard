@@ -5,7 +5,7 @@
 # Author:: Lite <degradinglight@gmail.com>
 # Copyright:: (C) 2012 gfax.ch
 # License:: GPL
-# Version:: 2013-03-01
+# Version:: 2013-03-02
 #
 
 class Junkyard
@@ -907,7 +907,7 @@ class Junkyard
   end
 
   def current_discard
-    return TITLE + " hasn't started yet." unless started
+    return title + " hasn't started yet." unless started
     d_string = "Current discard is %{c}"
     g_string = "%{o} has been grabbed by %{p}. " +
                "Current discard is #{Bold}face down#{Bold}."
@@ -1539,7 +1539,7 @@ class Junkyard
           n -= 1
         end
       end
-      p.glutton += 1
+      player.glutton += 1
       bee_recover(player)
     when :unstoppable
       if opponent.discard
@@ -1766,7 +1766,7 @@ class Junkyard
       b_string << "Multi-Deflector bonus: +#{b}. "
     end
     # Where's-the-fight? bonus:
-    if p.skip_count > 7
+    if p.skip_count >= 7
       p.bonuses += 1
       p.damage += p.skip_count * 2
       b_string << "Where's-the-fight? bonus: +#{p.skip_count * 2}. "
@@ -1796,12 +1796,12 @@ class Junkyard
     # Player's channel damage:
     player_hash = @registry[c][2]
     if player_hash.has_key? p
-      player_hash[p][:bonuses] = 0 if player_hash[p][:bonuses].nil?
+      b = player_hash[p][:bonuses] || 0
       player_hash[p] = { :nick => nick,
                          :wins => player_hash[p][:wins] + win,
                          :games => player_hash[p][:games] + 1,
                          :damage => player_hash[p][:damage] + player.damage,
-                         :bonuses => player_hash[p][:bonuses] + player.bonuses
+                         :bonuses => b + player.bonuses
                        }
     else
       player_hash[p] = { :nick => nick,
@@ -1814,12 +1814,12 @@ class Junkyard
     @registry[c] = [ @registry[c][0], @registry[c][1], player_hash ]
     # Player's network-wide damage:
     if @registry.has_key? p
-      @registry[p][:bonuses] = 0 if @registry[p][:bonuses].nil?
+      b = @registry[p][:bonuses] || 0
       @registry[p] = { :nick => nick,
                        :wins => @registry[p][:wins] + win,
                        :games => @registry[p][:games] + 1,
                        :damage => @registry[p][:damage] + player.damage,
-                       :bonuses => @registry[p][:bonuses] + player.bonuses
+                       :bonuses => b + player.bonuses
                      }
     else
       @registry[p] = player_hash[p]
