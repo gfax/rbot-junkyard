@@ -355,21 +355,26 @@ class Junkyard
   class Player
 
     attr_reader :user
-    attr_accessor :bees, :cards, :deflector, :discard, :damage,
-                  :garbage, :grabbed, :health, :multiball, :skips
+    attr_accessor :bees, :bonuses, :cards, :damage, :deflector, :deflectors,
+                  :discard, :garbage, :glutton, :grabbed, :health, :multiball,
+                  :skips, :skip_count
 
     def initialize(user)
-      @user = user       # p.user => unbolded, p.to_s => bolded
-      @bees = false      # player is attacked by bees when true
-      @cards = []        # hand cards
-      @damage = 0        # total damage dished out
-      @deflector = false # deflects attacks when true
-      @discard = nil     # card the player just played
-      @garbage = nil     # array of Garbage Man garbage cards
-      @grabbed = false   # currently being grabbed
-      @health = MAX_HP   # initial health
-      @multiball = false # gets to go again when true
-      @skips = 0         # skips player when > 0
+      @user = user        # p.user => unbolded, p.to_s => bolded
+      @bees = false       # player is attacked by bees when true
+      @bonuses = 0        # counter for end-of-game bonuses
+      @cards = []         # hand cards
+      @damage = 0         # total damage dished out
+      @deflector = false  # deflects attacks when true
+      @deflectors = 0     # counter for end-of-game bonuses
+      @discard = nil      # card the player just played
+      @garbage = nil      # array of Garbage Man garbage cards
+      @glutton = 0        # counter for end-of-game bonuses
+      @grabbed = false    # currently being grabbed
+      @health = MAX_HP    # initial health
+      @multiball = false  # gets to go again when true
+      @skips = 0          # skips player when > 0
+      @skip_count = 0     # counter for end-of-game bonuses
     end
 
     def delete_cards(request)
@@ -1195,6 +1200,7 @@ class Junkyard
       do_slots(player) # In case a Slot Machine was deflected.
       @discard << opponent.deflector
       opponent.deflector = false
+      opponent.deflectors += 1
       @attacked = players[n]
       opponent = players[n]
       opponent.grabbed = false
@@ -1245,6 +1251,7 @@ class Junkyard
           n -= 1
         end
       end
+      p.glutton += 1
       bee_recover(player)
     when :unstoppable
       if opponent.discard
@@ -1419,6 +1426,7 @@ class Junkyard
     if player.skips > 0
       say "#{player} misses a turn."
       player.skips -= 1
+      player.skip_count += 1
       increment_turn
     else
       say p_turn
@@ -1437,10 +1445,43 @@ class Junkyard
 
   def end_game
     p = players.first
-    b_string = ' ' # achievements bonuses
+    b_string = ' '
+    # Brutality bonus:
+    if p.damage >= 20
+      p.bonuses += 1
+      p.damage += MAX_HP
+      b_string << "Brutality bonus: +#{MAX_HP}. "
+    end
+    # Close-call bonus:
+    if p.health == 1
+      p.bonuses += 1
+      p.damage += MAX_HP - 1
+      b_string << "Close-call bonus: +#{MAX_HP - 1}. "
+    end
+    # Glutton bonus:
+    if p.glutton >= 6
+      p.bonuses += 1
+      p.damage += p.glutton
+      b_string << "Glutton bonus: +#{p.glutton}. "
+    end
+    # Health bonus:
     if p.health >= MAX_HP
+      p.bonuses += 1
       p.damage += p.health
-      b_string << "Health bonus: +#{p.health} "
+      b_string << "Health bonus: +#{p.health}. "
+    end
+    # Multi-Deflector bonus:
+    if p.deflectors > 1
+      p.bonuses += 1
+      b = MAX_HP + p.deflectors * 2
+      p.damage += b
+      b_string << "Multi-Deflector bonus: +#{b}. "
+    end
+    # Where's-the-fight? bonus:
+    if p.skip_count > 7
+      p.bonuses += 1
+      p.damage += p.skip_count * 2
+      b_string << "Where's-the-fight? bonus: +#{p.skip_count * 2}. "
     end
     say "#{p} wins after #{elapsed_time}!#{b_string}Damage done: #{p.damage}"
     update_chan_stats(p.damage)
@@ -1463,31 +1504,34 @@ class Junkyard
     c = channel.name
     nick = player.user.to_s
     p = player.user.downcase
-    unless @registry.has_key? c
-      @registry[channel.name] = [ 0, 0, {} ]
-    end
+    @registry[channel.name] = [ 0, 0, {} ] unless @registry.has_key? c
     # Player's channel damage:
     player_hash = @registry[c][2]
     if player_hash.has_key? p
+      player_hash[p][:bonuses] = 0 if player_hash[p][:bonuses].nil?
       player_hash[p] = { :nick => nick,
                          :wins => player_hash[p][:wins] + win,
                          :games => player_hash[p][:games] + 1,
-                         :damage => player_hash[p][:damage] + player.damage
+                         :damage => player_hash[p][:damage] + player.damage,
+                         :bonuses => player_hash[p][:bonuses] + player.bonuses
                        }
     else
       player_hash[p] = { :nick => nick,
                          :wins => win,
                          :games => 1,
-                         :damage => player.damage
+                         :damage => player.damage,
+                         :bonuses => player.bonuses
                        }
     end
     @registry[c] = [ @registry[c][0], @registry[c][1], player_hash ]
     # Player's network-wide damage:
     if @registry.has_key? p
+      @registry[p][:bonuses] = 0 if @registry[p][:bonuses].nil?
       @registry[p] = { :nick => nick,
                        :wins => @registry[p][:wins] + win,
                        :games => @registry[p][:games] + 1,
-                       :damage => @registry[p][:damage] + player.damage
+                       :damage => @registry[p][:damage] + player.damage,
+                       :bonuses => @registry[p][:bonuses] + player.bonuses
                      }
     else
       @registry[p] = player_hash[p]
@@ -1754,19 +1798,23 @@ class JunkyardPlugin < Plugin
         a = a.to_a.each { |e| e.slice!(0) }
         a.flatten!
         a.sort! { |x,y| y[:damage] <=> x[:damage] }
-        top_players = a[0..4]
+        z = params[:z] || 4
+        z = if z.to_i.between?(1,10) then z.to_i - 1 else 4 end
+        top_players = a[0..z]
         n = 1
         top_players.each do |k|
-          m.reply "#{Bold}#{n}. #{k[:nick]}#{Bold} - #{k[:damage]} dmg " +
-                  "(#{k[:wins]}/#{k[:games]} games won)"
+          @bot.say m.channel, "#{Bold}#{n}. #{k[:nick]}#{Bold} - " +
+                              "#{k[:damage]} dmg (#{k[:wins]}/ " +
+                              "#{k[:games]} games won)"
           n += 1
           end
         return
       else
-        m.reply "#{Bold}#{@registry[xd][:nick]}#{Bold} -- " +
-                "Wins: #{@registry[xd][:wins]}, " +
-                "games: #{@registry[xd][:games]}, " +
-                "damage: #{@registry[xd][:damage]}"
+        @bot.say m.channel, "#{Bold}#{@registry[xd][:nick]}#{Bold} -- " +
+                            "Wins: #{@registry[xd][:wins]}, " +
+                            "games: #{@registry[xd][:games]}, " +
+                            "damage: #{@registry[xd][:damage]}, " +
+                            "special bonuses: #{registry[xd][:bonuses]}"
         return
       end
     end
@@ -1775,10 +1823,11 @@ class JunkyardPlugin < Plugin
       "They haven't played a game in this channel, #{m.source.nick}"
       return
     end
-    m.reply "#{Bold}#{@registry[x][2][y][:nick]}#{Bold} (in #{x}) -- " +
-            "Wins: #{@registry[x][2][y][:wins]}, " +
-            "games: #{@registry[x][2][y][:games]}, " +
-            "damage: #{@registry[x][2][y][:damage]}"
+    @bot.say m.channel, "#{Bold}#{@registry[x][2][y][:nick]}#{Bold} " +
+                        "(in #{x}) -- Wins: #{@registry[x][2][y][:wins]}, " +
+                        "games: #{@registry[x][2][y][:games]}, " +
+                        "damage: #{@registry[x][2][y][:damage]}, " +
+                        "special bonuses: #{@registry[x][2][y][:bonuses]}"
   end
 
 end
@@ -1797,8 +1846,9 @@ plugin = JunkyardPlugin.new
     :action => :show_stats
   plugin.map "#{scope} stop",
     :private => false, :action => :stop_game
-  plugin.map "#{scope} top",
-    :private => false, :action => :show_stats, :defaults => { :x => false }
+  plugin.map "#{scope} top [:z]",
+    :private => false, :action => :show_stats,
+    :defaults => { :x => false, :z => 5 }
   plugin.map "#{scope}",
     :private => false, :action => :create_game
 end
