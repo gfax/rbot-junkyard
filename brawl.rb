@@ -1967,7 +1967,7 @@ class JunkyardPlugin < Plugin
     when /stat/, /top/
       "#{b}Stats:#{b} #{prefix}#{plugin} stats <nick> - network-wide stats, " +
       "#{prefix}#{plugin} stats #channel <nick> - channel-specific stats, " +
-      "#{prefix}#{plugin} top - top 5 players"
+      "#{prefix}#{plugin} top <num> - top <num> players"
     else
       "#{TITLE} help topics:#{@bot.config['junkyard.bot'] ? ' bot,' : ''} " +
       "commands, play, objective, stats; #{b}Rules:#{b} attacking, " +
