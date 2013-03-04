@@ -1835,7 +1835,7 @@ end
 
 plugin = RumblePlugin.new
 
-[ 'brawl', 'junk', 'rumble' ].each do |scope|
+[ 'rumble' ].each do |scope|
   plugin.map "#{scope} bot",
     :private => false, :action => :add_bot
   plugin.map "#{scope} cancel",
