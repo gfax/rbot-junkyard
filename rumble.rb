@@ -281,13 +281,13 @@ class Rumble
         :regex => [ /shift/, /business/ ],
         :help => "Swap hand cards with a random player."
       },
-      :the_bees => {
-        :name => 'THE BEES',
+      :the_ants => {
+        :name => 'THE ANTS',
         :type => :power,
-        :string => "%{p} drops the bee cage on %{o}'s head...",
-        :regex => [ /the/, /be+s/ ],
-        :help => "Random player is stung by bees and must do " +
-                 "their best Nicholas Cage impression. 1 damage " +
+        :string => "%{p} drops the ant hill on %{o}'s head...",
+        :regex => [ /the/, /ants/ ],
+        :help => "Random player is stung by ants and must do " +
+                 "their best Aquabats impression! 1 damage " +
                  "every turn until victim uses a support card."
       },
       :toolbox => {
@@ -355,13 +355,13 @@ class Rumble
   class Player
 
     attr_reader :user
-    attr_accessor :bees, :bonuses, :cards, :damage, :deflector, :deflectors,
+    attr_accessor :ants, :bonuses, :cards, :damage, :deflector, :deflectors,
                   :discard, :garbage, :glutton, :grabbed, :health, :multiball,
                   :skips, :skip_count
 
     def initialize(user)
       @user = user        # p.user => unbolded, p.to_s => bolded
-      @bees = false       # player is attacked by bees when true
+      @ants = false       # player is attacked by ants when true
       @bonuses = 0        # counter for end-of-game bonuses
       @cards = []         # hand cards
       @damage = 0         # total damage dished out
@@ -483,7 +483,7 @@ class Rumble
       @deck << Card.new(:multiball)
       @deck << Card.new(:reverse)
       @deck << Card.new(:shifty_business)
-      @deck << Card.new(:the_bees)
+      @deck << Card.new(:the_ants)
       @deck << Card.new(:tire_iron)
       @deck << Card.new(:toolbox)
       @deck << Card.new(:whirlwind)
@@ -637,11 +637,11 @@ class Rumble
     return "#{players.first} hasn't attacked yet."
   end
 
-  def bee_recover(player)
-    if player.bees
-      say "#{player} recovers from bee allergies."
-      @discard << player.bees
-      player.bees = false
+  def ant_recover(player)
+    if player.ants
+      say "#{player} recovers from ant allergies."
+      @discard << player.ants
+      player.ants = false
     end
   end
 
@@ -652,9 +652,9 @@ class Rumble
   end
 
   def valid_insurance?(player, opponent)
-    bees = if player.bees then -1 else 0 end
+    ants = if player.ants then -1 else 0 end
     damage = if opponent.discard then opponent.discard.health else 0 end
-    ensuing_health = player.health + damage + bees
+    ensuing_health = player.health + damage + ants
     if opponent.discard and opponent.discard.id == :slot_machine
       slots.each { |n| ensuing_health -= n }
     end
@@ -784,7 +784,7 @@ class Rumble
              c_hash[:toolbox].first
            elsif p.health == 1 and c_hash[:surgery].any?
              c_hash[:surgery].first
-           elsif p.bees and c_hash[:support].any?
+           elsif p.ants and c_hash[:support].any?
              c_hash[:support].first
            elsif c_hash[:grab].any? and c_hash[:unstoppable].any? and c_hash[:attack].any?
              c_hash[:grab].any?
@@ -854,7 +854,7 @@ class Rumble
     c_hash = bot_inventory(p)
     if valid_insurance?(p, o) and c_hash[:insurance].any?
       card = c_hash[:insurance].first
-    elsif p.bees and c_hash[:grab].any? and c_hash[:support].any?
+    elsif p.ants and c_hash[:grab].any? and c_hash[:support].any?
       card = c_hash[:grab].first
       card2 = c_hash[:support].first
     elsif not p.grabbed and c_hash[:dodge].any?
@@ -1089,8 +1089,8 @@ class Rumble
       notify player, "You cannot play power cards in the middle of an attack."
       return
     end
-    # Bees/Deflector are discarded when used up.
-    @discard << card unless card.id == :deflector or card.id == :the_bees
+    # Ants/Deflector are discarded when used up.
+    @discard << card unless card.id == :deflector or card.id == :the_ants
     player.delete_cards(card)
     case card.id
     when :avalanche
@@ -1122,9 +1122,9 @@ class Rumble
       say card.string % { :p => player, :o => players[n] }
       player.cards, players[n].cards = players[n].cards, player.cards
       notify(player, p_cards(player)) unless player == players.first
-    when :the_bees
+    when :the_ants
       n = rand(players.length)
-      players[n].bees = card
+      players[n].ants = card
       say card.string % { :p => player, :o => players[n] }
     when :toolbox
       n = if player.cards.length > 8 then 0 else 8 - player.cards.length end
@@ -1252,7 +1252,7 @@ class Rumble
         end
       end
       player.glutton += 1
-      bee_recover(player)
+      ant_recover(player)
     when :unstoppable
       if opponent.discard
         if opponent.discard.type == :counter
@@ -1316,7 +1316,7 @@ class Rumble
       if player.discard.id == :meal_steal
         if temp_deck.length > 0
           say "#{player} steals and consumes #{temp_deck.join(', ')}!!"
-          bee_recover(player)
+          ant_recover(player)
         end
       end
       say p_health(player)
@@ -1415,9 +1415,9 @@ class Rumble
       n = 5 - player.cards.length
       deal(player, n)
     end
-    if player.bees
+    if player.ants
       player.health -= 1
-      say "#{player} is stung by THE BEES."
+      say "#{player} is stung by THE ANTS."
       say p_health(player)
       check_health(player)
       # Turn will increment when they are dropped.
