@@ -210,7 +210,7 @@ class Rumble
       :coffee => {
         :type => :support,
         :health => 1,
-        :string => "%{p} sips on some coffee and relaxes.",
+        :string => "%{p} sips on some delicious, expensive Starbucks coffee, and relaxes.",
         :regex => [ /coffee/ ],
         :help => "Take a sip. Relax. Gain up to #{MAX_HP} health."
       },
