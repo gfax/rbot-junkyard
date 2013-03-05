@@ -58,8 +58,9 @@ class Junkyard
   # Add to or modify these as you wish.
   CARDS = {
       :block => {
+	:name => "NO!",
         :type => :counter,
-        :string => "%{p} blocks %{o}'s %{c}.",
+        :string => "%{p} blocks %{o}'s %{c} with a stern exclaimation!",
         :regex => 'block',
         :help => "Block a basic attack card when played against you. Can be " +
                  "used against a grab to nullify the grab's proceeding attack."
@@ -80,11 +81,12 @@ class Junkyard
                  "an attack to disguise your type of attack."
       },
       :mattress => {
+	:name => "The Mom Card",
         :type => :counter,
         :health => 2,
-        :string => "%{p} holds up an old mattress in defense.",
-        :regex => [ /mattres/ ],
-        :help => "Reduces opponent's attack by 2 points."
+        :string => "%{p} hides behind Your Mom! She softens the blow. ;)",
+        :regex => [ /yourmom/, /your mom/ ],
+        :help => "Hide behind your opponent's mom! Her soft, supple body reduces opponent's attack by 2 points."
       },
       :insurance => {
         :type => :counter,
@@ -96,12 +98,13 @@ class Junkyard
                  "killing blow. Resets you to 5 health points."
       },
       :wrench => {
+	:name => "Meeting Time",
         :type => :attack,
-        :string => "%{p} throws a wrench in %{o}'s gears.",
+        :string => "%{p} reminds %{o} that they're late for a meeting!",
         :skips => 2,
-        :regex => [ /wrench/ ],
-        :help => "Throw a wrench in your opponents' machinery. " +
-                 "He must spend 2 turns finding what jammed his gears."
+        :regex => [ /meeting/ ],
+        :help => "Send your opponent to a meeting, where they can't" +
+                 "bother you for a couple turns!"
       },
       :nose_bleed => {
         :type => :attack,
@@ -112,10 +115,11 @@ class Junkyard
         :help => "Opponent loses a turn to clean it up."
       },
       :gutpunch => {
+	:name => "Bitch Slap",
         :type => :attack,
         :health => -2,
-        :string => "%{p} punches %{o} in the guts.",
-        :regex => [ /gut/, 'punch' ],
+        :string => "%{p} slaps %{o} like a female dog in HEAT.",
+        :regex => [ /bitch/, 'slap' ],
         :help => "Basic attack."
       },
       :neck_punch => {
