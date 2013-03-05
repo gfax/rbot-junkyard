@@ -60,9 +60,9 @@ class Junkyard
       :block => {
 	:name => "NO!",
         :type => :counter,
-        :string => "%{p} blocks %{o}'s %{c} with a stern exclaimation!",
-        :regex => 'block',
-        :help => "Block a basic attack card when played against you. Can be " +
+        :string => "%{p} says NO!!! ..blocking %{o}'s %{c} with a stern exclaimation!",
+        :regex => 'no',
+        :help => "Blocks a basic attack card when played against you. Can be " +
                  "used against a grab to nullify the grab's proceeding attack."
       },
       :dodge => {
