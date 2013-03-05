@@ -262,7 +262,7 @@ class Rumble
                  "1 damage to everyone, starting with yourself."
       },
       :theterror => {
-        :name => 'The TERROR',
+        :name => 'TERROR',
         :type => :power,
         :string => "%{p} brings the TERROR! Everyone turns pale with fright.",
         :regex => [ /terror/, /multi/ ],
