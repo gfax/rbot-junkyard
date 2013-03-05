@@ -286,7 +286,7 @@ class Rumble
         :type => :power,
         :string => "%{p} drops an ant farm on %{o}'s head...",
         :regex => [ /the/, /ants/ ],
-        :help => "Random player is stung by ants and must do " +
+        :help => "Random player is bitten by ants and must do " +
                  "their best Aquabats impression! 1 damage " +
                  "every turn until victim uses a support card."
       },
@@ -1418,7 +1418,7 @@ class Rumble
     end
     if player.ants
       player.health -= 1
-      say "#{player} is stung by THE ANTS."
+      say "#{player} is bitten by THE ANTS."
       say p_health(player)
       check_health(player)
       # Turn will increment when they are dropped.
