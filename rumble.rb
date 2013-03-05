@@ -199,7 +199,7 @@ class Junkyard
         :type => :unstoppable,
         :health => -3,
         :string => "%{p} whacks %{o} in the head with an IBM Model M Keyboard. OUCH!",
-        :regex => [ /Model M/, 'Keyboard' ],
+        :regex => [ /[Mm]odel [Mm]/, 'keyboard' ],
         :help => "Beat your defenseless opponent senseless with the world's " +  
 		 "most industrial strength piece of computing hardware."
       },
