@@ -220,7 +220,7 @@ class Junkyard
 	:name => "Bacon",
         :type => :support,
         :health => 2,
-        :string => "%{p} eats a delicious strip of BACON.",
+        :string => "%{p} eats some delicious strips of BACON.",
         :regex =>  [ /bacon/ ],
         :help => "Heal yourself by 2 points, " +
                  "up to a maximum of #{MAX_HP}."
