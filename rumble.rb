@@ -200,10 +200,11 @@ class Rumble
         :regex => [ /tire( |-)?iron/, 'iron' ],
         :help => "Beat your defenseless opponent senseless."
       },
-      :meal_steal => {
+      :mouseraid => {
+	:name => 'Mouse Raid',
         :type => :unstoppable,
-        :string => "%{p} rummages through %{o}'s lunchbox for coffee and bacon.",
-        :regex => [ /meal/, /steal/ ],
+        :string => "%{p} sends ninja mice into %{o}'s lunchbox to swipe coffee and bacon.",
+        :regex => [ /mouse/, /raid/ ],
         :help => "Steal all of an opponent's coffee and bacon, " +
                  "if he has any, and use them on yourself."
       },
@@ -466,7 +467,7 @@ class Rumble
       @deck << Card.new(:a_gun)
       @deck << Card.new(:battery_acid)
       @deck << Card.new(:insurance)
-      @deck << Card.new(:meal_steal)
+      @deck << Card.new(:mouseraid)
       @deck << Card.new(:slot_machine)
       @deck << Card.new(:surgery)
       @deck << Card.new(:tire)
@@ -1275,7 +1276,7 @@ class Rumble
         player.delete_cards(player.garbage)
         deal(player, player.garbage.length)
         player.garbage = nil
-      when :meal_steal
+      when :mouseraid
         h, temp_deck = player.health, []
         opponent.cards.each do |e|
           if e.id == :coffee or e.id == :bacon
@@ -1313,10 +1314,10 @@ class Rumble
       end
     end
     # Announce health
-    if player.discard.type == :support or player.discard.id == :meal_steal
-      if player.discard.id == :meal_steal
+    if player.discard.type == :support or player.discard.id == :mouseraid
+      if player.discard.id == :mouseraid
         if temp_deck.length > 0
-          say "#{player} steals and consumes #{temp_deck.join(', ')}!!"
+          say "A ninja mouse brings #{player} some #{temp_deck.join(', ')}, and it is delicious!!"
           ant_recover(player)
         end
       end
