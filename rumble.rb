@@ -202,23 +202,23 @@ class Rumble
       },
       :meal_steal => {
         :type => :unstoppable,
-        :string => "%{p} rummages through %{o}'s lunchbox for soup and subs.",
+        :string => "%{p} rummages through %{o}'s lunchbox for coffee and bacon.",
         :regex => [ /meal/, /steal/ ],
-        :help => "Steal all of an opponent's soup and subs, " +
+        :help => "Steal all of an opponent's coffee and bacon, " +
                  "if he has any, and use them on yourself."
       },
-      :soup => {
+      :coffee => {
         :type => :support,
         :health => 1,
-        :string => "%{p} sips on some soup and relaxes.",
-        :regex => [ /soup/ ],
+        :string => "%{p} sips on some coffee and relaxes.",
+        :regex => [ /coffee/ ],
         :help => "Take a sip. Relax. Gain up to #{MAX_HP} health."
       },
-      :sub => {
+      :bacon => {
         :type => :support,
         :health => 2,
-        :string => "%{p} eats a sub.",
-        :regex => 'sub',
+        :string => "%{p} eats a delicious strip of BACON.",
+        :regex =>  [ /bacon/ ],
         :help => "Heal yourself by 2 points, " +
                  "up to a maximum of #{MAX_HP}."
       },
@@ -284,7 +284,7 @@ class Rumble
       :the_ants => {
         :name => 'THE ANTS',
         :type => :power,
-        :string => "%{p} drops the ant hill on %{o}'s head...",
+        :string => "%{p} drops an ant farm on %{o}'s head...",
         :regex => [ /the/, /ants/ ],
         :help => "Random player is stung by ants and must do " +
                  "their best Aquabats impression! 1 damage " +
@@ -448,7 +448,7 @@ class Rumble
     end
     7.times do
       @deck << Card.new(:kickball)
-      @deck << Card.new(:sub)
+      @deck << Card.new(:bacon)
     end
     6.times do
       @deck << Card.new(:dodge)
@@ -460,7 +460,7 @@ class Rumble
     3.times do
       @deck << Card.new(:mattress)
       @deck << Card.new(:nose_bleed)
-      @deck << Card.new(:soup)
+      @deck << Card.new(:coffee)
     end
     2.times do
       @deck << Card.new(:a_gun)
@@ -552,7 +552,8 @@ class Rumble
     if players.length == 2
       countdown = @bot.config['rumble.countdown']
       @bot.timer.add_once(countdown) { start_game }
-      say "Game will start in #{Bold}#{countdown}#{Bold} seconds."
+      say "Game will start in #{Bold}#{countdown}#{Bold} seconds." 
+      say "Let's get ready to #{Bold}RUMBLE!#{Bold}"
     end
   end
 
@@ -1277,7 +1278,7 @@ class Rumble
       when :meal_steal
         h, temp_deck = player.health, []
         opponent.cards.each do |e|
-          if e.id == :soup or e.id == :sub
+          if e.id == :coffee or e.id == :bacon
             temp_deck << e
             h += e.health
           end
