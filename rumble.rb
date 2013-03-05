@@ -1,6 +1,6 @@
 # coding: UTF-8
 #
-# :title: Rumble
+# :title: Junkyard
 #
 # Author:: Lite <degradinglight@gmail.com>
 # Copyright:: (C) 2012 gfax.ch
@@ -8,7 +8,7 @@
 # Version:: 2013-03-02
 #
 
-class Rumble
+class Junkyard
 
   TITLE = Bold + "Rumble!" + Bold
   MAX_HP = 10
@@ -200,7 +200,7 @@ class Rumble
         :regex => [ /tire( |-)?iron/, 'iron' ],
         :help => "Beat your defenseless opponent senseless."
       },
-      :mouseraid => {
+      :meal_steal => {
 	:name => 'Mouse Raid',
         :type => :unstoppable,
         :string => "%{p} sends ninja mice into %{o}'s lunchbox to swipe coffee and bacon.",
@@ -208,14 +208,16 @@ class Rumble
         :help => "Steal all of an opponent's coffee and bacon, " +
                  "if he has any, and use them on yourself."
       },
-      :coffee => {
+      :soup => {
+	:name => "Coffee",
         :type => :support,
         :health => 1,
         :string => "%{p} sips on some delicious, expensive Starbucks coffee, and relaxes. aaahhh...",
         :regex => [ /coffee/ ],
         :help => "Take a sip. Relax. Gain up to #{MAX_HP} health."
       },
-      :bacon => {
+      :sub => {
+	:name => "Bacon",
         :type => :support,
         :health => 2,
         :string => "%{p} eats a delicious strip of BACON.",
@@ -262,7 +264,7 @@ class Rumble
         :help => "An earthquake shakes the entire #{TITLE} " +
                  "1 damage to everyone, starting with yourself."
       },
-      :theterror => {
+      :multiball => {
         :name => 'TERROR!',
         :type => :power,
         :string => "%{p} brings the TERROR! Everyone turns pale with fright.",
@@ -282,7 +284,7 @@ class Rumble
         :regex => [ /shift/, /business/ ],
         :help => "Swap hand cards with a random player."
       },
-      :the_ants => {
+      :the_bees => {
         :name => 'THE ANTS',
         :type => :power,
         :string => "%{p} drops an ant farm on %{o}'s head...",
@@ -356,13 +358,13 @@ class Rumble
   class Player
 
     attr_reader :user
-    attr_accessor :ants, :bonuses, :cards, :damage, :deflector, :deflectors,
-                  :discard, :garbage, :glutton, :grabbed, :health, :theterror,
+    attr_accessor :bees, :bonuses, :cards, :damage, :deflector, :deflectors,
+                  :discard, :garbage, :glutton, :grabbed, :health, :multiball,
                   :skips, :skip_count
 
     def initialize(user)
       @user = user        # p.user => unbolded, p.to_s => bolded
-      @ants = false       # player is attacked by ants when true
+      @bees = false       # player is attacked by bees when true
       @bonuses = 0        # counter for end-of-game bonuses
       @cards = []         # hand cards
       @damage = 0         # total damage dished out
@@ -373,7 +375,7 @@ class Rumble
       @glutton = 0        # counter for end-of-game bonuses
       @grabbed = false    # currently being grabbed
       @health = MAX_HP    # initial health
-      @theterror = false  # gets to go again when true
+      @multiball = false  # gets to go again when true
       @skips = 0          # skips player when > 0
       @skip_count = 0     # counter for end-of-game bonuses
     end
@@ -449,7 +451,7 @@ class Rumble
     end
     7.times do
       @deck << Card.new(:kickball)
-      @deck << Card.new(:bacon)
+      @deck << Card.new(:sub)
     end
     6.times do
       @deck << Card.new(:dodge)
@@ -461,13 +463,13 @@ class Rumble
     3.times do
       @deck << Card.new(:mattress)
       @deck << Card.new(:nose_bleed)
-      @deck << Card.new(:coffee)
+      @deck << Card.new(:soup)
     end
     2.times do
       @deck << Card.new(:a_gun)
       @deck << Card.new(:battery_acid)
       @deck << Card.new(:insurance)
-      @deck << Card.new(:mouseraid)
+      @deck << Card.new(:meal_steal)
       @deck << Card.new(:slot_machine)
       @deck << Card.new(:surgery)
       @deck << Card.new(:tire)
@@ -481,10 +483,10 @@ class Rumble
       @deck << Card.new(:crane)
       @deck << Card.new(:deflector)
       @deck << Card.new(:earthquake)
-      @deck << Card.new(:theterror)
+      @deck << Card.new(:multiball)
       @deck << Card.new(:reverse)
       @deck << Card.new(:shifty_business)
-      @deck << Card.new(:the_ants)
+      @deck << Card.new(:the_bees)
       @deck << Card.new(:tire_iron)
       @deck << Card.new(:toolbox)
       @deck << Card.new(:whirlwind)
@@ -518,7 +520,7 @@ class Rumble
     say p_turn
     players.each { |p| notify p, p_cards(p) }
     Thread.new do
-      sleep(@bot.config['rumble.bot_delay'])
+      sleep(@bot.config['junkyard.bot_delay'])
       bot_move
     end
   end
@@ -551,7 +553,7 @@ class Rumble
     end
     deal(p, 5)
     if players.length == 2
-      countdown = @bot.config['rumble.countdown']
+      countdown = @bot.config['junkyard.countdown']
       @bot.timer.add_once(countdown) { start_game }
       say "Game will start in #{Bold}#{countdown}#{Bold} seconds." 
       say "Let's get ready to #{Bold}RUMBLE!#{Bold}"
@@ -639,11 +641,11 @@ class Rumble
     return "#{players.first} hasn't attacked yet."
   end
 
-  def ant_recover(player)
-    if player.ants
+  def bee_recover(player)
+    if player.bees
       say "#{player} recovers from ant allergies."
-      @discard << player.ants
-      player.ants = false
+      @discard << player.bees
+      player.bees = false
     end
   end
 
@@ -654,9 +656,9 @@ class Rumble
   end
 
   def valid_insurance?(player, opponent)
-    ants = if player.ants then -1 else 0 end
+    bees = if player.bees then -1 else 0 end
     damage = if opponent.discard then opponent.discard.health else 0 end
-    ensuing_health = player.health + damage + ants
+    ensuing_health = player.health + damage + bees
     if opponent.discard and opponent.discard.id == :slot_machine
       slots.each { |n| ensuing_health -= n }
     end
@@ -755,11 +757,11 @@ class Rumble
     c_hash = { :support => [], :surgery => [],
                :counter => [], :dodge => [], :grab => [], :insurance => [],
                :unstoppable => [], :attack => [], :power => [],
-               :deflector => [], :theterror => [], :toolbox => []
+               :deflector => [], :multiball => [], :toolbox => []
              }
     player.cards.each do |c|
       case c.id
-      when :deflector, :dodge, :grab, :insurance, :theterror, :surgery, :toolbox
+      when :deflector, :dodge, :grab, :insurance, :multiball, :surgery, :toolbox
         c_hash[c.id] << c
       else
         c_hash[c.type] << c
@@ -780,13 +782,13 @@ class Rumble
     a << players[n].user.to_s
     # Pick the best card to play.
     c_hash = bot_inventory(p)
-    card = if c_hash[:deflector].any? or c_hash[:theterror].any?
-             c_hash[:deflector].first || c_hash[:theterror].first
+    card = if c_hash[:deflector].any? or c_hash[:multiball].any?
+             c_hash[:deflector].first || c_hash[:multiball].first
            elsif c_hash[:toolbox].any?
              c_hash[:toolbox].first
            elsif p.health == 1 and c_hash[:surgery].any?
              c_hash[:surgery].first
-           elsif p.ants and c_hash[:support].any?
+           elsif p.bees and c_hash[:support].any?
              c_hash[:support].first
            elsif c_hash[:grab].any? and c_hash[:unstoppable].any? and c_hash[:attack].any?
              c_hash[:grab].any?
@@ -832,7 +834,7 @@ class Rumble
       discard(a)
     end
     Thread.new do
-      sleep(@bot.config['rumble.bot_delay'])
+      sleep(@bot.config['junkyard.bot_delay'])
       bot_move if card.type == :power
     end
   end
@@ -856,7 +858,7 @@ class Rumble
     c_hash = bot_inventory(p)
     if valid_insurance?(p, o) and c_hash[:insurance].any?
       card = c_hash[:insurance].first
-    elsif p.ants and c_hash[:grab].any? and c_hash[:support].any?
+    elsif p.bees and c_hash[:grab].any? and c_hash[:support].any?
       card = c_hash[:grab].first
       card2 = c_hash[:support].first
     elsif not p.grabbed and c_hash[:dodge].any?
@@ -1091,8 +1093,8 @@ class Rumble
       notify player, "You cannot play power cards in the middle of an attack."
       return
     end
-    # Ants/Deflector are discarded when used up.
-    @discard << card unless card.id == :deflector or card.id == :the_ants
+    # Bees/Deflector are discarded when used up.
+    @discard << card unless card.id == :deflector or card.id == :the_bees
     player.delete_cards(card)
     case card.id
     when :avalanche
@@ -1113,8 +1115,8 @@ class Rumble
       end
       say p_health
       check_health
-    when :theterror
-      player.theterror = true
+    when :multiball
+      player.multiball = true
       say card.string % { :p => player }
     when :shifty_business
       n = rand(players.length)
@@ -1124,9 +1126,9 @@ class Rumble
       say card.string % { :p => player, :o => players[n] }
       player.cards, players[n].cards = players[n].cards, player.cards
       notify(player, p_cards(player)) unless player == players.first
-    when :the_ants
+    when :the_bees
       n = rand(players.length)
-      players[n].ants = card
+      players[n].bees = card
       say card.string % { :p => player, :o => players[n] }
     when :toolbox
       n = if player.cards.length > 8 then 0 else 8 - player.cards.length end
@@ -1254,7 +1256,7 @@ class Rumble
         end
       end
       player.glutton += 1
-      ant_recover(player)
+      bee_recover(player)
     when :unstoppable
       if opponent.discard
         if opponent.discard.type == :counter
@@ -1276,10 +1278,10 @@ class Rumble
         player.delete_cards(player.garbage)
         deal(player, player.garbage.length)
         player.garbage = nil
-      when :mouseraid
+      when :meal_steal
         h, temp_deck = player.health, []
         opponent.cards.each do |e|
-          if e.id == :coffee or e.id == :bacon
+          if e.id == :soup or e.id == :sub
             temp_deck << e
             h += e.health
           end
@@ -1314,11 +1316,11 @@ class Rumble
       end
     end
     # Announce health
-    if player.discard.type == :support or player.discard.id == :mouseraid
-      if player.discard.id == :mouseraid
+    if player.discard.type == :support or player.discard.id == :meal_steal
+      if player.discard.id == :meal_steal
         if temp_deck.length > 0
           say "A ninja mouse brings #{player} some #{temp_deck.join(', ')}, and it is delicious!!"
-          ant_recover(player)
+          bee_recover(player)
         end
       end
       say p_health(player)
@@ -1406,8 +1408,8 @@ class Rumble
     end
     players.first.discard = nil
     players.first.grabbed = false
-    if players.first.theterror
-      players.first.theterror = false
+    if players.first.multiball
+      players.first.multiball = false
     else
       @players << @players.shift
     end
@@ -1417,7 +1419,7 @@ class Rumble
       n = 5 - player.cards.length
       deal(player, n)
     end
-    if player.ants
+    if player.bees
       player.health -= 1
       say "#{player} is bitten by THE ANTS."
       say p_health(player)
@@ -1434,7 +1436,7 @@ class Rumble
       say p_turn
       notify player, p_cards(player)
       Thread.new do
-        sleep(@bot.config['rumble.bot_delay'])
+        sleep(@bot.config['junkyard.bot_delay'])
         bot_move
       end
     end
@@ -1543,20 +1545,20 @@ class Rumble
 end
 
 
-class RumblePlugin < Plugin
+class JunkyardPlugin < Plugin
 
-  Config.register Config::BooleanValue.new('rumble.bot',
+  Config.register Config::BooleanValue.new('junkyard.bot',
     :default => false,
     :desc => "Enables or disables the AI.")
-  Config.register Config::IntegerValue.new('rumble.bot_delay',
+  Config.register Config::IntegerValue.new('junkyard.bot_delay',
     :default => 3, :validate => Proc.new{|v| v.between?(-1,61)},
     :desc => "Number of seconds for bot to wait before responding.")
-  Config.register Config::IntegerValue.new('rumble.countdown',
+  Config.register Config::IntegerValue.new('junkyard.countdown',
     :default => 20, :validate => Proc.new{|v| v > 2},
-    :desc => "Number of seconds before starting a game of Rumble.")
+    :desc => "Number of seconds before starting a game of Junkyard.")
 
-  TITLE = Rumble::TITLE
-  MAX_HP = Rumble::MAX_HP
+  TITLE = Junkyard::TITLE
+  MAX_HP = Junkyard::MAX_HP
 
   attr :games
 
@@ -1568,7 +1570,7 @@ class RumblePlugin < Plugin
   def help(plugin, topic='')
     # Extract help information from CARDS hash.
     id, card = nil, nil
-    Rumble::CARDS.each_pair do |key, value|
+    Junkyard::CARDS.each_pair do |key, value|
       a = value[:regex]
       a = a.split if a.kind_of? String
       a.each do |r|
@@ -1581,7 +1583,7 @@ class RumblePlugin < Plugin
     end
     # Format and return card information.
     unless card.nil?
-      color = Rumble::COLORS[card[:type]]
+      color = Junkyard::COLORS[card[:type]]
       name = if card[:name]
                card[:name]
              else
@@ -1600,11 +1602,11 @@ class RumblePlugin < Plugin
     # Check other help topics for information.
     prefix = @bot.config['core.address_prefix'].first
     b, cl = Bold, NormalText
-    a = Rumble::COLORS[:attack]
-    c = Rumble::COLORS[:counter]
-    p = Rumble::COLORS[:power]
-    s = Rumble::COLORS[:support]
-    u = Rumble::COLORS[:unstoppable]
+    a = Junkyard::COLORS[:attack]
+    c = Junkyard::COLORS[:counter]
+    p = Junkyard::COLORS[:power]
+    s = Junkyard::COLORS[:support]
+    u = Junkyard::COLORS[:unstoppable]
     case topic.downcase
     when 'attacking'
       "#{b}You're Attacking:#{b} When it's your turn to play, you can play " +
@@ -1625,7 +1627,7 @@ class RumblePlugin < Plugin
     when /bots?/
       "#{b}Bot Matches:#{b} #{prefix}#{plugin} bot to start a game with " +
       "#{@bot.nick}. Type the same command mid-game to have #{@bot.nick} " +
-      "join a game in progress.#{unless @bot.config['rumble.bot'] then
+      "join a game in progress.#{unless @bot.config['junkyard.bot'] then
       ' This feature is currently disabled on this rbot\'s config.'
       else '' end}"
     when /card/
@@ -1670,7 +1672,7 @@ class RumblePlugin < Plugin
       "#{prefix}#{plugin} stats #channel <nick> - channel-specific stats, " +
       "#{prefix}#{plugin} top <num> - top <num> players"
     else
-      "#{TITLE} help topics:#{@bot.config['rumble.bot'] ? ' bot,' : ''} " +
+      "#{TITLE} help topics:#{@bot.config['junkyard.bot'] ? ' bot,' : ''} " +
       "commands, play, objective, stats; #{b}Rules:#{b} attacking, " +
       "attacked, cards, grabbing"
     end
@@ -1689,7 +1691,7 @@ class RumblePlugin < Plugin
       @bot.say m.channel, g.current_discard
     when /^(ca?|cards?)( |\z)/
       if p.nil?
-        m.reply Rumble::RETORTS.sample % { :p => m.source }
+        m.reply Junkyard::RETORTS.sample % { :p => m.source }
         return
       end
       @bot.notice m.sourcenick, g.p_cards(p)
@@ -1732,12 +1734,12 @@ class RumblePlugin < Plugin
   end
 
   def add_bot(m, plugin)
-    unless @bot.config['rumble.bot']
+    unless @bot.config['junkyard.bot']
       m.reply "Playing against #{@bot.nick} is disabled."
       return
     end
     unless @games.key?(m.channel)
-      @games[m.channel] = Rumble.new(self, m.channel, m.source)
+      @games[m.channel] = Junkyard.new(self, m.channel, m.source)
     end
     g = @games[m.channel]
     g.add_player(@bot.nick)
@@ -1754,7 +1756,7 @@ class RumblePlugin < Plugin
         return
       end
     end
-    @games[m.channel] = Rumble.new(self, m.channel, m.source)
+    @games[m.channel] = Junkyard.new(self, m.channel, m.source)
   end
 
   # Called from within the game.
@@ -1835,7 +1837,7 @@ class RumblePlugin < Plugin
 end
 
 
-plugin = RumblePlugin.new
+plugin = JunkyardPlugin.new
 
 [ 'rumble' ].each do |scope|
   plugin.map "#{scope} bot",
