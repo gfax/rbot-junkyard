@@ -105,7 +105,7 @@ class Junkyard
       },
       :nose_bleed => {
         :type => :attack,
-        :health => -2,
+        :health => -3,
         :string => "%{p} pops %{o} in the nose, spraying blood everywhere.",
         :skips => 1,
         :regex => [ /nose/, /bleed/ ],
@@ -127,12 +127,13 @@ class Junkyard
                  "directed at the neck of your opponent."
       },
       :battery_acid => {
+	:name => "Leg Sweep",
         :type => :attack,
-        :health => -3,
-        :string => "%{p} throws battery acid in %{o}'s eyes.",
+        :health => -2,
+        :string => "%{p} sweeps %{o} off of their feet!",
         :skips => 1,
-        :regex => [ /battery/, /acid/ ],
-        :help => "Opponent is burned by battery acid and blinded for a turn."
+        :regex => [ 'leg sweep' ],
+        :help => "Duck down and sweep your opponent onto the ground! They'll spend a turn getting back up."
       },
       :kickball => {
         :type => :attack,
@@ -194,11 +195,12 @@ class Junkyard
         :help => "Can't dodge a gun. Simple as that."
       },
       :tire_iron => {
+	:name => "IBM Model M Keyboard",
         :type => :unstoppable,
         :health => -3,
-        :string => "%{p} whacks %{o} upside the head with a tire iron.",
-        :regex => [ /tire( |-)?iron/, 'iron' ],
-        :help => "Beat your defenseless opponent senseless."
+        :string => "%{p} whacks %{o} in the head with an IBM Model M Keyboard. OUCH!",
+        :regex => [ /Model M/, 'Keyboard' ],
+        :help => "Beat your defenseless opponent senseless with the worlds most industrial strength piece of computing hardware."
       },
       :meal_steal => {
 	:name => 'Mouse Raid',
