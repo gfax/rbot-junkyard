@@ -261,12 +261,12 @@ class Rumble
         :help => "An earthquake shakes the entire #{TITLE} " +
                  "1 damage to everyone, starting with yourself."
       },
-      :multiball => {
-        :name => 'Multi-ball',
+      :theterror => {
+        :name => 'The TERROR',
         :type => :power,
-        :string => "%{p} lites multi-ball.",
-        :regex => [ /multi/ ],
-        :help => "Take an extra turn after your turn."
+        :string => "%{p} brings the TERROR! Everyone turns pale with fright.",
+        :regex => [ /terror/, /multi/ ],
+        :help => "Take an extra turn after your turn. Let 'em HAVE IT."
       },
       :reverse => {
         :type => :power,
@@ -356,7 +356,7 @@ class Rumble
 
     attr_reader :user
     attr_accessor :ants, :bonuses, :cards, :damage, :deflector, :deflectors,
-                  :discard, :garbage, :glutton, :grabbed, :health, :multiball,
+                  :discard, :garbage, :glutton, :grabbed, :health, :theterror,
                   :skips, :skip_count
 
     def initialize(user)
@@ -372,7 +372,7 @@ class Rumble
       @glutton = 0        # counter for end-of-game bonuses
       @grabbed = false    # currently being grabbed
       @health = MAX_HP    # initial health
-      @multiball = false  # gets to go again when true
+      @theterror = false  # gets to go again when true
       @skips = 0          # skips player when > 0
       @skip_count = 0     # counter for end-of-game bonuses
     end
@@ -480,7 +480,7 @@ class Rumble
       @deck << Card.new(:crane)
       @deck << Card.new(:deflector)
       @deck << Card.new(:earthquake)
-      @deck << Card.new(:multiball)
+      @deck << Card.new(:theterror)
       @deck << Card.new(:reverse)
       @deck << Card.new(:shifty_business)
       @deck << Card.new(:the_ants)
@@ -754,11 +754,11 @@ class Rumble
     c_hash = { :support => [], :surgery => [],
                :counter => [], :dodge => [], :grab => [], :insurance => [],
                :unstoppable => [], :attack => [], :power => [],
-               :deflector => [], :multiball => [], :toolbox => []
+               :deflector => [], :theterror => [], :toolbox => []
              }
     player.cards.each do |c|
       case c.id
-      when :deflector, :dodge, :grab, :insurance, :multiball, :surgery, :toolbox
+      when :deflector, :dodge, :grab, :insurance, :theterror, :surgery, :toolbox
         c_hash[c.id] << c
       else
         c_hash[c.type] << c
@@ -779,8 +779,8 @@ class Rumble
     a << players[n].user.to_s
     # Pick the best card to play.
     c_hash = bot_inventory(p)
-    card = if c_hash[:deflector].any? or c_hash[:multiball].any?
-             c_hash[:deflector].first || c_hash[:multiball].first
+    card = if c_hash[:deflector].any? or c_hash[:theterror].any?
+             c_hash[:deflector].first || c_hash[:theterror].first
            elsif c_hash[:toolbox].any?
              c_hash[:toolbox].first
            elsif p.health == 1 and c_hash[:surgery].any?
@@ -1112,8 +1112,8 @@ class Rumble
       end
       say p_health
       check_health
-    when :multiball
-      player.multiball = true
+    when :theterror
+      player.theterror = true
       say card.string % { :p => player }
     when :shifty_business
       n = rand(players.length)
@@ -1405,8 +1405,8 @@ class Rumble
     end
     players.first.discard = nil
     players.first.grabbed = false
-    if players.first.multiball
-      players.first.multiball = false
+    if players.first.theterror
+      players.first.theterror = false
     else
       @players << @players.shift
     end
