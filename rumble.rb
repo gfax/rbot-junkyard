@@ -200,7 +200,8 @@ class Junkyard
         :health => -3,
         :string => "%{p} whacks %{o} in the head with an IBM Model M Keyboard. OUCH!",
         :regex => [ /Model M/, 'Keyboard' ],
-        :help => "Beat your defenseless opponent senseless with the worlds most industrial strength piece of computing hardware."
+        :help => "Beat your defenseless opponent senseless with the world's " +  
+		 "most industrial strength piece of computing hardware."
       },
       :meal_steal => {
 	:name => 'Mouse Raid',
@@ -244,12 +245,14 @@ class Junkyard
                  "Resets health to #{MAX_HP}."
       },
       :avalanche => {
+	:name => "A Shiny Red Button",
         :type => :power,
         :health => -6,
-        :string => "%{p} causes an avalanche to fall on %{o}!",
-        :regex => [ /avalanch/ ],
-        :help => "A scrap pile avalanches! 6 damage to " +
-                 "any random player, including yourself!."
+        :string => "Hmm, %{p} wonders what THIS button does.. %{o} finds out!!",
+        :regex => [ /shiny red button/ ],
+        :help => "Can you keep from pressing the SHINY RED BUTTON " +
+                 "that beckons you even now? WHO KNOWS what it'll do? " +
+		 "WHO KNOWS whom it'll do it to! DON'T PRESS IT!"
       },
       :deflector => {
         :type => :power,
