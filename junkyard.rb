@@ -1524,7 +1524,7 @@ class Junkyard
     end
     new_manager = get_player(a.first)
     if new_manager.nil?
-      say "'#{a.first}' is not playing #{title}"
+      say "'#{a.first}' is not playing #{TITLE}"
       return
     elsif manager == new_manager
       say "#{player.user}: You are already game manager."
