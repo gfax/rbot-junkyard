@@ -127,6 +127,7 @@ class Junkyard
         :health => -2,
         :string => "%{p} #{[ 'slaps',
 	       		     'backhands',	
+	       		     'pimp smacks',	
       			   ].sample} %{o} like a #{[ 'female dog in HEAT',
 			  			     'BEACH',
 						     'HORNY CANINE' 
