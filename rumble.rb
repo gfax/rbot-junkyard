@@ -62,7 +62,7 @@ class Junkyard
         :type => :counter,
         :string => "%{p} says NO!!! ..blocking %{o}'s %{c} with #{[ 'a stern exclamation', 
 								    'sheer WILL POWER', 
-								    'a defiant attitude', 
+								    'a defiant attitude' 
   								  ].sample}!",
         :regex => 'no',
         :help => "Blocks a basic attack card when played against you. Can be " +
@@ -89,7 +89,8 @@ class Junkyard
         :health => 2,
         :string => "%{p} hides behind Your Mom! #{[ 'She softens the blow', 
 						    'Her bosom comforts you', 
-						    'Her giant ass cushions you'].sample}. ;)",
+						    'Her giant ass cushions you'
+                                                  ].sample}. ;)",
         :regex => [ /mom/, /card/ ],
         :help => "Hide behind your opponent's mom! Her soft, supple body reduces opponent's attack by 2 points."
       },
@@ -128,7 +129,7 @@ class Junkyard
 	       		     'backhands',	
       			   ].sample} %{o} like a #{[ 'female dog in HEAT',
 			  			     'BEACH',
-						     'HORNY CANINE', 
+						     'HORNY CANINE' 
 						   ].sample}.",
         :regex => [ /bitch/, 'slap' ],
         :help => "Basic attack."
@@ -157,18 +158,18 @@ class Junkyard
         :string => "%{p} channels #{[ 'Chuck Norris',
 				      'Jet Li',
 				      'Fong Sai Yuk',
-				      'Jackie Chan',
+				      'Jackie Chan'
       				    ].sample} and #{[ 'violently',
 				    		      'hurtfully',
 						      'dramatically',
 						      'woefully',
-						      'devestatingly',
+						      'devestatingly'
 						    ].sample} #{[ 'delivers',
 						    		  'connects',
 								  'applys',
 								  'whacks',
 								  'plants',
-								  'impacts',
+								  'impacts'
      								].sample} a BOOT to %{o}'s HEAD.",
         :regex => [ /roundhouse/, /kick/ ],
         :help => "Major damage due to a swift BOOT TO THE HEAD. " +
@@ -228,7 +229,7 @@ class Junkyard
         :type => :unstoppable,
         :health => -2,
         :string => "%{p} #{[ 'shoots',
-			     "pew pew's",
+			     "pew pew's"
 			   ].sample} %{o} in the FRICKIN' FACE.",
         :regex => [ /laser/, /blaster/ ],
         :help => "Can't dodge a gun^H^H^HFRICKIN LASER. Simple as that."
@@ -241,10 +242,10 @@ class Junkyard
 	       					'face',
 						'noggin',
 					        'brain case',	
-						'SPLEEN',
+						'SPLEEN'
       					      ].sample} with an IBM Model M Keyboard. #{[ 'OUCH!',
 										   "%{p} then resumes typing.",
-										   "That's gotta hurt!",
+										   "That's gotta hurt!"
       										 ].sample}",
         :regex => [ /[Mm]odel [Mm]/, 'keyboard' ],
         :help => "Beat your defenseless opponent senseless with the world's " +  
@@ -258,7 +259,7 @@ class Junkyard
 		     	     'conscripts',
 			     'orders',
 			     'marches',
-			     'sneaks',	     
+			     'sneaks'	     
       			   ].sample} #{[ 'ninja',
 			  		 'kabuki',
 					 'ants dressed as',
@@ -267,7 +268,7 @@ class Junkyard
 					 'USB',
 					 'Knock-Out',
 					 'genetically altered',
-					 'invisible',
+					 'invisible'
       				       ].sample} mice into %{o}'s lunchbox to swipe coffee and bacon.",
         :regex => [ /mouse raid/ ],
         :help => "Steal all of an opponent's coffee and bacon, " +
@@ -283,12 +284,12 @@ class Junkyard
 					  'strong',
 					  'tepid',
 					  'iced',
-					  'counterfeit', 
+					  'counterfeit' 
       					].sample} #{[ 'Starbucks',
 						      "Seattle's Best",
 						      "Pete's",
 						      "Folgers",
-						      "Jamacian Blue Mountain",
+						      "Jamacian Blue Mountain"
       						    ].sample} coffee, and relaxes. aaahhh...",
         :regex => [ /coffee/ ],
         :help => "Take a sip. Relax. Gain up to #{MAX_HP} health."
@@ -326,8 +327,8 @@ class Junkyard
 	       	     "%{p} PUSHES THE BUTTON. Klaxons go off! Alarms Sound! Something bad happens to %{o}",
 		     "A distinct click is heard. %{o} screams out in agony!",
 		     "%{p} dares touch the history eraser button. You fool! %{o} suddenly can't remember anything!",
-		     "The beautiful, shiny button? The jolly, candy-like button? Will he hold out, folks? Can he hold out? NO! Poor %{o}.",
-      		   ].sample
+		     "The beautiful, shiny button? The jolly, candy-like button? Will he hold out, folks? Can he hold out? NO! Poor %{o}."
+      		   ].sample,
         :regex => [ /shiny red button/ ],
         :help => "Can you keep from pressing the SHINY RED BUTTON " +
                  "that beckons you even now? WHO KNOWS what it'll do? " +
