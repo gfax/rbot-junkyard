@@ -199,7 +199,7 @@ class Junkyard
 						    'buxom brawlers' 
       						  ].sample}. ",
         :regex => [ /derby/, /girls/ ],
-        :help => "Multi-dimentional BATTLE MAGIC Sends your opponent into the RINK." +
+        :help => "Multi-dimentional BATTLE MAGIC Sends your opponent into the RINK. " +
                  "High velocity skate warriors do 0 to 3 damage each. Dodge if you can!"
       },
       :bulldozer => {
