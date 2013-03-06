@@ -141,12 +141,13 @@ class Junkyard
         :help => "Duck down and sweep your opponent onto the ground! They'll spend a turn getting back up."
       },
       :kickball => {
+	:name => 'Roundhouse Kick',
         :type => :attack,
         :health => -4,
-        :string => "%{p} delivers %{o}'s private belongings a swift kick.",
-        :regex => [ /kick/, /ball/ ],
-        :help => "Major damage due to a swift kick in the balls. " +
-                 "Can be used on players that don't have balls."
+        :string => "%{p} channels Chuck Norris, and violently delivers a cowboy BOOT to %{o}'s HEAD.",
+        :regex => [ /roundhouse/, /kick/ ],
+        :help => "Major damage due to a swift BOOT TO THE HEAD. " +
+                 "Because not all players have balls."
       },
       :uppercut => {
         :type => :attack,
@@ -156,11 +157,13 @@ class Junkyard
         :help => "Ultimate attack."
       },
       :slot_machine => {
+	:name => "Derby Girls",
         :type => :attack,
-        :string => "Next time stick to the pachinkos, %{o}.",
-        :regex => [ /slot/, /machine/ ],
-        :help => "Spits out three random attack values from 0 " +
-                 "to 3. Attack does the sum of the three numbers."
+        :string => "${p} momentarily teleports ${o} to the middle of a RINK RUMBLE! " + 
+                   "%{o} tries hard dodge those crazy ladies.",
+        :regex => [ /derby/, /girls/ ],
+        :help => "Multi-dimentional BATTLE MAGIC Sends your opponent into the RINK." +
+                 "High velocity skate warriors do 0 to 3 damage each. Dodge if you can!"
       },
       :bulldozer => {
         :type => :unstoppable,
