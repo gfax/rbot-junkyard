@@ -5,7 +5,7 @@
 # Author:: Lite <degradinglight@gmail.com>
 # Copyright:: (C) 2012 gfax.ch
 # License:: GPL
-# Version:: 2013-03-02
+# Version:: 2013-03-06
 #
 
 class Junkyard
@@ -412,7 +412,7 @@ class Junkyard
   attr_reader :attacked, :channel, :deck, :discard, :dropouts,
               :manager, :players, :registry, :slots, :started
 
-  def initialize(plugin, channel, manager)
+  def initialize(plugin, channel, first_player)
     @channel = channel
     @plugin = plugin
     @bot = plugin.bot
@@ -420,13 +420,13 @@ class Junkyard
     @deck = []          # card stock
     @discard = []       # used cards
     @dropouts = []      # users that aren't allowed to rejoin
-    @manager = manager  # user that started the game
+    @manager = nil      # player that started the game
     @players = []       # players currently in game
     @registry = @plugin.registry
     @slots = []         # slot machine damage
     @started = nil      # time the game started
     create_deck
-    add_player(manager)
+    add_player(first_player)
   end
 
   def say(msg, opts={})
@@ -544,7 +544,8 @@ class Junkyard
     end
     p = Player.new(user)
     @players << p
-    if user == manager
+    if manager.nil?
+      @manager = p
       say "#{p} starts a #{TITLE} Type 'j' to join."
     else
       say "#{p} joins the #{TITLE}"
@@ -558,13 +559,13 @@ class Junkyard
   end
 
   def drop_player(dropper, player, killed=true)
-    unless dropper == false or dropper.user == manager or dropper == player
+    unless dropper == false or dropper == manager or dropper == player
       say "Only the game manager is allowed to drop others, #{dropper}."
       return
     end
     if dropper
       # If the manager drops the only other player, end the game.
-      if dropper.user == manager and dropper != player and players.length < 3
+      if dropper == manager and dropper != player and players.length < 3
         say "#{player} has been removed from the game. #{TITLE} stopped."
         @plugin.remove_game(channel)
         return
@@ -586,11 +587,13 @@ class Junkyard
       n = 0
       n += 1 until players[n] == player
       if next_turn(n).zero?
+        @manager = players.first if player == manager
         increment_turn
       else
         players[next_turn(n)].grabbed = true if attacked.grabbed = true
         attacked.discard, attacked.grabbed = nil
         @attacked = players[next_turn(n)]
+        @manager = players[next_turn(n)] if player == manager
         say p_turn
       end
     elsif player == players.first
@@ -912,6 +915,7 @@ class Junkyard
       end
     end
     # Play the card or otherwise discard.
+    # TODO: Playing Block breaks bot, but why?
     #debug p.cards.join(' ')
     #debug "playing #{a.join(' ')}"
     if a.length > 0
@@ -1203,8 +1207,7 @@ class Junkyard
       opponent.deflector = false
       opponent.deflectors += 1
       opponent.grabbed = false
-      @attacked = players[n]
-      opponent = players[n]
+      @attacked, opponent = players[n], players[n]
       wait = false
     end
     case player.discard.type
@@ -1447,7 +1450,7 @@ class Junkyard
 
   def end_game
     p = players.first
-    b_string = ' '
+    b_string = ''
     # Brutality bonus:
     if p.damage >= 30
       p.bonuses += 1
@@ -1498,10 +1501,37 @@ class Junkyard
       p.damage += p.skip_count * 2
       b_string << "Where's-the-fight? bonus: +#{p.skip_count * 2}. "
     end
-    say "#{p} wins after #{elapsed_time}, using #{p.turns} turns!#{b_string}Damage done: #{p.damage}"
+    say "#{p} wins after #{elapsed_time}, using #{p.turns} turns! " +
+        "#{b_string}Damage done: #{p.damage}"
     update_chan_stats(p.damage)
     update_user_stats(p)
     @plugin.remove_game(channel)
+  end
+
+  def replace_player(player, a)
+
+
+  end
+
+  def transfer_management(player, a)
+    unless player == manager
+      say "#{player.user}: you can't transfer game ownership. " +
+          "#{manager} manages this #{title}"
+      return
+    end
+    [ 'game', 'manager', 'management', 'ownership', 'to' ].each do |w|
+      a.delete_at(0) if a.first == w
+    end
+    new_manager = get_player(a.first)
+    if new_manager.nil?
+      say "'#{a.first}' is not playing #{title}"
+      return
+    elsif manager == new_manager
+      say "#{player.user}: You are already game manager."
+      return
+    end
+    @manager = new_manager
+    say "#{new_manager} is now game manager."
   end
 
   def update_chan_stats(damage)
@@ -1651,17 +1681,23 @@ class JunkyardPlugin < Plugin
       "consume a turn. Play these cards at the beginning of anyone's turn. " +
       "Use #{prefix}help #{plugin} <card> for card-specific info."
     when /command/
-      "#{b}Commands:#{b} c/cards - show cards, cd - current discard, " +
+      "#{b}Commands:#{b} " +
+      "c/cards - show cards, " +
+      "cd - show current discard, " +
       "d/discard - discard cards, drop <me>/<bot>/<nick> - remove " +
-      "yourself/#{@bot.nick}/player from the game, pa/pass - pass, " +
-      "p/play - play cards, s/score - show score, t/turn - show current " +
-      "turn/order/health, ti/time - time elapsed since game started"
+      "yourself/#{@bot.nick}/player from the game, " +
+      "pa/pass - pass, " +
+      "p/play - play cards, "
+      "replace [with] <nick> - give your spot in game to another player, " +
+      "s/score - show score, " +
+      "t/turn - show current turn/order/health, " +
+      "ti/time - time elapsed since game started"
     when /drop/
       "#{b}Dropping:#{b} Type 'drop' to drop from the game, or 'drop bot' to " +
       "drop the bot from the game. Only the game manager (the player that " +
       "started the game,) can drop other players."
     when /grabbing/
-      "#{b}Grabbing: #{b}Although a Counter card, you can Grab other " +
+      "#{b}Grabbing:#{b} Although a Counter card, you can Grab other " +
       "players on your own turn. You must lay your intended " +
       "#{a}Attack#{cl}, #{u}Unstoppable#{cl}, or #{s}Support#{cl} card with " +
       "the grab. The attacked player doesn't get to see what card is " +
@@ -1669,6 +1705,10 @@ class JunkyardPlugin < Plugin
       "can't dodge when being grabbed. If the card you played while " +
       "grabbing them turns out to be an #{u}Unstoppable#{cl} attack, any " +
       "counter card they play will be nullified and discarded."
+    when /manage/
+      "#{b}Manage:#{b} The player that starts the game is the game manager. " +
+      "Game managers may stop the game at any time, or transfer ownership " +
+      "by typing 'transfer [game to] <player>'."
     when /objective/
       "#{b}Objective:#{b} Every player has #{MAX_HP} health. " +
       "Play cards against an opponent to take away their health. " +
@@ -1678,13 +1718,15 @@ class JunkyardPlugin < Plugin
       "hand. Example: 'p Frank 4' to attack Frank with your 4th card. " +
       "You only need to specify a username when there are more than 2 " +
       "players playing the game."
-    when /stat/, /top/
+    when /stat/, 'top'
       "#{b}Stats:#{b} #{prefix}#{plugin} stats <nick> - network-wide stats, " +
       "#{prefix}#{plugin} stats #channel <nick> - channel-specific stats, " +
       "#{prefix}#{plugin} top <num> - top <num> players"
+    when 'stop', /^end/, 'halt'
+      "#{prefix}#{plugin} stop - stops the current game of #{TITLE}"
     else
       "#{TITLE} help topics:#{@bot.config['junkyard.bot'] ? ' bot,' : ''} " +
-      "commands, play, objective, stats; #{b}Rules:#{b} attacking, " +
+      "commands, play, manage, objective, stats; #{b}Rules:#{b} attacking, " +
       "attacked, cards, grabbing"
     end
   end
@@ -1741,6 +1783,9 @@ class JunkyardPlugin < Plugin
       else
         m.reply TITLE + " hasn't started yet."
       end
+    when /^transfer?( |\z)/
+      return if p.nil? or a.length.zero?
+      g.transfer_management(p, a)
     end
   end
 
@@ -1758,8 +1803,8 @@ class JunkyardPlugin < Plugin
 
   def create_game(m, plugin)
     if @games.key?(m.channel)
-      user = @games[m.channel].manager
-      if m.source == user
+      user = @games[m.channel].manager.user
+      if m.source.nick == user
         m.reply "...you already started a #{TITLE}"
         return
       else
@@ -1780,8 +1825,14 @@ class JunkyardPlugin < Plugin
       m.reply "There is no #{TITLE} here."
       return
     end
-    remove_game(m.channel)
-    m.reply "#{TITLE} stopped."
+    manager = @games[m.channel].manager
+    player = @games[m.channel].get_player(m.source.nick)
+    if manager == player or @bot.auth.irc_to_botuser(m.source).owner?
+      remove_game(m.channel)
+      @bot.say m.channel, "#{TITLE} stopped."
+    else
+      m.reply "Only game managers may stop the game."
+    end
   end
 
   def show_stats(m, params)
