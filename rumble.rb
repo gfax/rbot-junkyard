@@ -88,8 +88,8 @@ class Junkyard
         :type => :counter,
         :health => 2,
         :string => "%{p} hides behind Your Mom! #{[ 'She softens the blow', 
-						    'Her bosom comforts you', 
-						    'Her giant ass cushions you'
+						    'Her bosom provides much comfort', 
+						    'Her giant ass provides great cushion'
                                                   ].sample}. ;)",
         :regex => [ /mom/, /card/ ],
         :help => "Hide behind your opponent's mom! Her soft, supple body reduces opponent's attack by 2 points."
@@ -186,7 +186,7 @@ class Junkyard
 	:name => "Derby Girls",
         :type => :attack,
         :string => "%{p} momentarily teleports %{o} to the middle of a RINK RUMBLE! " + 
-                   "%{o} tries hard dodge those #{[ 'crazy ladies', 
+                   "%{o} tries hard to dodge those #{[ 'crazy ladies', 
 			   			    'wild women', 
 						    'buxom brawlers' 
       						  ].sample}. ",
@@ -229,7 +229,8 @@ class Junkyard
         :type => :unstoppable,
         :health => -2,
         :string => "%{p} #{[ 'shoots',
-			     "pew pew's"
+			     "pew pew's",
+			     "blasts"
 			   ].sample} %{o} in the FRICKIN' FACE.",
         :regex => [ /laser/, /blaster/ ],
         :help => "Can't dodge a gun^H^H^HFRICKIN LASER. Simple as that."
