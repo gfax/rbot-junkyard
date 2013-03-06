@@ -357,7 +357,7 @@ class Junkyard
     attr_reader :user
     attr_accessor :bees, :bonuses, :cards, :damage, :deflector, :deflectors,
                   :discard, :garbage, :glutton, :grabbed, :health, :multiball,
-                  :skips, :skip_count
+                  :skips, :skip_count, :turns
 
     def initialize(user)
       @user = user        # p.user => unbolded, p.to_s => bolded
@@ -375,6 +375,7 @@ class Junkyard
       @multiball = false  # gets to go again when true
       @skips = 0          # skips player when > 0
       @skip_count = 0     # counter for end-of-game bonuses
+      @turns = 0           # turns spent playing this game
     end
 
     def delete_cards(request)
@@ -762,9 +763,9 @@ class Junkyard
       else
         c_hash[c.type] << c
         c_hash[c.type].sort! {|x,y| x.health  <=> y.health }
-        c_hash[c.type].reverse! if c.type == :support
       end
     end
+    c_hash[:support].reverse!
     c_hash
   end
 
@@ -911,6 +912,8 @@ class Junkyard
       end
     end
     # Play the card or otherwise discard.
+    #debug p.cards.join(' ')
+    #debug "playing #{a.join(' ')}"
     if a.length > 0
       play_counter(p, a)
     else
@@ -1039,12 +1042,10 @@ class Junkyard
     if c[0].type == :power
       do_power(player, c[0])
       return
-    end
-    if player.discard
+    elsif player.discard
       say "You already played a card."
       return
-    end
-    unless player == attacked
+    elsif player != attacked
       notify player, "Wait your turn, #{player.user}."
       return
     end
@@ -1201,9 +1202,9 @@ class Junkyard
       @discard << opponent.deflector
       opponent.deflector = false
       opponent.deflectors += 1
+      opponent.grabbed = false
       @attacked = players[n]
       opponent = players[n]
-      opponent.grabbed = false
       wait = false
     end
     case player.discard.type
@@ -1404,6 +1405,7 @@ class Junkyard
     end
     players.first.discard = nil
     players.first.grabbed = false
+    players.first.turns += 1
     if players.first.multiball
       players.first.multiball = false
     else
@@ -1458,6 +1460,13 @@ class Junkyard
       p.damage += MAX_HP - 1
       b_string << "Close-call bonus: +#{MAX_HP - 1}. "
     end
+    # Endurance bonus:
+    if p.turns >= 20
+      p.bonuses += 1
+      b = (p.turns/2).to_i
+      p.damage += b
+      b_string << "Endurance bonus: +#{b}. "
+    end
     # Glutton bonus:
     if p.glutton >= 6
       p.bonuses += 1
@@ -1477,13 +1486,19 @@ class Junkyard
       p.damage += b
       b_string << "Multi-Deflector bonus: +#{b}. "
     end
+    # Speed bonus:
+    if started.to_i - Time.now.to_i >= 60
+      p.bonuses += 1
+      p.damage += 10
+      b_string << "Speed bonus: +10. "
+    end
     # Where's-the-fight? bonus:
     if p.skip_count >= 7
       p.bonuses += 1
       p.damage += p.skip_count * 2
       b_string << "Where's-the-fight? bonus: +#{p.skip_count * 2}. "
     end
-    say "#{p} wins after #{elapsed_time}!#{b_string}Damage done: #{p.damage}"
+    say "#{p} wins after #{elapsed_time}, using #{p.turns} turns!#{b_string}Damage done: #{p.damage}"
     update_chan_stats(p.damage)
     update_user_stats(p)
     @plugin.remove_game(channel)
