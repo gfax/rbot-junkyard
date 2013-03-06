@@ -159,7 +159,7 @@ class Junkyard
       :slot_machine => {
 	:name => "Derby Girls",
         :type => :attack,
-        :string => "${p} momentarily teleports ${o} to the middle of a RINK RUMBLE! " + 
+        :string => "%{p} momentarily teleports %{o} to the middle of a RINK RUMBLE! " + 
                    "%{o} tries hard dodge those crazy ladies.",
         :regex => [ /derby/, /girls/ ],
         :help => "Multi-dimentional BATTLE MAGIC Sends your opponent into the RINK." +
