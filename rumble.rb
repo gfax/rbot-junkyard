@@ -77,7 +77,14 @@ class Junkyard
       },
       :grab => {
         :type => :counter,
-        :string => "%{p} grabs %{o}. Respond or pass, %{o}.",
+        :string => "%{p} #{[ 'grabs',
+			     'grapples',
+			     'seizes',
+			     'grips',
+			     'clutches'
+			   ].sample } %{o}. #{[ "Respond or pass", 
+			   			"Pass or respond" 
+			   		      ].sample }, %{o}.",
         :regex => 'grab',
         :help => "Play this as a counter so you can attack back. This " +
                  "cannot be dodged. Also note this can be played before " +
