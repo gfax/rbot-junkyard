@@ -60,7 +60,10 @@ class Junkyard
       :block => {
 	:name => "NO!",
         :type => :counter,
-        :string => "%{p} says NO!!! ..blocking %{o}'s %{c} with a stern exclamation!",
+        :string => "%{p} says NO!!! ..blocking %{o}'s %{c} with #{[ 'a stern exclamation', 
+								    'sheer WILL POWER', 
+								    'a defiant attitude', 
+  								  ].sample}!",
         :regex => 'no',
         :help => "Blocks a basic attack card when played against you. Can be " +
                  "used against a grab to nullify the grab's proceeding attack."
@@ -84,7 +87,9 @@ class Junkyard
 	:name => "The Mom Card",
         :type => :counter,
         :health => 2,
-        :string => "%{p} hides behind Your Mom! She softens the blow. ;)",
+        :string => "%{p} hides behind Your Mom! #{[ 'She softens the blow', 
+						    'Her bosom comforts you', 
+						    'Her giant ass cushions you'].sample}. ;)",
         :regex => [ /mom/, /card/ ],
         :help => "Hide behind your opponent's mom! Her soft, supple body reduces opponent's attack by 2 points."
       },
@@ -101,7 +106,7 @@ class Junkyard
       :wrench => {
 	:name => "Meeting Time",
         :type => :attack,
-        :string => "%{p} reminds %{o} that they're late for a meeting!",
+        :string => "%{p} reminds %{o} that (s)he's late for a meeting!",
         :skips => 2,
         :regex => [ /meeting/ ],
         :help => "Send your opponent to a meeting, where they can't" +
@@ -119,7 +124,12 @@ class Junkyard
 	:name => "Bitch Slap",
         :type => :attack,
         :health => -2,
-        :string => "%{p} slaps %{o} like a female dog in HEAT.",
+        :string => "%{p} #{[ 'slaps',
+	       		     'backhands',	
+      			   ].sample} %{o} like a #{[ 'female dog in HEAT',
+			  			     'BEACH',
+						     'HORNY CANINE', 
+						   ].sample}.",
         :regex => [ /bitch/, 'slap' ],
         :help => "Basic attack."
       },
@@ -144,7 +154,22 @@ class Junkyard
 	:name => 'Roundhouse Kick',
         :type => :attack,
         :health => -4,
-        :string => "%{p} channels Chuck Norris, and violently delivers a cowboy BOOT to %{o}'s HEAD.",
+        :string => "%{p} channels #{[ 'Chuck Norris',
+				      'Jet Li',
+				      'Fong Sai Yuk',
+				      'Jackie Chan',
+      				    ].sample} and #{[ 'violently',
+				    		      'hurtfully',
+						      'dramatically',
+						      'woefully',
+						      'devestatingly',
+						    ].sample} #{[ 'delivers',
+						    		  'connects',
+								  'applys',
+								  'whacks',
+								  'plants',
+								  'impacts',
+     								].sample} a BOOT to %{o}'s HEAD.",
         :regex => [ /roundhouse/, /kick/ ],
         :help => "Major damage due to a swift BOOT TO THE HEAD. " +
                  "Because not all players have balls."
@@ -160,7 +185,10 @@ class Junkyard
 	:name => "Derby Girls",
         :type => :attack,
         :string => "%{p} momentarily teleports %{o} to the middle of a RINK RUMBLE! " + 
-                   "%{o} tries hard dodge those crazy ladies.",
+                   "%{o} tries hard dodge those #{[ 'crazy ladies', 
+			   			    'wild women', 
+						    'buxom brawlers' 
+      						  ].sample}. ",
         :regex => [ /derby/, /girls/ ],
         :help => "Multi-dimentional BATTLE MAGIC Sends your opponent into the RINK." +
                  "High velocity skate warriors do 0 to 3 damage each. Dodge if you can!"
@@ -196,17 +224,28 @@ class Junkyard
         :help => "An mIRC-inspired attack. Slap your opponent with a trout."
       },
       :a_gun => {
+	:name => 'Laser Blaster',
         :type => :unstoppable,
         :health => -2,
-        :string => "%{p} shoots %{o} in the FACE.",
-        :regex => [ /(a ?)?gun/ ],
-        :help => "Can't dodge a gun. Simple as that."
+        :string => "%{p} #{[ 'shoots',
+			     "pew pew's",
+			   ].sample} %{o} in the FRICKIN' FACE.",
+        :regex => [ /laser/, /blaster/ ],
+        :help => "Can't dodge a gun^H^H^HFRICKIN LASER. Simple as that."
       },
       :tire_iron => {
 	:name => "IBM Model M Keyboard",
         :type => :unstoppable,
         :health => -3,
-        :string => "%{p} whacks %{o} in the head with an IBM Model M Keyboard. OUCH!",
+        :string => "%{p} whacks %{o} in the #{[ 'head',
+	       					'face',
+						'noggin',
+					        'brain case',	
+						'SPLEEN',
+      					      ].sample} with an IBM Model M Keyboard. #{[ 'OUCH!',
+										   "%{p} then resumes typing.",
+										   "That's gotta hurt!",
+      										 ].sample}",
         :regex => [ /[Mm]odel [Mm]/, 'keyboard' ],
         :help => "Beat your defenseless opponent senseless with the world's " +  
 		 "most industrial strength piece of computing hardware."
@@ -214,7 +253,22 @@ class Junkyard
       :meal_steal => {
 	:name => 'Mouse Raid',
         :type => :unstoppable,
-        :string => "%{p} sends ninja mice into %{o}'s lunchbox to swipe coffee and bacon.",
+        :string => "%{p} #{[ 'sends',
+	       		     'dispatches',
+		     	     'conscripts',
+			     'orders',
+			     'marches',
+			     'sneaks',	     
+      			   ].sample} #{[ 'ninja',
+			  		 'kabuki',
+					 'ants dressed as',
+					 'clockwork',
+					 'PS/2',
+					 'USB',
+					 'Knock-Out',
+					 'genetically altered',
+					 'invisible',
+      				       ].sample} mice into %{o}'s lunchbox to swipe coffee and bacon.",
         :regex => [ /mouse raid/ ],
         :help => "Steal all of an opponent's coffee and bacon, " +
                  "if he has any, and use them on yourself."
@@ -223,7 +277,19 @@ class Junkyard
 	:name => "Coffee",
         :type => :support,
         :health => 1,
-        :string => "%{p} sips on some delicious, expensive Starbucks coffee, and relaxes. aaahhh...",
+        :string => "%{p} sips on some #{[ 'delicious', 
+					  'expensive',
+					  'burnt',
+					  'strong',
+					  'tepid',
+					  'iced',
+					  'counterfeit', 
+      					].sample} #{[ 'Starbucks',
+						      "Seattle's Best",
+						      "Pete's",
+						      "Folgers",
+						      "Jamacian Blue Mountain",
+      						    ].sample} coffee, and relaxes. aaahhh...",
         :regex => [ /coffee/ ],
         :help => "Take a sip. Relax. Gain up to #{MAX_HP} health."
       },
@@ -256,7 +322,12 @@ class Junkyard
 	:name => "The Shiny Red Button",
         :type => :power,
         :health => -6,
-        :string => "Hmm, %{p} wonders what THIS button does.. %{o} finds out!!",
+        :string => [ "Hmm, %{p} wonders what THIS button does.. %{o} finds out!!",
+	       	     "%{p} PUSHES THE BUTTON. Klaxons go off! Alarms Sound! Something bad happens to %{o}",
+		     "A distinct click is heard. %{o} screams out in agony!",
+		     "%{p} dares touch the history eraser button. You fool! %{o} suddenly can't remember anything!",
+		     "The beautiful, shiny button? The jolly, candy-like button? Will he hold out, folks? Can he hold out? NO! Poor %{o}.",
+      		   ].sample
         :regex => [ /shiny red button/ ],
         :help => "Can you keep from pressing the SHINY RED BUTTON " +
                  "that beckons you even now? WHO KNOWS what it'll do? " +
