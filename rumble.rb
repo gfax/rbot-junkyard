@@ -1580,7 +1580,7 @@ class Junkyard
       b_string << "Multi-Deflector bonus: +#{b}. "
     end
     # Speed bonus:
-    if started.to_i - Time.now.to_i >= 60
+    if Time.now.to_i - started.to_i <= 60
       p.bonuses += 1
       p.damage += 10
       b_string << "Speed bonus: +10. "
