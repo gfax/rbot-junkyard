@@ -85,15 +85,16 @@ class Junkyard
         :type => :counter,
         :health => 2,
         :string => "%{p} hides behind Your Mom! She softens the blow. ;)",
-        :regex => [ /yourmom/, /your mom/ ],
+        :regex => [ /mom/, /card/ ],
         :help => "Hide behind your opponent's mom! Her soft, supple body reduces opponent's attack by 2 points."
       },
       :insurance => {
+	:name => "Obamacare",
         :type => :counter,
         :health => 5,
-        :string => "%{p} uses health insurance and " +
-                  "is restored to 5 health!",
-        :regex => [ /insurance/ ],
+        :string => "%{p} invokes universal health insurance and " +
+                  "is restored to 5 health! THANKS, OBAMA!",
+        :regex => [ /obamacare/ ],
         :help => "Can only be used against a blockable, " +
                  "killing blow. Resets you to 5 health points."
       },
@@ -136,7 +137,7 @@ class Junkyard
         :health => -2,
         :string => "%{p} sweeps %{o} off of their feet!",
         :skips => 1,
-        :regex => [ 'leg sweep' ],
+        :regex => [ /leg sweep/ ],
         :help => "Duck down and sweep your opponent onto the ground! They'll spend a turn getting back up."
       },
       :kickball => {
@@ -211,7 +212,7 @@ class Junkyard
 	:name => 'Mouse Raid',
         :type => :unstoppable,
         :string => "%{p} sends ninja mice into %{o}'s lunchbox to swipe coffee and bacon.",
-        :regex => [ /mouse/, /raid/ ],
+        :regex => [ /mouse raid/ ],
         :help => "Steal all of an opponent's coffee and bacon, " +
                  "if he has any, and use them on yourself."
       },
