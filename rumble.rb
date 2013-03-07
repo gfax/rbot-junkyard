@@ -154,7 +154,16 @@ class Junkyard
 	:name => 'Kroddychop',
         :type => :attack,
         :health => -3,
-        :string => "HIIIIIYA! In a splendid display of martial arts, %{p} whacks %{o} in the " + 
+        :string => "#{%w(HIIIIIYA WHAM POW BAM HAAAAA).sample}! In a" +
+		[ ' splendid',
+		  'n unorthodox',
+		  ' stereotypical',
+		  ' wicked',
+		  'n uncommon',
+		  ' banal',
+		  ' seemingly well practiced',
+		].sample +
+		" display of martial arts, %{p} #{%w(whacks chops hits thwaps punches jabs).sample} %{o} in the " + 
 		[ 'face', 
 		  'liver', 
 		  'privates', 
@@ -226,7 +235,7 @@ class Junkyard
         :string => "%{p} momentarily teleports %{o} to the middle of a " + 
 		[ 'RINK RUMBLE', 
 		  'SKATE GIRL SHOWDOWN', 
-		  "ROLLERSKATER'S BRAWL"
+		  "ROLLERSKATER'S SCUFFLE"
       		].sample + 
                 "%{o} tries hard to dodge all those " +
 		[ 'crazy ladies', 
@@ -284,9 +293,10 @@ class Junkyard
         :string => "%{p} " +
 		[ 'shoots',
 		  "pew pew's",
-		  "blasts"
+		  "blasts",
+      		  'zaps',
 		].sample +
-		" %{o} in the FRICKIN' FACE.",
+		" %{o} in the FACE with a %{c}!",
         :regex => [ /laser/, /blaster/ ],
         :help => "Can't dodge a gun^H^H^HFRICKIN LASER. Simple as that."
       },
@@ -378,7 +388,8 @@ class Junkyard
 	       	     "%{p} PUSHES THE BUTTON. Klaxons go off! Alarms Sound! Something bad happens to %{o}",
 		     "%{p} succumbs to temptation, a button gets pressed. A distinct click is heard and %{o} screams out in agony!",
 		     "%{p} dares touch the history eraser button. You fool! Suddenly, %{o}'s life is greatly diminished!",
-		     "The beautiful, shiny button? The jolly, candy-like button? Will %{p} hold out, folks? Can %{p} hold out? NO! Poor %{o}."
+		     "The beautiful, shiny button? The jolly, candy-like button? Will %{p} hold out, folks? Can %{p} hold out? NO! Poor %{o}.",
+		     'A disembodied voice says "That was easy!" as %{p} pushes the button. Suddenly, %{o} cries out!' 
       		   ].sample,
         :regex => [ /shiny red button/ ],
         :help => "Can you keep from pressing the SHINY RED BUTTON " +
@@ -403,7 +414,9 @@ class Junkyard
       :multiball => {
         :name => 'TERROR!',
         :type => :power,
-        :string => "%{p} brings the TERROR! Everyone turns pale with fright.",
+        :string => ["%{p} brings the TERROR! Everyone turns pale with fright.",
+		    "%{p} tells a horror story about ANT, NAKED! Everyone is paralyzed with fear!"
+		   ].sample,
         :regex => [ /terror/ ],
         :help => "Take an extra turn after your turn. Let 'em HAVE IT."
       },
@@ -447,17 +460,17 @@ class Junkyard
       :whirlwind => {
 	:name => "Smoke Break",
         :type => :power,
-        :string => "Grifter compels everyone, to chill out for a bit. After passing a " +
-		[ 'joint',
-		  'bong',
-		  'glass pipe',
-		  'vaporizor',
-		  'wooden pipe',
-		  'apple with a hole in it',
-		  'slightly crushed soda can',
-		  'metal pipe'
+        :string => "Grifter compels everyone, to chill out for a bit. After passing a" +
+		[ ' joint',
+		  ' bong',
+		  ' glass pipe',
+		  ' vaporizor',
+		  ' wooden pipe',
+		  'n apple with a hole in it',
+		  ' slightly crushed soda can',
+		  ' metal pipe'
 		].sample +
-		" around, everyone grabs the wrong cards!",
+		" around. Afterwards everyone grabs the wrong cards and resumes playing!",
         :regex => [ /smoke( )?break/ ],
         :help => "Grifter gets everyone stoned. Every player shifts their hand cards " +
                  "in the confusion."
