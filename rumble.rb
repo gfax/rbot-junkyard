@@ -146,7 +146,7 @@ class Junkyard
 	:name => 'Kroddychop',
         :type => :attack,
         :health => -3,
-        :string => "HIIIIIYA! In a splendid display of  martial arts, %{p} whacks %{o} in the #{[ 'face', 
+        :string => "HIIIIIYA! In a splendid display of martial arts, %{p} whacks %{o} in the #{[ 'face', 
 											      'liver', 
 											      'privates', 
 											      'kidneys', 
