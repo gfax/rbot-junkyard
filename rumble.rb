@@ -442,15 +442,15 @@ class Junkyard
       :whirlwind => {
 	:name => "Smoke Break",
         :type => :power,
-        :string => "Grifter compels everyone, to chill out for a bit." + "After passing a #{[ 'joint',
-											      'bong',
-											      'glass pipe',
-											      'vaporizor',
-											      'wooden pipe',
-											      'apple with a hole in it',
-											      'slightly crushed soda can',
-											      'metal pipe'
-											    ].sample} around, everyone grabs the wrong cards!",
+        :string => "Grifter compels everyone, to chill out for a bit." + "After passing a#{[ ' joint',
+											      ' bong',
+											      ' glass pipe',
+											      ' vaporizor',
+											      ' wooden pipe',
+											      'n apple with a hole in it',
+											      ' slightly crushed soda can',
+											      ' metal pipe'
+											    ].sample} around, everyone grabs the wrong cards and resumes the game!",
         :regex => [ /smoke( )?break/ ],
         :help => "Grifter gets everyone stoned. Every player shifts their hand cards " +
                  "in the confusion."
