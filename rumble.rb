@@ -218,10 +218,15 @@ class Junkyard
       :slot_machine => {
 	:name => "Derby Girls",
         :type => :attack,
-        :string => "%{p} momentarily teleports %{o} to the middle of a RINK RUMBLE! " + 
+        :string => "%{p} momentarily teleports %{o} to the middle of a #{[ 'RINK RUMBLE', 
+									   'SKATE GIRL SHOWDOWN', 
+									   "ROLLERBLADER'S BRAWL"
+      									 ].sample }!" + 
                    "%{o} tries hard to dodge those #{[ 'crazy ladies', 
 			   			    'wild women', 
-						    'buxom brawlers' 
+						    'buxom brawlers',
+						    'foxy flailers',
+						    "hip-checkin' hotties" 
       						  ].sample}. ",
         :regex => [ /derby/, /girls/ ],
         :help => "Multi-dimentional BATTLE MAGIC Sends your opponent into the RINK. " +
@@ -1350,7 +1355,7 @@ class Junkyard
       damage = 0
       # Determine amount of damage.
       if player.discard.id == :slot_machine
-        string = "#{player} pulls #{opponent}'s lever..."
+        string = "#{player} sprinkles pixie dust on #{opponent}. MAGIC OCCURS!"
         slots.each do |slot|
           damage -= slot
           string << " #{slot}."
