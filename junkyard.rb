@@ -493,6 +493,7 @@ class Junkyard
   end
 
   def deal(player, n=1)
+    return if n < 1
     if deck.length < n
       n -= deck.length
       cards = @deck.pop(deck.length)
@@ -514,12 +515,8 @@ class Junkyard
   def start_game
     @players.shuffle!
     @started = Time.now
-    say p_turn
-    players.each { |p| notify p, p_cards(p) }
-    Thread.new do
-      sleep(@bot.config['junkyard.bot_delay'])
-      bot_move
-    end
+    increment_turn
+    players.each { |p| notify p, p_cards(p) unless p = players.first }
   end
 
   def add_player(user)
