@@ -180,7 +180,8 @@ class Junkyard
         :string => "%{p} channels #{[ 'Chuck Norris',
 				      'Jet Li',
 				      'Fong Sai Yuk',
-				      'Jackie Chan'
+				      'Jackie Chan',
+				      'Bruce Lee'
       				    ].sample} and #{[ 'violently',
 				    		      'hurtfully',
 						      'dramatically',
