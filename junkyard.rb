@@ -354,10 +354,9 @@ class Junkyard
 
   class Player
 
-    attr_reader :user
-    attr_accessor :bees, :bonuses, :cards, :damage, :deflector, :deflectors,
-                  :discard, :garbage, :glutton, :grabbed, :health, :multiball,
-                  :skips, :skip_count, :turns
+    attr_accessor :user, :bees, :bonuses, :cards, :damage, :deflector,
+                  :deflectors, :discard, :garbage, :glutton, :grabbed,
+                  :health, :multiball, :skips, :skip_count, :turns
 
     def initialize(user)
       @user = user        # p.user => unbolded, p.to_s => bolded
@@ -375,7 +374,7 @@ class Junkyard
       @multiball = false  # gets to go again when true
       @skips = 0          # skips player when > 0
       @skip_count = 0     # counter for end-of-game bonuses
-      @turns = 0           # turns spent playing this game
+      @turns = 0          # turns spent playing this game
     end
 
     def delete_cards(request)
@@ -1508,9 +1507,16 @@ class Junkyard
     @plugin.remove_game(channel)
   end
 
-  def replace_player(player, a)
-
-
+  def replace_player(player, new_player)
+    if player.user == new_player.nick
+      say "You're already playing, #{player.user}"
+    elsif get_player(new_player.nick)
+      say "#{new_player.nick} is already playing #{TITLE}."
+    else
+      say = "#{player} was replaced by #{Bold + new_player.nick + Bold}!"
+      player.user = new_player
+      say "#{player} is now game manager." if player == manager
+    end
   end
 
   def transfer_management(player, a)
@@ -1705,7 +1711,7 @@ class JunkyardPlugin < Plugin
       "can't dodge when being grabbed. If the card you played while " +
       "grabbing them turns out to be an #{u}Unstoppable#{cl} attack, any " +
       "counter card they play will be nullified and discarded."
-    when /manage/
+    when /manage/, /transfer/, /xfer/
       "#{b}Manage:#{b} The player that starts the game is the game manager. " +
       "Game managers may stop the game at any time, or transfer ownership " +
       "by typing 'transfer [game to] <player>'."
@@ -1718,6 +1724,9 @@ class JunkyardPlugin < Plugin
       "hand. Example: 'p Frank 4' to attack Frank with your 4th card. " +
       "You only need to specify a username when there are more than 2 " +
       "players playing the game."
+    when /replace/
+      "#{b}Replace:#{b} type 'replace [me with] <nick>' mid-game to " +
+      "have another user in the channel take your place in the game."
     when /stat/, 'top'
       "#{b}Stats:#{b} #{prefix}#{plugin} stats <nick> - network-wide stats, " +
       "#{prefix}#{plugin} stats #channel <nick> - channel-specific stats, " +
@@ -1775,6 +1784,15 @@ class JunkyardPlugin < Plugin
       end
     when /^(od?|order)( |\z)/, /^(tu?|turn)( |\z)/
       @bot.say m.channel, g.p_order if g.started
+    when /^replace( |\z)/
+      return if p.nil? or a.length.zero?
+      [ "me", "with" ].each { |e| a.delete_at(0) if a.first == e }
+      new_player = m.channel.get_user(a.first)
+      if new_player.nil?
+        m.reply "There is no one here named '#{a.first}"
+      else
+        g.replace_player(p, new_player)
+      end
     when /^(sc?|scores?)( |\z)/
       @bot.say m.channel, g.p_damage if g.started
     when /^ti(me)?( |\z)/
@@ -1783,7 +1801,7 @@ class JunkyardPlugin < Plugin
       else
         m.reply TITLE + " hasn't started yet."
       end
-    when /^transfer?( |\z)/
+    when /^transfer( |\z)/
       return if p.nil? or a.length.zero?
       g.transfer_management(p, a)
     end
