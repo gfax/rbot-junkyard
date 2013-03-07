@@ -961,9 +961,8 @@ class Junkyard
   end
 
   def p_cards(player)
-    n = 0
-    c = Bold + Irc.color(:white,:black)
-    cards = player.cards.map { |k| n += 1; "#{c}#{n}.\)#{Bold} #{k}"}
+    n, b = 0, Bold
+    cards = player.cards.map { |c| n += 1; "#{b}#{n}.\)#{b} #{c}"}
     return cards.join(" ")
   end
 
