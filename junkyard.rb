@@ -5,7 +5,7 @@
 # Author:: Lite <degradinglight@gmail.com>
 # Copyright:: (C) 2012 gfax.ch
 # License:: GPL
-# Version:: 2013-03-06
+# Version:: 2013-03-07
 #
 
 class Junkyard
@@ -675,7 +675,7 @@ class Junkyard
   def p_cards(player)
     n, b = 0, Bold
     cards = player.cards.map { |c| n += 1; "#{b}#{n}.\)#{b} #{c}"}
-    return cards.join(" ")
+    return cards.join(' ')
   end
 
   def p_damage
