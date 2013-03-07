@@ -185,7 +185,8 @@ class Junkyard
 				      'Jet Li',
 				      'Fong Sai Yuk',
 				      'Jackie Chan',
-				      'Bruce Lee'
+				      'Bruce Lee',
+				      'Chun Li'
       				    ].sample} and #{[ 'violently',
 				    		      'hurtfully',
 						      'dramatically',
