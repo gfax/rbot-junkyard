@@ -358,7 +358,7 @@ class Junkyard
                   :deflectors, :discard, :garbage, :glutton, :grabbed,
                   :health, :multiball, :skips, :skip_count, :turns
 
-    def initialize(user)
+    def initialize(user, health=MAX_HP)
       @user = user        # p.user => unbolded, p.to_s => bolded
       @bees = false       # player is attacked by bees when true
       @bonuses = 0        # counter for end-of-game bonuses
@@ -370,7 +370,7 @@ class Junkyard
       @garbage = nil      # array of Garbage Man garbage cards
       @glutton = 0        # counter for end-of-game bonuses
       @grabbed = false    # currently being grabbed
-      @health = MAX_HP    # initial health
+      @health = health    # initial health
       @multiball = false  # gets to go again when true
       @skips = 0          # skips player when > 0
       @skip_count = 0     # counter for end-of-game bonuses
@@ -541,7 +541,14 @@ class Junkyard
         return
       end
     end
-    p = Player.new(user)
+    if started and @bot.config['junkyard.average_hp']
+      n = 0
+      players.each { |e| n += e.health }
+    hp = (n / players.length + 0.5).to_i
+    else
+    hp = MAX_HP
+    end
+    p = Player.new(user, hp)
     @players << p
     if manager.nil?
       @manager = p
@@ -1601,15 +1608,23 @@ end
 
 class JunkyardPlugin < Plugin
 
+  Config.register Config::BooleanValue.new('junkyard.average_hp',
+    :default => false,
+    :desc => "Should players joining mid-game receive full health " +
+             "or an averaged amount of health from current players?"
+  )
   Config.register Config::BooleanValue.new('junkyard.bot',
     :default => false,
-    :desc => "Enables or disables the AI.")
+    :desc => "Enables or disables the AI."
+  )
   Config.register Config::IntegerValue.new('junkyard.bot_delay',
-    :default => 3, :validate => Proc.new{|v| v.between?(-1,61)},
-    :desc => "Number of seconds for bot to wait before responding.")
+    :default => 3, :validate => Proc.new{|v| v.between?(0,60)},
+    :desc => "Number of seconds for bot to wait before responding."
+  )
   Config.register Config::IntegerValue.new('junkyard.countdown',
     :default => 20, :validate => Proc.new{|v| v > 2},
-    :desc => "Number of seconds before starting a game of Junkyard.")
+    :desc => "Number of seconds before starting a game of Junkyard."
+  )
 
   TITLE = Junkyard::TITLE
   MAX_HP = Junkyard::MAX_HP
