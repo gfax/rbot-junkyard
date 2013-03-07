@@ -5,7 +5,7 @@
 # Author:: Lite <degradinglight@gmail.com>
 # Copyright:: (C) 2012 gfax.ch
 # License:: GPL
-# Version:: 2013-03-06
+# Version:: 2013-03-07
 #
 
 class Junkyard
@@ -335,18 +335,18 @@ class Junkyard
     def to_s
       color = COLORS[type]
       hs = if health.zero? then ''
-           elsif health < 0 then COLORS[:-] + health.to_s
-           else COLORS[:+] + '+' + health.to_s
+           elsif health < 0 then COLORS[:-] + ' ' + health.to_s
+           else COLORS[:+] + ' +' + health.to_s
            end
       ss = if skips.zero?
              ''
            elsif hs == ''
-             COLORS[:skips] + skips.to_s
+             COLORS[:skips] + ' ' + skips.to_s
            else
              Irc.color(:white) + '/' +
              COLORS[:skips] + skips.to_s
            end
-      color + "#{name} #{hs}#{ss}" + NormalText
+      color + "#{name}#{hs}#{ss}" + NormalText
     end
 
   end
@@ -354,12 +354,11 @@ class Junkyard
 
   class Player
 
-    attr_reader :user
-    attr_accessor :bees, :bonuses, :cards, :damage, :deflector, :deflectors,
-                  :discard, :garbage, :glutton, :grabbed, :health, :multiball,
-                  :skips, :skip_count, :turns
+    attr_accessor :user, :bees, :bonuses, :cards, :damage, :deflector,
+                  :deflectors, :discard, :garbage, :glutton, :grabbed,
+                  :health, :multiball, :skips, :skip_count, :turns
 
-    def initialize(user)
+    def initialize(user, health=MAX_HP)
       @user = user        # p.user => unbolded, p.to_s => bolded
       @bees = false       # player is attacked by bees when true
       @bonuses = 0        # counter for end-of-game bonuses
@@ -371,11 +370,11 @@ class Junkyard
       @garbage = nil      # array of Garbage Man garbage cards
       @glutton = 0        # counter for end-of-game bonuses
       @grabbed = false    # currently being grabbed
-      @health = MAX_HP    # initial health
+      @health = health    # initial health
       @multiball = false  # gets to go again when true
       @skips = 0          # skips player when > 0
       @skip_count = 0     # counter for end-of-game bonuses
-      @turns = 0           # turns spent playing this game
+      @turns = 0          # turns spent playing this game
     end
 
     def delete_cards(request)
@@ -494,6 +493,7 @@ class Junkyard
   end
 
   def deal(player, n=1)
+    return if n < 1
     if deck.length < n
       n -= deck.length
       cards = @deck.pop(deck.length)
@@ -515,12 +515,8 @@ class Junkyard
   def start_game
     @players.shuffle!
     @started = Time.now
-    say p_turn
-    players.each { |p| notify p, p_cards(p) }
-    Thread.new do
-      sleep(@bot.config['junkyard.bot_delay'])
-      bot_move
-    end
+    increment_turn
+    players.each { |p| notify p, p_cards(p) unless p = players.first }
   end
 
   def add_player(user)
@@ -542,7 +538,14 @@ class Junkyard
         return
       end
     end
-    p = Player.new(user)
+    if started and @bot.config['junkyard.average_hp']
+      n = 0
+      players.each { |e| n += e.health }
+    hp = (n / players.length + 0.5).to_i
+    else
+    hp = MAX_HP
+    end
+    p = Player.new(user, hp)
     @players << p
     if manager.nil?
       @manager = p
@@ -667,10 +670,9 @@ class Junkyard
   end
 
   def p_cards(player)
-    n = 0
-    c = Bold + Irc.color(:white,:black)
-    cards = player.cards.map { |k| n += 1; "#{c}#{n}.\)#{Bold} #{k}"}
-    return cards.join(" ")
+    n, b = 0, Bold
+    cards = player.cards.map { |c| n += 1; "#{b}#{n}.\)#{b} #{c}"}
+    return cards.join(' ')
   end
 
   def p_damage
@@ -1074,11 +1076,18 @@ class Junkyard
       player.garbage = c[2..-1]
     end
     do_move(opponent, player, wait=false) if player == attacked
-    return if player.health < 1 # In case a player dies trying to grab.
+    # In case player dies trying to grab.
+    return if player.health < 1
     @discard |= [ c[0], c[1] ]
     player.discard = c[1]
     do_slots(player)
     player.delete_cards([c[0], c[1]])
+    # In case player being grabbed dies when 
+    # being grabbed (ie., from Deflector).
+    if opponent.health < 1
+      increment_turn
+      return
+    end
     @attacked = opponent unless attacked
     opponent.grabbed = true
     say c[0].string % { :p => player, :o => opponent }
@@ -1508,9 +1517,16 @@ class Junkyard
     @plugin.remove_game(channel)
   end
 
-  def replace_player(player, a)
-
-
+  def replace_player(player, new_player)
+    if player.user == new_player.nick
+      say "You're already playing, #{player.user}"
+    elsif get_player(new_player.nick)
+      say "#{new_player.nick} is already playing #{TITLE}."
+    else
+      say "#{player} was replaced by #{Bold + new_player.nick + Bold}!"
+      player.user = new_player
+      say "#{player} is now game manager." if player == manager
+    end
   end
 
   def transfer_management(player, a)
@@ -1588,15 +1604,23 @@ end
 
 class JunkyardPlugin < Plugin
 
+  Config.register Config::BooleanValue.new('junkyard.average_hp',
+    :default => false,
+    :desc => "Should players joining mid-game receive full health " +
+             "or an averaged amount of health from current players?"
+  )
   Config.register Config::BooleanValue.new('junkyard.bot',
     :default => false,
-    :desc => "Enables or disables the AI.")
+    :desc => "Enables or disables the AI."
+  )
   Config.register Config::IntegerValue.new('junkyard.bot_delay',
-    :default => 3, :validate => Proc.new{|v| v.between?(-1,61)},
-    :desc => "Number of seconds for bot to wait before responding.")
+    :default => 3, :validate => Proc.new{|v| v.between?(0,60)},
+    :desc => "Number of seconds for bot to wait before responding."
+  )
   Config.register Config::IntegerValue.new('junkyard.countdown',
     :default => 20, :validate => Proc.new{|v| v > 2},
-    :desc => "Number of seconds before starting a game of Junkyard.")
+    :desc => "Number of seconds before starting a game of Junkyard."
+  )
 
   TITLE = Junkyard::TITLE
   MAX_HP = Junkyard::MAX_HP
@@ -1687,7 +1711,7 @@ class JunkyardPlugin < Plugin
       "d/discard - discard cards, drop <me>/<bot>/<nick> - remove " +
       "yourself/#{@bot.nick}/player from the game, " +
       "pa/pass - pass, " +
-      "p/play - play cards, "
+      "p/play - play cards, " +
       "replace [with] <nick> - give your spot in game to another player, " +
       "s/score - show score, " +
       "t/turn - show current turn/order/health, " +
@@ -1705,7 +1729,7 @@ class JunkyardPlugin < Plugin
       "can't dodge when being grabbed. If the card you played while " +
       "grabbing them turns out to be an #{u}Unstoppable#{cl} attack, any " +
       "counter card they play will be nullified and discarded."
-    when /manage/
+    when /manage/, /transfer/, /xfer/
       "#{b}Manage:#{b} The player that starts the game is the game manager. " +
       "Game managers may stop the game at any time, or transfer ownership " +
       "by typing 'transfer [game to] <player>'."
@@ -1718,6 +1742,9 @@ class JunkyardPlugin < Plugin
       "hand. Example: 'p Frank 4' to attack Frank with your 4th card. " +
       "You only need to specify a username when there are more than 2 " +
       "players playing the game."
+    when /replace/
+      "#{b}Replace:#{b} type 'replace [me with] <nick>' mid-game to " +
+      "have another user in the channel take your place in the game."
     when /stat/, 'top'
       "#{b}Stats:#{b} #{prefix}#{plugin} stats <nick> - network-wide stats, " +
       "#{prefix}#{plugin} stats #channel <nick> - channel-specific stats, " +
@@ -1775,6 +1802,15 @@ class JunkyardPlugin < Plugin
       end
     when /^(od?|order)( |\z)/, /^(tu?|turn)( |\z)/
       @bot.say m.channel, g.p_order if g.started
+    when /^replace( |\z)/
+      return if p.nil? or a.length.zero?
+      [ "me", "with" ].each { |e| a.delete_at(0) if a.first == e }
+      new_player = m.channel.get_user(a.first)
+      if new_player.nil?
+        m.reply "There is no one here named '#{a.first}'"
+      else
+        g.replace_player(p, new_player)
+      end
     when /^(sc?|scores?)( |\z)/
       @bot.say m.channel, g.p_damage if g.started
     when /^ti(me)?( |\z)/
@@ -1783,7 +1819,7 @@ class JunkyardPlugin < Plugin
       else
         m.reply TITLE + " hasn't started yet."
       end
-    when /^transfer?( |\z)/
+    when /^transfer( |\z)/
       return if p.nil? or a.length.zero?
       g.transfer_management(p, a)
     end
@@ -1901,7 +1937,7 @@ end
 
 plugin = JunkyardPlugin.new
 
-[ 'brawl', 'junk', 'junkyard' ].each do |scope|
+[ 'junk', 'junkyard' ].each do |scope|
   plugin.map "#{scope} bot",
     :private => false, :action => :add_bot
   plugin.map "#{scope} cancel",
