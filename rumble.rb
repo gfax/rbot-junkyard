@@ -237,10 +237,11 @@ class Junkyard
                  "High velocity skate warriors do 0 to 3 damage each. Dodge if you can!"
       },
       :bulldozer => {
+	:name => "Force Push",
         :type => :unstoppable,
-        :string => "%{p} bulldozes all the cards out of %{o}'s hand.",
-        :regex => [ /bull/, /dozer/ ],
-        :help => "Push all of your opponent's hand cards into " +
+        :string => "%{p} uses the Force, and ejects all the cards out of %{o}'s hand!",
+        :regex => [ /force/, /push/ ],
+        :help => "Are you a Jedi? Use the Force to cause all of your opponent's cards into " +
                  "the discard, leaving him vulnerable to attack."
       },
       :crane => {
@@ -438,11 +439,20 @@ class Junkyard
                  "from the player previous to them."
       },
       :whirlwind => {
+	:name => "Smoke Break",
         :type => :power,
-        :string => "A whirlwind causes everyone to rotate hand cards!",
-        :regex => [ /whirl( |-)?wind/ ],
-        :help => "Every player shifts their hand cards " +
-                 "over to the player in front of them."
+        :string => "Grifter compels everyone, to chill out for a bit." + "After passing a #{[ 'joint',
+											      'bong',
+											      'glass pipe',
+											      'vaporizor',
+											      'wooden pipe',
+											      'apple with a hole in it',
+											      'slightly crushed soda can',
+											      'metal pipe'
+											    ].sample} around, everyone grabs the wrong cards!",
+        :regex => [ /smoke( )?break/ ],
+        :help => "Grifter gets everyone stoned. Every player shifts their hand cards " +
+                 "in the confusion."
       }
   }
 
