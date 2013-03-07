@@ -1801,7 +1801,7 @@ class Junkyard
     elsif get_player(new_player.nick)
       say "#{new_player.nick} is already playing #{title}."
     else
-      say = "#{player} was replaced by #{Bold + new_player.nick + Bold}!"
+      say "#{player} was replaced by #{Bold + new_player.nick + Bold}!"
       player.user = new_player
       say "#{player} is now game manager." if player == manager
     end
@@ -1994,7 +1994,7 @@ class JunkyardPlugin < Plugin
       "d/discard - discard cards, drop <me>/<bot>/<nick> - remove " +
       "yourself/#{@bot.nick}/player from the game, " +
       "pa/pass - pass, " +
-      "p/play - play cards, "
+      "p/play - play cards, " +
       "replace [with] <nick> - give your spot in game to another player, " +
       "s/score - show score, " +
       "t/turn - show current turn/order/health, " +
