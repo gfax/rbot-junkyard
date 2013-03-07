@@ -1073,11 +1073,18 @@ class Junkyard
       player.garbage = c[2..-1]
     end
     do_move(opponent, player, wait=false) if player == attacked
-    return if player.health < 1 # In case a player dies trying to grab.
+    # In case player dies trying to grab.
+    return if player.health < 1
     @discard |= [ c[0], c[1] ]
     player.discard = c[1]
     do_slots(player)
     player.delete_cards([c[0], c[1]])
+    # In case player being grabbed dies when 
+    # being grabbed (ie., from Deflector).
+    if opponent.health < 1
+      increment_turn
+      return
+    end
     @attacked = opponent unless attacked
     opponent.grabbed = true
     say c[0].string % { :p => player, :o => opponent }
@@ -1789,7 +1796,7 @@ class JunkyardPlugin < Plugin
       [ "me", "with" ].each { |e| a.delete_at(0) if a.first == e }
       new_player = m.channel.get_user(a.first)
       if new_player.nil?
-        m.reply "There is no one here named '#{a.first}"
+        m.reply "There is no one here named '#{a.first}'"
       else
         g.replace_player(p, new_player)
       end
