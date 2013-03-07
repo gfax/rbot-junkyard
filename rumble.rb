@@ -58,7 +58,7 @@ class Junkyard
   # Add to or modify these as you wish.
   CARDS = {
       :block => {
-	:name => "NO!",
+	:name => 'NO!',
         :type => :counter,
         :string => "%{p} says NO!!! ..blocking %{o}'s %{c} with #{[ 'a stern exclamation', 
 								    'sheer WILL POWER', 
@@ -226,7 +226,7 @@ class Junkyard
         :string => "%{p} momentarily teleports %{o} to the middle of a #{[ 'RINK RUMBLE', 
 									   'SKATE GIRL SHOWDOWN', 
 									   "ROLLERBLADER'S BRAWL"
-      									 ].sample }!" + 
+      									 ].sample }! " + 
                    "%{o} tries hard to dodge those #{[ 'crazy ladies', 
 			   			    'wild women', 
 						    'buxom brawlers',
