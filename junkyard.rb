@@ -1940,7 +1940,7 @@ end
 
 plugin = JunkyardPlugin.new
 
-[ 'brawl', 'junk', 'junkyard' ].each do |scope|
+[ 'junk', 'junkyard' ].each do |scope|
   plugin.map "#{scope} bot",
     :private => false, :action => :add_bot
   plugin.map "#{scope} cancel",
