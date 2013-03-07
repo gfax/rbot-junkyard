@@ -60,10 +60,12 @@ class Junkyard
       :block => {
 	:name => 'NO!',
         :type => :counter,
-        :string => "%{p} says NO!!! ..blocking %{o}'s %{c} with #{[ 'a stern exclamation', 
-								    'sheer WILL POWER', 
-								    'a defiant attitude' 
-  								  ].sample}!",
+        :string => "%{p} says NO!!! ..blocking %{o}'s %{c} with " + 
+		[ 'a stern exclamation', 
+		  'sheer WILL POWER', 
+		  'a defiant attitude' 
+  		].sample +
+		"!",
         :regex => 'no',
         :help => "Blocks a basic attack card when played against you. Can be " +
                  "used against a grab to nullify the grab's proceeding attack."
@@ -260,7 +262,7 @@ class Junkyard
 	       						      'suddenly, %{o} stops moving.',
 						      	      "%{o}'s animated gif comes to a halt.",
 							      'frozen water emits from his hands, covering %{o}'
-							    ]}",
+							    ].sample}",
         :skips => 1,
         :regex => [ /ice( )?freeze/ ],
         :help => "Throw a tire around your opponent, impeding " +
