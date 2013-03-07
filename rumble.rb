@@ -254,10 +254,15 @@ class Junkyard
                  "he manages to get his hand below 5 cards again."
       },
       :tire => {
+	:name => 'Ice Freeze',
         :type => :unstoppable,
-        :string => "%{p} throws a tire around %{o}.",
+        :string => "Sub-Zero emerges from the shadows and #{[ 'performs Down, Forward, Low Punch on %{o}.',
+	       						      'suddenly, %{o} stops moving.',
+						      	      "%{o}'s animated gif comes to a halt.",
+							      'frozen water emits from his hands, covering %{o}'
+							    ]}",
         :skips => 1,
-        :regex => [ /tire(d|s)?\b/ ],
+        :regex => [ /ice( )?freeze/ ],
         :help => "Throw a tire around your opponent, impeding " +
                  "his movement and causing him to lose a turn."
       },
@@ -371,9 +376,9 @@ class Junkyard
         :health => -6,
         :string => [ "Hmm, %{p} wonders what THIS button does.. %{o} finds out!!",
 	       	     "%{p} PUSHES THE BUTTON. Klaxons go off! Alarms Sound! Something bad happens to %{o}",
-		     "A distinct click is heard. %{o} screams out in agony!",
-		     "%{p} dares touch the history eraser button. You fool! %{o} suddenly can't remember anything!",
-		     "The beautiful, shiny button? The jolly, candy-like button? Will he hold out, folks? Can he hold out? NO! Poor %{o}."
+		     "%{p} succumbs to temptation, a button gets pressed. A distinct click is heard and %{o} screams out in agony!",
+		     "%{p} dares touch the history eraser button. You fool! Suddenly, %{o}'s life is greatly diminished!",
+		     "The beautiful, shiny button? The jolly, candy-like button? Will %{p} hold out, folks? Can %{p} hold out? NO! Poor %{o}."
       		   ].sample,
         :regex => [ /shiny red button/ ],
         :help => "Can you keep from pressing the SHINY RED BUTTON " +
