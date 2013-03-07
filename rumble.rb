@@ -237,7 +237,7 @@ class Junkyard
 		  'SKATE GIRL SHOWDOWN', 
 		  "ROLLERSKATER'S SCUFFLE"
       		].sample + 
-                "%{o} tries hard to dodge all those " +
+                "! %{o} tries hard to dodge all those " +
 		[ 'crazy ladies', 
 		  'wild women', 
 		  'buxom brawlers',
