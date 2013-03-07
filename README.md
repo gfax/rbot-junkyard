@@ -15,6 +15,5 @@ http://wiki.gfax.ch/Junkyard
 
 ##TODO
 
-* Bug: Check if player dies from a deflector attack before grabbing them!
 * Option: Players joining mid-game should have an averaged HP instead of 10.
 * Bee Bonus: kill someone with bees
