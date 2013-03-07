@@ -143,12 +143,27 @@ class Junkyard
         :help => "Basic attack."
       },
       :neck_punch => {
+	:name => 'Kroddychop',
         :type => :attack,
         :health => -3,
-        :string => "%{p} delivers %{o} a punch in the neck.",
-        :regex => [ /neck/ ],
+        :string => "HIIIIIYA! In a splendid display of  martial arts, %{p} whacks %{o} in the #{[ 'face', 
+											      'liver', 
+											      'privates', 
+											      'kidneys', 
+											      'neck', 
+											      'spleen', 
+											      'solar plexus', 
+											      'rib cage', 
+											      'motherboard', 
+											      'shins', 
+											      'knees', 
+											      'forehead',
+											      'boobs'
+											    ].sample} REALLY REALLY hard!"
+      },
+        :regex => [ /kroddy( ?)chop/ ],
         :help => "Slightly more powerful attack " +
-                 "directed at the neck of your opponent."
+                 "directed at a random region of your opponent."
       },
       :battery_acid => {
 	:name => "Leg Sweep",
@@ -184,9 +199,19 @@ class Junkyard
                  "Because not all players have balls."
       },
       :uppercut => {
+	:name => "SHORYUKEN!",
         :type => :attack,
         :health => -5,
-        :string => "%{o} receives an uppercut from %{p}.",
+        :string => "%{o} receives #{[ 'an INCREDIBLE', 
+				      'a REMARKABLE',
+				      'a SPLENDID',
+				      'a FANTASTIC',
+				      'an AMAZING',
+				      'an UNBELIEVABLE',
+				      'a TOTALLY AWESOME',
+				      'a surprisingly plain looking',
+				      'a SPECTACULAR'
+      				    ].sample } uppercut from %{p}.",
         :regex => [ /upper/ ],
         :help => "Ultimate attack."
       },
@@ -321,10 +346,11 @@ class Junkyard
                  "Your main HP will be protected until the armor is depleted."
       },
       :surgery => {
+	:name => "St. Jeffgus"
         :type => :support,
         :health => MAX_HP - 1,
-        :string => "%{p} undergoes surgery and is completely restored!",
-        :regex => [ /s(e|u)rg(e|u)r/ ],
+        :string => "Saint Jeffgus aknowledges %{p}'s pain, and his miraculous tears HEAL %{p} COMPLETELY!"
+        :regex => [ /(st|saint) jeffgus/ ],
         :help => "Used only when you have 1 health. " +
                  "Resets health to #{MAX_HP}."
       },
