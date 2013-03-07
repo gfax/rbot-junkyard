@@ -622,18 +622,18 @@ class Junkyard
     def to_s
       color = COLORS[type]
       hs = if health.zero? then ''
-           elsif health < 0 then COLORS[:-] + health.to_s
-           else COLORS[:+] + '+' + health.to_s
+           elsif health < 0 then COLORS[:-] + ' ' + health.to_s
+           else COLORS[:+] + ' +' + health.to_s
            end
       ss = if skips.zero?
              ''
            elsif hs == ''
-             COLORS[:skips] + skips.to_s
+             COLORS[:skips] + ' ' + skips.to_s
            else
              Irc.color(:white) + '/' +
              COLORS[:skips] + skips.to_s
            end
-      color + "#{name} #{hs}#{ss}" + NormalText
+      color + "#{name}#{hs}#{ss}" + NormalText
     end
 
   end
