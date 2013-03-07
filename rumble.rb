@@ -118,7 +118,7 @@ class Junkyard
 		     "%{o} is abruptly called away for a meeting.",
 		     "%{o} inexplicably goes AFK.",
 		     "%{p} poses as a customer, complaining to %{o}'s boss. %{o} is called in to 'discuss the matter'.",
-		     "DAMN MEETINGS, ${o} would rather be playing Rumble!"].sample,
+		     "DAMN MEETINGS, %{o} would rather be playing Rumble!"].sample,
         :skips => 2,
         :regex => [ /meeting/ ],
         :help => "Send your opponent to a meeting, where they can't" +
