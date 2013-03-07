@@ -159,8 +159,7 @@ class Junkyard
 											      'knees', 
 											      'forehead',
 											      'boobs'
-											    ].sample} REALLY REALLY hard!"
-      },
+											    ].sample} REALLY REALLY hard!",
         :regex => [ /kroddy( ?)chop/ ],
         :help => "Slightly more powerful attack " +
                  "directed at a random region of your opponent."
@@ -346,10 +345,10 @@ class Junkyard
                  "Your main HP will be protected until the armor is depleted."
       },
       :surgery => {
-	:name => "St. Jeffgus"
+	:name => "St. Jeffgus",
         :type => :support,
         :health => MAX_HP - 1,
-        :string => "Saint Jeffgus aknowledges %{p}'s pain, and his miraculous tears HEAL %{p} COMPLETELY!"
+        :string => "Saint Jeffgus aknowledges %{p}'s pain, and his miraculous tears HEAL %{p} COMPLETELY!",
         :regex => [ /(st|saint) jeffgus/ ],
         :help => "Used only when you have 1 health. " +
                  "Resets health to #{MAX_HP}."
