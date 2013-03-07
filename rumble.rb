@@ -79,7 +79,7 @@ class Junkyard
       },
       :grab => {
         :type => :counter,
-        :string => "%{p} #{%w(grabs grapples seizes grips clutches).sample} %{o}." + 
+        :string => "%{p} #{%w(grabs grapples seizes grips clutches).sample} %{o}. " + 
 		[ "Respond or pass", 
 		  "Pass or respond" 
 		].sample +
@@ -226,7 +226,7 @@ class Junkyard
         :string => "%{p} momentarily teleports %{o} to the middle of a " + 
 		[ 'RINK RUMBLE', 
 		  'SKATE GIRL SHOWDOWN', 
-		  "ROLLERBLADER'S BRAWL"
+		  "ROLLERSKATER'S BRAWL"
       		].sample + 
                 "%{o} tries hard to dodge all those " +
 		[ 'crazy ladies', 
