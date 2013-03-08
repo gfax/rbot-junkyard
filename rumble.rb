@@ -1633,7 +1633,7 @@ class Junkyard
     if p.damage >= 30
       p.bonuses += 1
       p.damage += MAX_HP
-      b_string << "Brutality bonus: +#{MAX_HP}. "
+      b_string << "BRUTALITY! bonus: +#{MAX_HP}. "
     end
     # Close-call bonus:
     if p.health == 1
