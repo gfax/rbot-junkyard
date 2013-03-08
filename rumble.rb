@@ -63,7 +63,11 @@ class Junkyard
         :string => "%{p} says NO!!! ..blocking %{o}'s %{c} with " + 
 		[ 'a stern exclamation', 
 		  'sheer WILL POWER', 
-		  'a defiant attitude' 
+		  'a defiant attitude', 
+		  'a steely glance',
+		  'a pathetic whimper',
+		  "a hero's charisma",
+		  'BALLS of STEEL',
   		].sample +
 		"!",
         :regex => 'no',
@@ -258,12 +262,13 @@ class Junkyard
                  "the discard, leaving him vulnerable to attack."
       },
       :crane => {
+	:name => 'RC Quadcopter',
         :type => :unstoppable,
-        :string => "%{p}'s crane dumps some garbage cards on %{o}.",
-        :regex => [ /crane/ ],
-        :help => "Pick up all your cards you don't want and dump them on an " +
-                 "opponent. The opponent won't get any new cards until " +
-                 "he manages to get his hand below 5 cards again."
+        :string => "%{p} loads cargo into the chopper, fly's over over, and jettisons it into %{o}'s hand.",
+        :regex => [ /((quad)?copter|chopper)/ ],
+        :help => "Before launching your sortie, specify the cards you don't want, then " + 
+	         "fly them over to, and dump them on an opponent. The opponent won't " + 
+		 "get any new cards until he manages to get his hand below 5 cards again."
       },
       :tire => {
 	:name => 'Ice Freeze',
@@ -460,7 +465,7 @@ class Junkyard
       :whirlwind => {
 	:name => "Smoke Break",
         :type => :power,
-        :string => "Grifter compels everyone, to chill out for a bit. After passing a" +
+        :string => "Grifter compels everyone to chill out for a bit. After passing a" +
 		[ ' joint',
 		  ' bong',
 		  ' glass pipe',
@@ -470,7 +475,7 @@ class Junkyard
 		  ' slightly crushed soda can',
 		  ' metal pipe'
 		].sample +
-		" around. Afterwards everyone grabs the wrong cards and resumes playing!",
+		" around a few times, #{Bold}everybody grabs the wrong cards#{Bold} and resumes playing!",
         :regex => [ /smoke( )?break/ ],
         :help => "Grifter gets everyone stoned. Every player shifts their hand cards " +
                  "in the confusion."
@@ -1492,7 +1497,7 @@ class Junkyard
     if player.discard.type == :support or player.discard.id == :meal_steal
       if player.discard.id == :meal_steal
         if temp_deck.length > 0
-          say "A mouse minion brings #{player} some #{temp_deck.join(', ')}, and it is delicious!!"
+          say "A mouse minion brings #{player} some #{temp_deck.join(', ')}, and it is #{%w(delicious!! stale.. rotten!! passable.. AWESOME! wonderful! tastey! sabroso! fantastic! meh.. vegan! good. ).sample}"
           bee_recover(player)
         end
       end
