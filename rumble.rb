@@ -94,8 +94,8 @@ class Junkyard
         :type => :counter,
         :health => 2,
         :string => "%{p} hides behind Your Mom! " +
-		[ 'She softens the blow', 
-		  'Her bosom provides much comfort', 
+		[ "She'll soften the blow", 
+		  "Her #{%w(bosom thighs warts belly gunt hips).sample} will provide much comfort", 
 		  'Her giant ass provides great cushion'
                 ].sample +
 		". ;)",
