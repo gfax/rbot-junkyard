@@ -264,7 +264,7 @@ class Junkyard
       :crane => {
 	:name => 'RC Quadcopter',
         :type => :unstoppable,
-        :string => "%{p} loads cargo into the chopper, fly's over over, and jettisons it into %{o}'s hand.",
+        :string => "%{p} loads cargo into a little RC chopper, fly's over to %{o}, and jettisons the hold into %{o}'s hand.",
         :regex => [ /((quad)?copter|chopper)/ ],
         :help => "Before launching your sortie, specify the cards you don't want, then " + 
 	         "fly them over to, and dump them on an opponent. The opponent won't " + 
