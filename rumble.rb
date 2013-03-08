@@ -296,7 +296,7 @@ class Junkyard
 		  "blasts",
       		  'zaps',
 		].sample +
-		" %{o} in the FACE with a %{c}!",
+		" %{o} in the FACE!",
         :regex => [ /laser/, /blaster/ ],
         :help => "Can't dodge a gun^H^H^HFRICKIN LASER. Simple as that."
       },
@@ -1492,7 +1492,7 @@ class Junkyard
     if player.discard.type == :support or player.discard.id == :meal_steal
       if player.discard.id == :meal_steal
         if temp_deck.length > 0
-          say "A ninja mouse brings #{player} some #{temp_deck.join(', ')}, and it is delicious!!"
+          say "A mouse minion brings #{player} some #{temp_deck.join(', ')}, and it is delicious!!"
           bee_recover(player)
         end
       end
