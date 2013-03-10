@@ -641,27 +641,30 @@ class Junkyard
 
   class Player
 
-    attr_accessor :user, :bees, :bonuses, :cards, :damage, :deflector,
-                  :deflectors, :discard, :garbage, :glutton, :grabbed,
-                  :health, :multiball, :skips, :skip_count, :turns
+    attr_accessor :user, :bees, :blocks, :bonuses, :cards, :damage, 
+                  :deflector, :deflectors, :discard, :garbage, :glutton,
+                  :grabbed, :health, :multiball, :skips, :skip_count,
+                  :turns, :turn_wizard
 
     def initialize(user, health=MAX_HP)
       @user = user        # p.user => unbolded, p.to_s => bolded
       @bees = false       # player is attacked by bees when true
+      @blocks = 0         # counter for "NOPE" bonus
       @bonuses = 0        # counter for end-of-game bonuses
       @cards = []         # hand cards
       @damage = 0         # total damage dished out
       @deflector = false  # deflects attacks when true
-      @deflectors = 0     # counter for end-of-game bonuses
+      @deflectors = 0     # counter for "Deflector" bonus
       @discard = nil      # card the player just played
       @garbage = nil      # array of Garbage Man garbage cards
-      @glutton = 0        # counter for end-of-game bonuses
+      @glutton = 0        # counter for "Glutton" bonus
       @grabbed = false    # currently being grabbed
       @health = health    # initial health
       @multiball = false  # gets to go again when true
       @skips = 0          # skips player when > 0
-      @skip_count = 0     # counter for end-of-game bonuses
+      @skip_count = 0     # counter for "Where's-the-fight?" bonus
       @turns = 0          # turns spent playing this game
+      @turn_wizard = 0    # counter for "Turn Wizard" bonus
     end
 
     def delete_cards(request)
@@ -891,6 +894,7 @@ class Junkyard
       increment_turn
     end
     @discard |= player.cards
+    @discard |= player.garbage if player.garbage
     @discard << player.deflector if player.deflector
     @dropouts << player
     @players.delete(player)
@@ -1301,6 +1305,7 @@ class Junkyard
     end
     @discard << c[0]
     player.discard = c[0]
+    # Don't discard crane cards.
     if player.discard.id == :crane
       player.garbage = c[1..-1]
     end
@@ -1411,11 +1416,28 @@ class Junkyard
         p.health += card.health
         player.damage += card.health.abs
       end
+      # First player to die from Earthquake is
+      # always the player that played the card.
+      check_health(player)
       say p_health
       check_health
     when :multiball
       player.multiball = true
       say card.string % { :p => player }
+    when :reverse
+      say card.string % { :p => player }
+      # Yank the turn back in two-player games (Uno style).
+      if players.length == 2 and player != players.first
+        player.turn_wizard += 1
+        increment_turn
+        return
+      elsif players.length > 2
+        tmp = @players.reverse
+        (tmp.length-1).times do
+          tmp << tmp.shift
+        end
+        @players = tmp
+      end
     when :shifty_business
       n = rand(players.length)
       while players[n] == player
@@ -1461,18 +1483,6 @@ class Junkyard
         @players[n].cards << e
         notify players[n], p_cards(players[n]) unless players[n] == player
         n += 1
-      end
-    when :reverse
-      say card.string % { :p => player }
-      if players.length == 2 and player != players.first
-        increment_turn
-        return
-      elsif players.length > 2
-        tmp = @players.reverse
-        (tmp.length-1).times do
-          tmp << tmp.shift
-        end
-        @players = tmp
       end
     end
     # In the rare event the current player has
@@ -1603,7 +1613,9 @@ class Junkyard
     end
     # Announce attack
     say player.discard.string % { :p => player, :o => opponent }
+    # Tally up turns being missed
     opponent.skips += player.discard.skips
+    player.turn_wizard += player.discard.skips
     # Redemption tokens
     if opponent.discard
       if opponent.discard.id == :insurance
@@ -1670,6 +1682,7 @@ class Junkyard
         player.delete_cards(c[0])
         say c[0].string % { :p => player, :o => opponent,
                             :c => opponent.discard }
+        player.blocks += 1 # increment Blocks used
         increment_turn
         return
       end
@@ -1786,14 +1799,26 @@ class Junkyard
       p.damage += b
       b_string << "Multi-Deflector bonus: +#{b}. "
     end
+    # NOPE bonus:
+    if p.blocks >= 7
+      p.bonuses += 1
+      p.damage += p.blocks
+      b_string << "NOPE bonus: +#{p.blocks}. "
+    end
     # Speed bonus:
     if Time.now.to_i - started.to_i <= 60
       p.bonuses += 1
       p.damage += 10
       b_string << "Speed bonus: +10. "
     end
+    # Turn-Wizard bonus:
+    if p.turn_wizard >= 7
+      p.bonuses += 1
+      p.damage += p.turn_wizard
+      b_string << "Turn-Wizard bonus: +#{p.turn_wizard}. "
+    end
     # Where's-the-fight? bonus:
-    if p.skip_count >= 7
+    if p.skip_count >= 6
       p.bonuses += 1
       p.damage += p.skip_count * 2
       b_string << "Where's-the-fight? bonus: +#{p.skip_count * 2}. "
@@ -2211,7 +2236,7 @@ class JunkyardPlugin < Plugin
         n = 1
         top_players.each do |k|
           @bot.say m.channel, "#{Bold}#{n}. #{k[:nick]}#{Bold} - " +
-                              "#{k[:damage]} dmg (#{k[:wins]}/ " +
+                              "#{k[:damage]} dmg (#{k[:wins]}/" +
                               "#{k[:games]} games won)"
           n += 1
           end
