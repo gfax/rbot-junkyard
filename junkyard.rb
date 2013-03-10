@@ -5,7 +5,7 @@
 # Author:: Lite <degradinglight@gmail.com>
 # Copyright:: (C) 2012 gfax.ch
 # License:: GPL
-# Version:: 2013-03-07
+# Version:: 2013-03-09
 #
 
 class Junkyard
@@ -354,10 +354,10 @@ class Junkyard
 
   class Player
 
-    attr_accessor :user, :bees, :blocks, :bonuses, :cards, :damage, 
-                  :deflector, :deflectors, :discard, :garbage, :glutton,
-                  :grabbed, :health, :multiball, :skips, :skip_count,
-                  :turns, :turn_wizard
+    attr_accessor :user, :bees, :blocks, :bonuses, :cards, :crane,
+                  :damage, :deflector, :deflectors, :discard,
+                  :glutton, :grabbed, :health, :multiball, :skips,
+                  :skip_count, :turns, :turn_wizard
 
     def initialize(user, health=MAX_HP)
       @user = user        # p.user => unbolded, p.to_s => bolded
@@ -365,11 +365,11 @@ class Junkyard
       @blocks = 0         # counter for "NOPE" bonus
       @bonuses = 0        # counter for end-of-game bonuses
       @cards = []         # hand cards
+      @crane = nil        # array of cards played with Crane
       @damage = 0         # total damage dished out
       @deflector = false  # deflects attacks when true
       @deflectors = 0     # counter for "Deflector" bonus
       @discard = nil      # card the player just played
-      @garbage = nil      # array of Garbage Man garbage cards
       @glutton = 0        # counter for "Glutton" bonus
       @grabbed = false    # currently being grabbed
       @health = health    # initial health
@@ -606,7 +606,7 @@ class Junkyard
       increment_turn
     end
     @discard |= player.cards
-    @discard |= player.garbage if player.garbage
+    @discard |= player.crane if player.crane
     @discard << player.deflector if player.deflector
     @dropouts << player
     @players.delete(player)
@@ -1019,7 +1019,7 @@ class Junkyard
     player.discard = c[0]
     # Don't discard crane cards.
     if player.discard.id == :crane
-      player.garbage = c[1..-1]
+      player.crane = c[1..-1]
     end
     player.delete_cards(c[0])
     # Deflector, (by our interpretation of the rules,) automatically
@@ -1078,7 +1078,7 @@ class Junkyard
         return
       end
     elsif c[1].id == :crane
-      player.garbage = c[2..-1]
+      player.crane = c[2..-1]
     end
     do_move(opponent, player, wait=false) if player == attacked
     # In case player dies trying to grab.
@@ -1292,11 +1292,11 @@ class Junkyard
           end
         end
       when :crane
-        @discard |= player.garbage
-        opponent.cards |= player.garbage
-        player.delete_cards(player.garbage)
-        deal(player, player.garbage.length)
-        player.garbage = nil
+        @discard |= player.crane
+        opponent.cards |= player.crane
+        player.delete_cards(player.crane)
+        deal(player, player.crane.length)
+        player.crane = nil
       when :meal_steal
         h, temp_deck = player.health, []
         opponent.cards.each do |e|
