@@ -369,12 +369,13 @@ class Junkyard
                  "up to a maximum of #{MAX_HP}."
       },
       :armor => {
+	:name => "Anabolic Steroids",
         :type => :support,
         :health => 5,
-        :string => "%{p} buckles on some armor.",
+        :string => "%{p} pops some conspicuous looking pills. Suddenly, STRONGER!",
         :regex => 'armor',
         :help => "Adds 5 extra points to your health on top of your maximum. " +
-                 "Your main HP will be protected until the armor is depleted."
+                 "Your main HP will be protected until the steroid is depleted."
       },
       :surgery => {
 	:name => "St. Jeffgus",
