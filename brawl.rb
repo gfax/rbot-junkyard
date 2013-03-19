@@ -1439,7 +1439,7 @@ class Junkyard
       end
       say card.string % { :p => player, :o => players[n] }
       player.cards, players[n].cards = players[n].cards, player.cards
-      notify(player, p_cards(player)) unless player == players.first
+      notify(players[n], p_cards(players[n])) unless players[n] == players.first
     when :the_bees
       n = rand(players.length)
       players[n].bees = card
