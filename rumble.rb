@@ -218,18 +218,20 @@ class Junkyard
 	:name => "SHORYUKEN!",
         :type => :attack,
         :health => -5,
-        :string => "%{o} receives " +
-		[ 'an INCREDIBLE', 
-		  'a REMARKABLE',
-		  'a SPLENDID',
-		  'a FANTASTIC',
-		  'an AMAZING',
-		  'an UNBELIEVABLE',
-		  'a TOTALLY AWESOME',
-		  'a surprisingly plain looking',
-		  'a SPECTACULAR'
-      		].sample +
+        :string =>[ "%{p} catches fire and screams SSSSSSSSSSSSSSSSSSSSHHHHHHHHHHHHHHHHOOOOOOOOOOOOORRRRRRRRRYYYYYYYYYUUUUUUUKKKKKKKKKKKKEEEEEEEEENNNNNNNNNNNN!!!!!!!!!!!!!!!!!!!11 on %{o}",
+	       	"%{o} receives " +
+			[ 'an INCREDIBLE', 
+			  'a REMARKABLE',
+			  'a SPLENDID',
+			  'a FANTASTIC',
+			  'an AMAZING',
+			  'an UNBELIEVABLE',
+			  'a TOTALLY AWESOME',
+			  'a surprisingly plain looking',
+			  'a SPECTACULAR'
+	      		].sample +
 		" uppercut from %{p}.",
+      		].sample,
         :regex => [ /upper/ ],
         :help => "Ultimate attack."
       },
@@ -734,11 +736,15 @@ class Junkyard
     end
   end
 
-  def drop_player(dropper, player, killed=true)
+  def drop_player(player, dropper=false)
     unless dropper == false or dropper == manager or dropper == player
       say "Only the game manager is allowed to drop others, #{dropper}."
       return
     end
+    # Pass any attacks on before removing a dropped player.
+    n = 0
+    n += 1 until players[n] == player
+    @manager = players[next_turn(n)] if player == manager
     if dropper
       # If the manager drops the only other player, end the game.
       if dropper == manager and dropper != player and players.length < 3
@@ -746,8 +752,10 @@ class Junkyard
         @plugin.remove_game(channel)
         return
       end
-    end
-    if killed
+      say "#{player} has been removed from the game."
+      @attacked = players[next_turn(n)] if attacked
+      players[next_turn(n)].grabbed = true if player.grabbed
+    else
       player.damage = 0
       update_user_stats(player, 0)
       if player.user == @bot.nick
@@ -755,32 +763,20 @@ class Junkyard
       else
         say DEATHS.sample % { :p => player }
       end
-    else
-      say "#{player} has been removed from the game."
     end
-    if player == attacked and not killed
-      # Pass any attacks on before removing player.
-      n = 0
-      n += 1 until players[n] == player
-      if next_turn(n).zero?
-        @manager = players.first if player == manager
-        increment_turn
-      else
-        players[next_turn(n)].grabbed = true if attacked.grabbed = true
-        attacked.discard, attacked.grabbed = nil
-        @attacked = players[next_turn(n)]
-        @manager = players[next_turn(n)] if player == manager
-        say p_turn
-      end
-    elsif player == players.first
-      increment_turn
-    end
+    player.discard, player.grabbed = nil
     @discard |= player.cards
     @discard |= player.crane if player.crane
     @discard << player.deflector if player.deflector
     @dropouts << player
     @players.delete(player)
-    end_game if players.length == 1
+    if players.length < 2
+      end_game
+    elsif player == players.first or player == attacked
+      increment_turn
+    else
+      say p_turn
+    end
   end
 
   def get_player(user)
@@ -882,11 +878,11 @@ class Junkyard
 
   def check_health(player=nil)
     unless player.nil?
-      drop_player(false, player) if player.health < 1
+      drop_player(player) if player.health < 1
       return
     end
     players.each do |p|
-      drop_player(false, p) if p.health < 1
+      drop_player(p) if p.health < 1
     end
   end
 
@@ -1327,7 +1323,7 @@ class Junkyard
       end
       say card.string % { :p => player, :o => players[n] }
       player.cards, players[n].cards = players[n].cards, player.cards
-      notify(player, p_cards(player)) unless player == players.first
+      notify(players[n], p_cards(players[n])) unless players[n] == players.first
     when :the_bees
       n = rand(players.length)
       players[n].bees = card
@@ -1626,7 +1622,7 @@ class Junkyard
       player.skip_count += 1
       increment_turn
     else
-      say p_turn
+      say p_turn unless players.length < 2 or not started
       notify player, p_cards(player)
       Thread.new do
         sleep(@bot.config['junkyard.bot_delay'])
@@ -1983,7 +1979,7 @@ class JunkyardPlugin < Plugin
         m.reply "There is no one playing named '#{a[0]}'."
         return
       end
-      g.drop_player(p, victim, false)
+      g.drop_player(victim, p)
     when /^(pa|pass)( |\z)/
       return unless g.attacked and p
       g.pass(p) if g.attacked == p or p.grabbed
