@@ -5,7 +5,7 @@
 # Author:: Lite <degradinglight@gmail.com>
 # Copyright:: (C) 2012 gfax.ch
 # License:: GPL
-# Version:: 2013-03-20
+# Version:: 2013-03-21
 #
 
 class Junkyard
@@ -1101,8 +1101,8 @@ class Junkyard
       a << n
       n2 = rand(p.cards.length)
       if card.id == :crane and p.cards.length > 1
-        # Throw a random card at the player
-        # just for the heck of it!
+        # Throw a random card at the
+        # playe just for the heck of it!
         n2 = rand(p.cards.length) while n == n2
         a << n2
       elsif card.id == :grab
@@ -1117,7 +1117,8 @@ class Junkyard
       play_move(a)
     else
       a = Array.new(p.cards.length) { |i| i + 1 }
-      # Don't discard the first card in the hand if we can help it.
+      # Don't discard the first card
+      # in the hand if we can help it.
       a.shift unless a.length < 2
       discard(a)
     end
@@ -1309,10 +1310,12 @@ class Junkyard
     # to respond, therefore we execute the attack and increment_turn.
     deflecting = if opponent.deflector then true else false end
     do_move(player, opponent)
-    if opponent.grabbed == false and deflecting
-      increment_turn
-    elsif c[0].type == :support or c[0].type == :unstoppable
-      increment_turn
+    unless opponent.health < 1 or player.health < 1
+      if opponent.grabbed == false and deflecting
+        increment_turn
+      elsif c[0].type == :support or c[0].type == :unstoppable
+        increment_turn
+      end
     end
   end
 
@@ -1692,7 +1695,7 @@ class Junkyard
     player.delete_cards(c[0])
     player.discard = c[0]
     do_move(opponent, player, wait=false)
-    increment_turn
+    increment_turn unless player.health < 1 or opponent.health < 1
   end
 
   def elapsed_time
