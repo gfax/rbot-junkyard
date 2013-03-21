@@ -860,7 +860,14 @@ class Junkyard
     # Pass any attacks on before removing a dropped player.
     n = 0
     n += 1 until players[n] == player
-    @manager = players[next_turn(n)] if player == manager
+    if player == manager
+      unless players[next_turn(n)].user == @bot.nick
+        @manager = players[next_turn(n)]
+      else
+        @manager = players[next_turn(next_turn(n))]
+      end
+      say "#{manager} is now game manager."
+    end
     if dropper
       # If the manager drops the only other player, end the game.
       if dropper == manager and dropper != player and players.length < 3
