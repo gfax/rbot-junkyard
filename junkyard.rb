@@ -1074,7 +1074,7 @@ class Junkyard
     elsif c[1].id == :crane
       player.crane = c[2..-1]
     end
-    do_move(opponent, player, wait=false) if player == attacked
+    do_move(opponent, player, wait=false) if player == attacked or opponent.discard
     # In case player dies trying to grab.
     return if player.health < 1
     @discard |= [ c[0], c[1] ]
