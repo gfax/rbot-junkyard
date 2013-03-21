@@ -1667,6 +1667,7 @@ class Junkyard
         say "#{player} jumps out of the way and passes " +
             "#{opponent.user}'s attack onto #{players[n]}!"
         @attacked = players[n]
+        notify players[n], p_cards(players[n])
         Thread.new do
           sleep(2)
           bot_counter
