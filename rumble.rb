@@ -5,7 +5,7 @@
 # Author:: Lite <degradinglight@gmail.com>
 # Copyright:: (C) 2012 gfax.ch
 # License:: GPL
-# Version:: 2013-03-09
+# Version:: 2013-03-21
 #
 
 class Junkyard
@@ -266,7 +266,7 @@ class Junkyard
       :crane => {
 	:name => 'RC Quadcopter',
         :type => :unstoppable,
-        :string => "%{p} loads cargo into a little RC chopper, fly's over to %{o}, and jettisons the hold into %{o}'s hand.",
+        :string => "%{p} loads cargo into a little RC chopper, flies over to %{o}, and jettisons the hold into %{o}'s hand.",
         :regex => [ /((quad)?copter|chopper)/ ],
         :help => "Before launching your sortie, specify the cards you don't want, then " + 
 	         "fly them over to, and dump them on an opponent. The opponent won't " + 
@@ -457,11 +457,13 @@ class Junkyard
         :help => "Draw until you have 8 cards in your hand."
       },
       :windy => {
-        :name => 'It\'s Getting Windy',
+        :name => 'Hockey Night',
         :type => :power,
-        :string => "%{p} turns up the ceiling fan too high and blows up " +
-                  "a gust! Every player passes a random card forward.",
-        :regex => [ /it\'?s\b/, /getting/, /windy/ ],
+        :string => "%{p} discards, and *POOF*, the #{%w(Bruins Sabres Canadiens Senators Hurricaines Panthers Lightning Capitals Jets).sample}" +
+      		  " and the #{%w(Canucks DUCKS Oilers Avalanche Predators Stars Kings Coyotes Sharks).sample} magically" +
+                  " appear and get into a big fight. In the confusion some cards get" +
+		  " tossed around!",
+        :regex => [ /Hockey (night)?/ ],
         :help => "All players choose a random card " +
                  "from the player previous to them."
       },
@@ -744,7 +746,14 @@ class Junkyard
     # Pass any attacks on before removing a dropped player.
     n = 0
     n += 1 until players[n] == player
-    @manager = players[next_turn(n)] if player == manager
+    if player == manager
+      unless players[next_turn(n)].user == @bot.nick
+        @manager = players[next_turn(n)]
+      else
+        @manager = players[next_turn(next_turn(n))]
+      end
+      say "#{manager} is now game manager."
+    end
     if dropper
       # If the manager drops the only other player, end the game.
       if dropper == manager and dropper != player and players.length < 3
@@ -1193,10 +1202,12 @@ class Junkyard
     # to respond, therefore we execute the attack and increment_turn.
     deflecting = if opponent.deflector then true else false end
     do_move(player, opponent)
-    if opponent.grabbed == false and deflecting
-      increment_turn
-    elsif c[0].type == :support or c[0].type == :unstoppable
-      increment_turn
+    unless opponent.health < 1 or player.health < 1
+      if opponent.grabbed == false and deflecting
+        increment_turn
+      elsif c[0].type == :support or c[0].type == :unstoppable
+        increment_turn
+      end
     end
   end
 
@@ -1246,7 +1257,7 @@ class Junkyard
     elsif c[1].id == :crane
       player.crane = c[2..-1]
     end
-    do_move(opponent, player, wait=false) if player == attacked
+    do_move(opponent, player, wait=false) if player == attacked or opponent.discard
     # In case player dies trying to grab.
     return if player.health < 1
     @discard |= [ c[0], c[1] ]
@@ -1548,6 +1559,7 @@ class Junkyard
         say "#{player} jumps out of the way and passes " +
             "#{opponent.user}'s attack onto #{players[n]}!"
         @attacked = players[n]
+        notify players[n], p_cards(players[n])
         Thread.new do
           sleep(2)
           bot_counter
@@ -1576,7 +1588,7 @@ class Junkyard
     player.delete_cards(c[0])
     player.discard = c[0]
     do_move(opponent, player, wait=false)
-    increment_turn
+    increment_turn unless player.health < 1 or opponent.health < 1
   end
 
   def elapsed_time
