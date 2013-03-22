@@ -1572,9 +1572,9 @@ class Junkyard
       if opponent.discard
         if opponent.discard.type == :counter
           say "#{opponent}'s #{opponent.discard} was thwarted!"
+          @discard << opponent.discard
+          opponent.discard = nil
         end
-        @discard << opponent.discard
-        opponent.discard = nil
       end
       case player.discard.id
       when :bulldozer
