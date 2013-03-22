@@ -5,7 +5,7 @@
 # Author:: Lite <degradinglight@gmail.com>
 # Copyright:: (C) 2012 gfax.ch
 # License:: GPL
-# Version:: 2013-03-21
+# Version:: 2013-03-22
 #
 
 class Junkyard
@@ -356,8 +356,8 @@ class Junkyard
 
     attr_accessor :user, :bees, :blocks, :bonuses, :cards, :crane,
                   :damage, :deflector, :deflectors, :discard,
-                  :glutton, :grabbed, :health, :multiball, :skips,
-                  :skip_count, :turns, :turn_wizard
+                  :glutton, :grabbed, :hand_max, :health, :multiball,
+                  :skips, :skip_count, :turns, :turn_wizard
 
     def initialize(user, health=MAX_HP)
       @user = user        # p.user => unbolded, p.to_s => bolded
@@ -372,6 +372,7 @@ class Junkyard
       @discard = nil      # card the player just played
       @glutton = 0        # counter for "Glutton" bonus
       @grabbed = false    # currently being grabbed
+      @hand_max = 5       # maximum number of cards to deal up to
       @health = health    # initial health
       @multiball = false  # gets to go again when true
       @skips = 0          # skips player when > 0
@@ -556,7 +557,7 @@ class Junkyard
     else
       say "#{p} joins the #{TITLE}"
     end
-    deal(p, 5)
+    deal(p, p.hand_max)
     if players.length == 2
       countdown = @bot.config['junkyard.countdown']
       @bot.timer.add_once(countdown) { start_game }
@@ -1449,8 +1450,8 @@ class Junkyard
     end
     # Deal the new player some cards.
     player = players.first
-    if player.cards.length < 5
-      n = 5 - player.cards.length
+    if player.cards.length < player.hand_max
+      n = player.hand_max - player.cards.length
       deal(player, n)
     end
     if player.bees
