@@ -14,7 +14,7 @@ class Junkyard
   MAX_HP = 10
   COLORS = { :attack => Bold + Irc.color(:lightgray,:black),
              :counter => Bold + Irc.color(:green,:black),
-             :power => Bold + Irc.color(:brown,:black),
+             :disaster => Bold + Irc.color(:brown,:black),
              :support => Bold + Irc.color(:teal,:black),
              :unstoppable => Bold + Irc.color(:yellow,:black),
              :skips => Irc.color(:purple),
@@ -140,7 +140,7 @@ class Junkyard
         :type => :attack,
         :health => -4,
         :string => "%{p} delivers %{o}'s private belongings a swift kick.",
-        :regex => [ /kick/, /ball/ ],
+        :regex => [ /kick(bal)?/ ],
         :help => "Major damage due to a swift kick in the balls. " +
                  "Can be used on players that don't have balls."
       },
@@ -241,7 +241,7 @@ class Junkyard
                  "Resets health to #{MAX_HP}."
       },
       :avalanche => {
-        :type => :power,
+        :type => :disaster,
         :health => -6,
         :string => "%{p} causes an avalanche to fall on %{o}!",
         :regex => [ /avalanch/ ],
@@ -249,14 +249,14 @@ class Junkyard
                  "any random player, including yourself!."
       },
       :deflector => {
-        :type => :power,
+        :type => :disaster,
         :string => "%{p} raises a deflector shield!",
         :regex => [ /deflect/ ],
         :help => "Next attack played against you automatically " +
                  "attacks a random player that isn't you."
       },
       :earthquake => {
-        :type => :power,
+        :type => :disaster,
         :health => -1,
         :string => "%{p} shakes everybody up with an earthquake!",
         :regex =>  [ /earth/, /quake/ ],
@@ -265,27 +265,27 @@ class Junkyard
       },
       :multiball => {
         :name => 'Multi-ball',
-        :type => :power,
+        :type => :disaster,
         :string => "%{p} lites multi-ball.",
         :regex => [ /multi/ ],
         :help => "Take an extra turn after your turn."
       },
       :reverse => {
-        :type => :power,
+        :type => :disaster,
         :string => "%{p} reverses the table!",
         :regex => [ /reverse/ ],
         :help => "REVERSE playing order. Skip " +
                  "opponent's turn if a 2-player game."
       },
       :shifty_business => {
-        :type => :power,
+        :type => :disaster,
         :string => "%{p} swaps hands with %{o}!",
         :regex => [ /shift/, /business/ ],
         :help => "Swap hand cards with a random player."
       },
       :the_bees => {
         :name => 'THE BEES',
-        :type => :power,
+        :type => :disaster,
         :string => "%{p} drops the bee cage on %{o}'s head...",
         :regex => [ /the/, /be+s/ ],
         :help => "Random player is stung by bees and must do " +
@@ -293,14 +293,14 @@ class Junkyard
                  "every turn until victim uses a support card."
       },
       :toolbox => {
-        :type => :power,
+        :type => :disaster,
         :string => "%{p} pulls %{n} cards from the deck.",
         :regex => [ /tool/, /box/, /bag/ ],
         :help => "Draw until you have 8 cards in your hand."
       },
       :windy => {
         :name => 'It\'s Getting Windy',
-        :type => :power,
+        :type => :disaster,
         :string => "%{p} turns up the ceiling fan too high and blows up " +
                   "a gust! Every player passes a random card forward.",
         :regex => [ /it\'?s\b/, /getting/, /windy/ ],
@@ -308,7 +308,7 @@ class Junkyard
                  "from the player previous to them."
       },
       :whirlwind => {
-        :type => :power,
+        :type => :disaster,
         :string => "A whirlwind causes everyone to rotate hand cards!",
         :regex => [ /whirl( |-)?wind/ ],
         :help => "Every player shifts their hand cards " +
@@ -407,7 +407,7 @@ class Junkyard
                    'private belongings', 'particle accelerator',
                    'anodes', 'anchors', 'Jimmy Deans', 'coat rack',
                    'balls' ].sample} a swift kick.",
-        :regex => [ /kick/, /ball/ ],
+        :regex => [ /kick(bal)?/ ],
         :help => "Major damage due to a swift kick in the balls. " +
                  "Can be used on players that don't have balls."
       },
@@ -524,7 +524,7 @@ class Junkyard
       },
       :avalanche => {
         :name => 'FFFFFF',
-        :type => :power,
+        :type => :disaster,
         :health => -6,
         :string => "%{p} randomly inflicts 6 damage on %{o}. What a dick!",
         :regex => [ /avalanch/ ],
@@ -532,7 +532,7 @@ class Junkyard
                  "any random player, including yourself!."
       },
       :deflector => {
-        :type => :power,
+        :type => :disaster,
         :string => "%{p} raises a deflector shield!",
         :regex => [ /deflect/ ],
         :help => "Next attack played against you automatically " +
@@ -540,7 +540,7 @@ class Junkyard
       },
       :earthquake => {
         :name => 'Fireball',
-        :type => :power,
+        :type => :disaster,
         :health => -1,
         :string => "%{p} drops a fireball on everyone.",
         :regex =>  [ /fire/ ],
@@ -548,28 +548,28 @@ class Junkyard
       },
       :multiball => {
         :name => 'Multi-ball',
-        :type => :power,
+        :type => :disaster,
         :string => "%{p} lites multi-ball.",
         :regex => [ /multi/ ],
         :help => "Take an extra turn after your turn."
       },
       :reverse => {
         :name => 'You\'re Your Grandfather',
-        :type => :power,
+        :type => :disaster,
         :string => "%{p} reverses the table!",
         :regex => [ /you'?re?/, /grand/, 'reverse' ],
         :help => "Time is moving backwards! REVERSE playing order. " +
                  "Skip opponent's turn if a 2-player game."
       },
       :shifty_business => {
-        :type => :power,
+        :type => :disaster,
         :string => "%{p} swaps hands with %{o}!",
         :regex => [ /shift/, /business/ ],
         :help => "Swap hand cards with a random player."
       },
       :the_bees => {
         :name => 'THE BEES',
-        :type => :power,
+        :type => :disaster,
         :string => "%{p} drops the bee cage on %{o}'s head...",
         :regex => [ /the/, /be+s/ ],
         :help => "Random player is stung by bees and must do " +
@@ -577,14 +577,14 @@ class Junkyard
                  "every turn until victim uses a support card."
       },
       :toolbox => {
-        :type => :power,
+        :type => :disaster,
         :string => "%{p} pulls %{n} cards from the deck.",
         :regex => [ /tool/, 'box', 'bag' ],
         :help => "Draw until you have 8 cards in your hand."
       },
       :windy => {
         :name => 'It\'s Getting Windy',
-        :type => :power,
+        :type => :disaster,
         :string => "%{p} turns up the ceiling fan too high and blows up " +
                   "a gust! Every player passes a random card forward.",
         :regex => [ /it\'?s(( ?getting)? ?windy)?/, 'getting', 'windy' ],
@@ -592,7 +592,7 @@ class Junkyard
                  "from the player previous to them."
       },
       :whirlwind => {
-        :type => :power,
+        :type => :disaster,
         :string => "FEEL THE POWER OF THE WIND",
         :regex => [ /whirl( |-)?wind/ ],
         :help => "Every player shifts their hand cards " +
@@ -1056,7 +1056,7 @@ class Junkyard
     # Make an inventory of what the bot has.
     c_hash = { :support => [], :surgery => [],
                :counter => [], :dodge => [], :grab => [], :insurance => [],
-               :unstoppable => [], :attack => [], :power => [],
+               :unstoppable => [], :attack => [], :disaster => [],
                :deflector => [], :multiball => [], :toolbox => []
              }
     player.cards.each do |c|
@@ -1098,8 +1098,8 @@ class Junkyard
              c_hash[:attack].first
            elsif p.health < (MAX_HP - 1) and c_hash[:support].any?
              c_hash[:support].first
-           elsif c_hash[:power].any?
-             c_hash[:power].first
+           elsif c_hash[:disaster].any?
+             c_hash[:disaster].first
            else nil
            end
     # Find out which card in the deck this is,
@@ -1136,7 +1136,7 @@ class Junkyard
     end
     Thread.new do
       sleep(@bot.config['junkyard.bot_delay'])
-      bot_move if card.type == :power
+      bot_move if card.type == :disaster
     end
   end
 
@@ -1238,11 +1238,11 @@ class Junkyard
       if attacked
         opponent = attacked
       else
-        # Don't really need an opponent if power/support card.
+        # Don't really need an opponent if disaster/support card.
         temp_card = a[0].to_i - 1
         if temp_card.between?(0, player.cards.length-1)
           temp_card = player.cards[temp_card]
-          if temp_card.type == :power or temp_card.type == :support
+          if temp_card.type == :disaster or temp_card.type == :support
             opponent = players[1]
           else
             opponent = get_player(a[0])
@@ -1298,8 +1298,8 @@ class Junkyard
         notify player, "That's not an attack card."
         return
       end
-    elsif c[0].type == :power
-      do_power(player, c[0])
+    elsif c[0].type == :disaster
+      do_disaster(player, c[0])
       return
     else
     end
@@ -1347,8 +1347,8 @@ class Junkyard
         return
       end
     end
-    if c[0].type == :power
-      do_power(player, c[0])
+    if c[0].type == :disaster
+      do_disaster(player, c[0])
       return
     elsif player.discard
       say "You already played a card."
@@ -1365,7 +1365,7 @@ class Junkyard
     if c[1].nil?
       notify player, "Play an attack when grabbing."
       return
-    elsif c[1].type == :counter or c[1].type == :power
+    elsif c[1].type == :counter or c[1].type == :disaster
       notify player, "You can't play a #{c[1].type} card when grabbing."
       return
     elsif c[1].id == :surgery
@@ -1400,9 +1400,10 @@ class Junkyard
     end
   end
 
-  def do_power(player, card)
+  def do_disaster(player, card)
     unless attacked.nil?
-      notify player, "You cannot play power cards in the middle of an attack."
+      notify player, "You cannot play disaster " +
+                     "cards in the middle of an attack."
       return
     end
     # Bees/Deflector are discarded when used up.
@@ -2007,7 +2008,7 @@ class JunkyardPlugin < Plugin
     b, cl = Bold, NormalText
     a = Junkyard::COLORS[:attack]
     c = Junkyard::COLORS[:counter]
-    p = Junkyard::COLORS[:power]
+    p = Junkyard::COLORS[:disaster]
     s = Junkyard::COLORS[:support]
     u = Junkyard::COLORS[:unstoppable]
     case topic.downcase
@@ -2038,7 +2039,7 @@ class JunkyardPlugin < Plugin
       "of cards: #{a}Attack#{cl} cards are played against other players on " +
       "your turn. #{u}Unstoppable#{cl} cards are as well, but cannot be " +
       "countered by the opponent. #{s}Support#{cl} cards heal you. " +
-      "#{c}Counter#{cl} cards counter attacks against you. #{p}Power#{cl} " +
+      "#{c}Counter#{cl} cards counter attacks against you. #{p}Disaster#{cl} " +
       "cards either affect all players or a random player. They do not " +
       "consume a turn. Play these cards at the beginning of anyone's turn. " +
       "Use #{prefix}help #{plugin} <card> for card-specific info."
