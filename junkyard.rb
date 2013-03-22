@@ -675,9 +675,13 @@ class Junkyard
   end
 
   def p_cards(player)
-    n, b = 0, Bold
-    cards = player.cards.map { |c| n += 1; "#{b}#{n}.\)#{b} #{c}"}
-    return cards.join(' ')
+    if player.cards > 0
+      n, b = 0, Bold
+      cards = player.cards.map { |c| n += 1; "#{b}#{n}.\)#{b} #{c}"}
+      return cards.join(' ')
+    else
+      return "#{Bold}(You have no cards!)#{Bold}"
+    end
   end
 
   def p_damage
