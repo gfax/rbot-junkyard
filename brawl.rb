@@ -140,7 +140,7 @@ class Junkyard
         :type => :attack,
         :health => -4,
         :string => "%{p} delivers %{o}'s private belongings a swift kick.",
-        :regex => [ /kick(bal)?/ ],
+        :regex => [ /kick/ ],
         :help => "Major damage due to a swift kick in the balls. " +
                  "Can be used on players that don't have balls."
       },
@@ -287,7 +287,7 @@ class Junkyard
         :name => 'THE BEES',
         :type => :disaster,
         :string => "%{p} drops the bee cage on %{o}'s head...",
-        :regex => [ /the/, /be+s/ ],
+        :regex => [ /be+s/ ],
         :help => "Random player is stung by bees and must do " +
                  "their best Nicholas Cage impression. 1 damage " +
                  "every turn until victim uses a support card."
@@ -310,7 +310,7 @@ class Junkyard
       :whirlwind => {
         :type => :disaster,
         :string => "A whirlwind causes everyone to rotate hand cards!",
-        :regex => [ /whirl( |-)?wind/ ],
+        :regex => [ /whirl/, /wind/ ],
         :help => "Every player shifts their hand cards " +
                  "over to the player in front of them."
       }
@@ -407,7 +407,7 @@ class Junkyard
                    'private belongings', 'particle accelerator',
                    'anodes', 'anchors', 'Jimmy Deans', 'coat rack',
                    'balls' ].sample} a swift kick.",
-        :regex => [ /kick(bal)?/ ],
+        :regex => [ /kick/ ],
         :help => "Major damage due to a swift kick in the balls. " +
                  "Can be used on players that don't have balls."
       },
@@ -571,7 +571,7 @@ class Junkyard
         :name => 'THE BEES',
         :type => :disaster,
         :string => "%{p} drops the bee cage on %{o}'s head...",
-        :regex => [ /the/, /be+s/ ],
+        :regex => [ /be+s/ ],
         :help => "Random player is stung by bees and must do " +
                  "their best Nicholas Cage impression. 1 damage " +
                  "every turn until victim uses a support card."
@@ -594,7 +594,7 @@ class Junkyard
       :whirlwind => {
         :type => :disaster,
         :string => "FEEL THE POWER OF THE WIND",
-        :regex => [ /whirl( |-)?wind/ ],
+        :regex => [ /whirl/, /wind/ ],
         :help => "Every player shifts their hand cards " +
                  "over to the player in front of them."
       }
