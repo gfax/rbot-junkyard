@@ -635,6 +635,9 @@ class Junkyard
       players.each do |p|
         return p if p.user.irc_downcase == user.irc_downcase(channel.casemap)
       end
+      players.each do |p|
+        return p if p.user.irc_downcase =~ /#{user.irc_downcase(channel.casemap)}/
+      end
     else
       get_player(user.to_s)
     end
@@ -905,7 +908,7 @@ class Junkyard
       when 0..2
         card = c_hash[:grab].first
         card2 = c_hash[:unstoppable].first
-      else 
+      else
         card = nil
       end
     elsif c_hash[:grab].any? and c_hash[:attack].any?
@@ -965,7 +968,6 @@ class Junkyard
       bot_move
     end
   end
-
 
   def play_move(a)
     player = players.first
@@ -1124,7 +1126,7 @@ class Junkyard
     player.discard = c[1]
     do_slots(player)
     player.delete_cards([c[0], c[1]])
-    # In case player being grabbed dies when 
+    # In case player being grabbed dies when
     # being grabbed (ie., from Deflector).
     if opponent.health < 1
       increment_turn
