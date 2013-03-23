@@ -5,7 +5,7 @@
 # Author:: Lite <degradinglight@gmail.com>
 # Copyright:: (C) 2012 gfax.ch
 # License:: GPL
-# Version:: 2013-03-22
+# Version:: 2013-03-23
 #
 
 class Junkyard
@@ -861,11 +861,12 @@ class Junkyard
     # Pass any attacks on before removing a dropped player.
     n = 0
     n += 1 until players[n] == player
+    n = next_turn(n)
     if player == manager and players.length > 2
-      unless players[next_turn(n)].user == @bot.nick
-        @manager = players[next_turn(n)]
+      unless players[n].user == @bot.nick
+        @manager = players[n]
       else
-        @manager = players[next_turn(next_turn(n))]
+        @manager = players[next_turn(n)]
       end
       say "#{manager} is now game manager."
     end
@@ -877,8 +878,17 @@ class Junkyard
         return
       end
       say "#{player} has been removed from the game."
-      @attacked = players[next_turn(n)] if attacked
-      players[next_turn(n)].grabbed = true if player.grabbed
+      # Pass any existing attacks to the next player (as
+      # long as the next player isn't the one attacking).
+      unless player == players.first
+        if players[n] == players.first
+          @attacked = players[next_turn(n)] if player == attacked
+          players[next_turn(n)].grabbed = true if player.grabbed
+        else
+          @attacked = players[n] if player == attacked
+          players[n].grabbed = true if player.grabbed
+        end
+      end
     else
       player.damage = 0
       update_user_stats(player, 0)
@@ -896,11 +906,11 @@ class Junkyard
     @players.delete(player)
     if players.length < 2
       end_game
-    elsif player == players.first or player == attacked
-      increment_turn
-    else
-      say p_turn
+      return
     end
+    say p_turn
+    bot_thread_counter
+    bot_thread_move
   end
 
   def get_player(user)
@@ -1069,12 +1079,13 @@ class Junkyard
       end
     end
     c_hash[:support].reverse!
-    c_hash
+    return c_hash
   end
 
   def bot_move
     p = players.first
     return unless p.user == @bot.nick
+    return if players.length < 2 or p.grabbed
     a = [] # array to pass to play_move
     # For now, just make the bot pick on a random player.
     n = rand(players.length)
@@ -1091,7 +1102,7 @@ class Junkyard
            elsif p.bees and c_hash[:support].any?
              c_hash[:support].first
            elsif c_hash[:grab].any? and c_hash[:unstoppable].any? and c_hash[:attack].any?
-             c_hash[:grab].any?
+             c_hash[:grab].first
            elsif c_hash[:unstoppable].any?
              c_hash[:unstoppable].first
            elsif c_hash[:attack].any?
@@ -1114,30 +1125,29 @@ class Junkyard
       n2 = rand(p.cards.length)
       if card.id == :crane and p.cards.length > 1
         # Throw a random card at the
-        # playe just for the heck of it!
+        # player just for the heck of it!
         n2 = rand(p.cards.length) while n == n2
         a << n2
       elsif card.id == :grab
         until p.cards[n2].type == :unstoppable or p.cards[n2].type == :attack
           n2 = rand(p.cards.length)
         end
-        a << n2
+        a << n2 + 1
       end
     end
     # Play the card or otherwise discard.
     if a.length > 1
+      #debug "playing #{a.join(' ')}"
       play_move(a)
     else
       a = Array.new(p.cards.length) { |i| i + 1 }
       # Don't discard the first card
       # in the hand if we can help it.
       a.shift unless a.length < 2
+      #debug "discarding #{a.join(' ')}"
       discard(a)
     end
-    Thread.new do
-      sleep(@bot.config['junkyard.bot_delay'])
-      bot_move if card.type == :disaster
-    end
+    bot_thread_move if card.type == :disaster
   end
 
   def bot_counter
@@ -1164,11 +1174,11 @@ class Junkyard
       card2 = c_hash[:support].first
     elsif not p.grabbed and c_hash[:dodge].any?
       card = c_hash[:dodge].first
+    elsif p.health <= (MAX_HP/2) and c_hash[:counter].any?
+      card = c_hash[:counter].first
     elsif p.health <= (MAX_HP/2) and c_hash[:grab].any? and c_hash[:support].any?
       card = c_hash[:grab].first
       card2 = c_hash[:support].first
-    elsif p.health <= (MAX_HP/2) and c_hash[:counter].any?
-      card = c_hash[:counter].first
     elsif c_hash[:counter].any?
       card = if o.discard.health <= -3
                c_hash[:counter].first
@@ -1216,15 +1226,34 @@ class Junkyard
       end
     end
     # Play the card or otherwise discard.
-    # TODO: Playing Block breaks bot, but why?
     #debug p.cards.join(' ')
-    #debug "playing #{a.join(' ')}"
     if a.length > 0
-      play_counter(p, a)
+      if players.first.user == @bot.nick
+        #debug "counter-countering with #{a.join(' ')}"
+        play_move(p, a)
+      else
+        #debug "countering with #{a.join(' ')}"
+        play_counter(p, a)
+      end
     else
       pass(p)
     end
   end
+
+  def bot_thread_counter
+    Thread.new do
+      sleep(2)
+      bot_counter
+    end
+  end
+
+  def bot_thread_move
+    Thread.new do
+      sleep(@bot.config['junkyard.bot_delay'])
+      bot_move
+    end
+  end
+
 
   def play_move(a)
     player = players.first
@@ -1357,8 +1386,7 @@ class Junkyard
       notify player, "Wait your turn, #{player.user}."
       return
     end
-    opponent = players.first
-    do_counter(player, opponent, c)
+    do_counter(player, players.first, c)
   end
 
   def do_grab(player, opponent, c)
@@ -1394,10 +1422,7 @@ class Junkyard
     opponent.grabbed = true
     say c[0].string % { :p => player, :o => opponent }
     notify opponent, p_cards(opponent)
-    Thread.new do
-      sleep(2)
-      bot_counter
-    end
+    bot_thread_counter
   end
 
   def do_disaster(player, card)
@@ -1534,10 +1559,7 @@ class Junkyard
         say "#{player} plays #{player.discard}. Respond or pass, #{opponent}."
         notify opponent, p_cards(opponent)
         @attacked = opponent
-        Thread.new do
-          sleep(2)
-          bot_counter
-        end
+        bot_thread_counter
         return
       end
       damage = 0
@@ -1683,10 +1705,7 @@ class Junkyard
             "#{opponent.user}'s attack onto #{players[n]}!"
         @attacked = players[n]
         notify players[n], p_cards(players[n])
-        Thread.new do
-          sleep(2)
-          bot_counter
-        end
+        bot_thread_counter
       end
       return
     when :block
@@ -1759,10 +1778,7 @@ class Junkyard
     else
       say p_turn unless players.length < 2 or not started
       notify player, p_cards(player)
-      Thread.new do
-        sleep(@bot.config['junkyard.bot_delay'])
-        bot_move
-      end
+      bot_thread_move
     end
   end
 
@@ -2139,7 +2155,7 @@ class JunkyardPlugin < Plugin
       else
         g.play_counter(p, a)
       end
-    when /^(od?|order)( |\z)/, /^(tu?|turn)( |\z)/
+    when /^(tu?|turn)( |\z)/
       @bot.say m.channel, g.p_order if g.started
     when /^replace( |\z)/
       return if p.nil? or a.length.zero?
