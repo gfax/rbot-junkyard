@@ -898,9 +898,21 @@ class Junkyard
         say DEATHS.sample % { :p => player }
       end
     end
+    if @bot.config['junkyard.reveal_cards']
+      reveal_string = if player.cards.length > 0
+                        "#{player} had #{player.cards.join(', ')}"
+                      else
+                         "#{player} had no cards"
+                      end
+      reveal_string << " and an active #{player.deflector}" if player.deflector
+      reveal_string << " while suffering from #{player.bees}" if player.bees
+      reveal_string << "."
+      say reveal_string
+    end
     player.discard, player.grabbed = nil
     @discard |= player.cards
     @discard |= player.crane if player.crane
+    @discard << player.bees if player.bees
     @discard << player.deflector if player.deflector
     @dropouts << player
     @players.delete(player)
@@ -1854,8 +1866,13 @@ class Junkyard
       p.damage += p.skip_count * 2
       b_string << "Where's-the-fight? bonus: +#{p.skip_count * 2}. "
     end
+    # String revealing winner's remaining cards:
+    reveal_string = if @bot.config['junkyard.reveal_cards'] and not p.cards.empty?
+                      " Cards left: #{p.cards.join(', ')}"
+                    else ''
+                    end
     say "#{p} wins after #{elapsed_time}, using #{p.turns} turns! " +
-        "#{b_string}Damage done: #{p.damage}"
+        "#{b_string}Damage done: #{p.damage}#{reveal_string}"
     update_chan_stats(p.damage)
     update_user_stats(p)
     @plugin.remove_game(channel)
@@ -1954,7 +1971,7 @@ class JunkyardPlugin < Plugin
              "or an averaged amount of health from current players?"
   )
   Config.register Config::BooleanValue.new('junkyard.bot',
-    :default => false,
+    :default => true,
     :desc => "Enables or disables the AI."
   )
   Config.register Config::IntegerValue.new('junkyard.bot_delay',
@@ -1962,8 +1979,12 @@ class JunkyardPlugin < Plugin
     :desc => "Number of seconds for bot to wait before responding."
   )
   Config.register Config::IntegerValue.new('junkyard.countdown',
-    :default => 20, :validate => Proc.new{|v| v > 2},
+    :default => 15, :validate => Proc.new{|v| v > 2},
     :desc => "Number of seconds before starting a game of Junkyard."
+  )
+  Config.register Config::BooleanValue.new('junkyard.reveal_cards',
+    :default => false,
+    :desc => "Reveal a player's hand cards when dropped or killed."
   )
 
   TITLE = Junkyard::TITLE
