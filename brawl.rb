@@ -920,12 +920,14 @@ class Junkyard
       end_game
       return
     end
-    say p_turn
-    bot_thread_counter
-    bot_thread_move
+    if dropper
+      say p_turn
+      bot_thread_counter
+      bot_thread_move
+    end
   end
 
-  def get_player(user)
+  def get_player(user, source=nil)
     case user
     when User
       players.each do |p|
@@ -936,7 +938,9 @@ class Junkyard
         return p if p.user.irc_downcase == user.irc_downcase(channel.casemap)
       end
       players.each do |p|
-        return p if p.user.irc_downcase =~ /#{user.irc_downcase(channel.casemap)}/
+        if p.user.irc_downcase =~ /#{user.irc_downcase(channel.casemap)}/
+          return p unless p.user.irc_downcase == source
+        end
       end
     else
       get_player(user.to_s)
@@ -1094,6 +1098,7 @@ class Junkyard
       end
     end
     c_hash[:support].reverse!
+    debug "Created card inventory."
     return c_hash
   end
 
@@ -1128,6 +1133,9 @@ class Junkyard
              c_hash[:disaster].first
            else nil
            end
+    z = 'cards: '
+    p.cards.each { |c| z << "- #{c.id.upcase}" }
+    debug z
     # Find out which card in the deck this is,
     # if we have indeed found a suitable card.
     unless card.nil?
@@ -1152,14 +1160,14 @@ class Junkyard
     end
     # Play the card or otherwise discard.
     if a.length > 1
-      #debug "playing #{a.join(' ')}"
+      debug "playing #{a.join(' ')} "
       play_move(a)
     else
       a = Array.new(p.cards.length) { |i| i + 1 }
       # Don't discard the first card
       # in the hand if we can help it.
       a.shift unless a.length < 2
-      #debug "discarding #{a.join(' ')}"
+      debug "discarding #{a.join(' ')}"
       discard(a)
     end
     bot_thread_move if card.type == :disaster
@@ -1184,6 +1192,8 @@ class Junkyard
     c_hash = bot_inventory(p)
     if valid_insurance?(p, o) and c_hash[:insurance].any?
       card = c_hash[:insurance].first
+    elsif o.discard.id == :crane
+      card = nil
     elsif p.bees and c_hash[:grab].any? and c_hash[:support].any?
       card = c_hash[:grab].first
       card2 = c_hash[:support].first
@@ -1222,6 +1232,9 @@ class Junkyard
     else
       card = nil
     end
+    z = 'cards: '
+    p.cards.each { |c| z << "- #{c.id.upcase} " }
+    debug z
     # Find out which card in the deck this is,
     # if we have indeed found a suitable card.
     unless card.nil?
@@ -1241,13 +1254,12 @@ class Junkyard
       end
     end
     # Play the card or otherwise discard.
-    #debug p.cards.join(' ')
     if a.length > 0
       if players.first.user == @bot.nick
-        #debug "counter-countering with #{a.join(' ')}"
+        debug "counter-countering with #{a.join(' ')}"
         play_move(p, a)
       else
-        #debug "countering with #{a.join(' ')}"
+        debug "countering with #{a.join(' ')}"
         play_counter(p, a)
       end
     else
@@ -1275,7 +1287,7 @@ class Junkyard
     if players.length == 2
       # If just two players are playing, the opponent
       # is assumed to be the player not attacking.
-      a.delete_at(0) if get_player(a[0])
+      a.delete_at(0) if get_player(a[0], player.user.downcase)
       opponent = players[1]
     else
       if attacked
@@ -1288,7 +1300,7 @@ class Junkyard
           if temp_card.type == :disaster or temp_card.type == :support
             opponent = players[1]
           else
-            opponent = get_player(a[0])
+            opponent = get_player(a[0], player.user.downcase)
             if opponent.nil?
               say "There is no player '#{a[0]}'."
               return
@@ -1296,7 +1308,7 @@ class Junkyard
             a.delete_at(0)
           end
         else
-          opponent = get_player(a[0])
+          opponent = get_player(a[0], player.user.downcase)
           if opponent.nil?
             say "There is no player '#{a[0]}'."
             return
@@ -1376,7 +1388,7 @@ class Junkyard
 
   def play_counter(player, a)
     c = []
-    a.delete_at(0) if get_player(a[0])
+    a.delete_at(0) if get_player(a[0], player.user.downcase)
     a.each do |e|
       n = e.to_i
       if n < 1
@@ -1899,7 +1911,7 @@ class Junkyard
     [ 'game', 'manager', 'management', 'ownership', 'to' ].each do |w|
       a.delete_at(0) if a.first == w
     end
-    new_manager = get_player(a.first)
+    new_manager = get_player(a.first, manager.user.downcase)
     if new_manager.nil?
       say "'#{a.first}' is not playing #{title}"
       return
@@ -2160,7 +2172,7 @@ class JunkyardPlugin < Plugin
       victim = case a[0]
                when 'me', nil then p
                when 'bot' then g.get_player(@bot.nick)
-               else g.get_player(a[0])
+               else g.get_player(a[0], m.sourcenick.downcase)
                end
       unless victim
         m.reply "There is no one playing named '#{a[0]}'."
