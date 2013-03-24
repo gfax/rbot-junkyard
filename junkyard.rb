@@ -1592,7 +1592,7 @@ class Junkyard
     end
     # String revealing winner's remaining cards:
     reveal_string = if @bot.config['junkyard.reveal_cards'] and not p.cards.empty?
-                      " Cards left: #{p.cards.join(', ')}"
+                      "; Cards left: #{p.cards.join(', ')}"
                     else ''
                     end
     say "#{p} wins after #{elapsed_time}, using #{p.turns} turns! " +
