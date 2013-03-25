@@ -944,7 +944,7 @@ class Junkyard
         return p if p.user.irc_downcase == user.irc_downcase(channel.casemap)
       end
       players.each do |p|
-        if p.user.irc_downcase =~ /#{user.irc_downcase(channel.casemap)}/
+        if p.user.irc_downcase =~ /^#{user.irc_downcase(channel.casemap)}/
           return p unless p.user.irc_downcase == source
         end
       end
