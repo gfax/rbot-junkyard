@@ -5,7 +5,7 @@
 # Author:: Lite <degradinglight@gmail.com>
 # Copyright:: (C) 2012 gfax.ch
 # License:: GPL
-# Version:: 2013-03-23
+# Version:: 2013-03-24
 #
 
 class Junkyard
@@ -909,7 +909,8 @@ class Junkyard
       reveal_string << "."
       say reveal_string
     end
-    player.discard, player.grabbed = nil
+    player.discard = nil
+    player.grabbed = false
     @discard |= player.cards
     @discard |= player.crane if player.crane
     @discard << player.bees if player.bees
@@ -920,7 +921,11 @@ class Junkyard
       end_game
       return
     elsif not dropper
-      @attacked = nil
+      if attacked
+        attacked.discard = nil
+        attacked.grabbed = false
+        @attacked = nil
+      end
     else
       say p_turn
       bot_thread_counter
@@ -1069,7 +1074,7 @@ class Junkyard
     player.delete_cards(c)
     s = if c.length == 1 then '' else 's' end
     say "#{player} discards #{c.length} card#{s}."
-    deal(player, c.length)
+    deal(player, player.hand_max - player.cards.length)
     increment_turn
   end
 
