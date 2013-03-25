@@ -631,8 +631,9 @@ class Junkyard
     if players.length < 2
       end_game
       return
-    end
-    if dropper
+    elsif not dropper
+      @attacked = nil
+    else
       say p_turn
       bot_thread_counter
       bot_thread_move
