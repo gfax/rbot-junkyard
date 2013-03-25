@@ -973,9 +973,9 @@ class Junkyard
     end
     # Play the card or otherwise discard.
     if a.length > 0
-      if players.first.user == @bot.nick
+      if p == players.first
         debug "counter-countering with #{a.join(' ')}"
-        play_move(p, a)
+        play_move(a)
       else
         debug "countering with #{a.join(' ')}"
         play_counter(p, a)
