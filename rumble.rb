@@ -1483,7 +1483,7 @@ class Junkyard
       damage = 0
       # Determine amount of damage.
       if player.discard.id == :slot_machine
-        string = "#{player} pulls #{opponent}'s lever..."
+        string = "#{player} sprinkles pixie dust on #{opponent}. SUDDENLY, SKATE CHICKS!" 
         slots.each do |slot|
           damage -= slot
           string << " #{slot}."
