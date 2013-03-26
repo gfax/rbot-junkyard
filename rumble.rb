@@ -436,9 +436,10 @@ class Junkyard
                  "opponent's turn if a 2-player game."
       },
       :shifty_business => {
+	:name => "Jedi Mind Trick",
         :type => :disaster,
-        :string => "%{p} swaps hands with %{o}!",
-        :regex => [ /shift/, /business/ ],
+        :string => "%{p} waves a hand in mysterious fashion, while deftly swapping cards with %{o}!",
+        :regex => [ /jedi/, /mind/, /trick/ ],
         :help => "Swap hand cards with a random player."
       },
       :the_bees => {
@@ -472,18 +473,16 @@ class Junkyard
         :type => :disaster,
         :string => "Grifter compels everyone to chill out for a bit. After passing a" +
 		[ ' joint',
-		  ' bong',
-		  ' glass pipe',
+		  " #{%w(glass ceramic leaky plastic complicated simple short tall pretty).sample} bong",
+		  " #{%W(glass ceramic wooden metal).sample} pipe",
 		  ' vaporizor',
-		  ' wooden pipe',
 		  'n apple with a hole in it',
 		  ' slightly crushed soda can',
-		  ' metal pipe'
 		].sample +
 		" around a few times, #{Bold}everybody grabs the wrong cards#{Bold} and resumes playing!",
         :regex => [ /smoke( )?break/ ],
-        :help => "Grifter gets everyone stoned. Every player shifts their hand cards " +
-                 "in the confusion."
+        :help => "Grifter gets everyone stoned. Every player shifts the cards in their hand" +
+                 " in the confusion."
       }
   }
 
