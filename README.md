@@ -15,5 +15,5 @@ http://wiki.gfax.ch/Junkyard
 
 ##TODO
 
-* Add option to show players' cards when dropping/dying
 * Bee Bonus: kill someone with bees
+* Highest-damage record?
