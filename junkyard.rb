@@ -5,7 +5,7 @@
 # Author:: Lite <degradinglight@gmail.com>
 # Copyright:: (C) 2012 gfax.ch
 # License:: GPL
-# Version:: 2013-03-24
+# Version:: 2013-03-31
 #
 
 class Junkyard
@@ -1598,7 +1598,7 @@ class Junkyard
     end
     # String revealing winner's remaining cards:
     reveal_string = if @bot.config['junkyard.reveal_cards'] and not p.cards.empty?
-                      "; Cards left: #{p.cards.join(', ')}"
+                      " -- Cards left: #{p.cards.join(', ')}"
                     else ''
                     end
     say "#{p} wins after #{elapsed_time}, using #{p.turns} turns! " +
@@ -2035,14 +2035,12 @@ plugin = JunkyardPlugin.new
 [ 'junk', 'junkyard' ].each do |scope|
   plugin.map "#{scope} bot",
     :private => false, :action => :add_bot
-  plugin.map "#{scope} cancel",
-    :private => false, :action => :stop_game
-  plugin.map "#{scope} end",
-    :private => false, :action => :stop_game
+  [ 'cancel', 'end', 'halt', 'stop' ].each do |x|
+    plugin.map "#{scope} #{x}",
+      :private => false, :action => :stop_game
+  end
   plugin.map "#{scope} stat[s] [:x [:y]]",
     :action => :show_stats
-  plugin.map "#{scope} stop",
-    :private => false, :action => :stop_game
   plugin.map "#{scope} top [:z]",
     :private => false, :action => :show_stats,
     :defaults => { :x => false, :z => 5 }
