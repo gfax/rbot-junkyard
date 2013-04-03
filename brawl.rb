@@ -5,7 +5,7 @@
 # Author:: Lite <degradinglight@gmail.com>
 # Copyright:: (C) 2012 gfax.ch
 # License:: GPL
-# Version:: 2013-03-24
+# Version:: 2013-04-02
 #
 
 class Junkyard
@@ -1886,7 +1886,7 @@ class Junkyard
     end
     # String revealing winner's remaining cards:
     reveal_string = if @bot.config['junkyard.reveal_cards'] and not p.cards.empty?
-                      "; Cards left: #{p.cards.join(', ')}"
+                      " -- Cards left: #{p.cards.join(', ')}"
                     else ''
                     end
     say "#{p} wins after #{elapsed_time}, using #{p.turns} turns! " +
@@ -1929,7 +1929,19 @@ class Junkyard
     say "#{new_manager} is now game manager."
   end
 
+  def update_scores?
+    unless @bot.config['junkyard.bot_score']
+      unless players.length + dropouts.length > 2
+        players.each { |p| return false if p.user == @bot.nick }
+        dropouts.each { |p| return false if p.user == @bot.nick }
+      end
+      return false if players.first == @bot.nick
+    end
+    return true
+  end
+
   def update_chan_stats(damage)
+    return unless update_scores?
     if @registry.has_key? channel.name
       @registry[channel.name] = [ @registry[channel.name][0] + 1,
                                   @registry[channel.name][1] + damage,
@@ -1941,6 +1953,7 @@ class Junkyard
   end
 
   def update_user_stats(player, win=1)
+    return unless update_scores?
     c = channel.name
     nick = player.user.to_s
     p = player.user.downcase
@@ -1995,6 +2008,10 @@ class JunkyardPlugin < Plugin
   Config.register Config::IntegerValue.new('junkyard.bot_delay',
     :default => 3, :validate => Proc.new{|v| v.between?(0,60)},
     :desc => "Number of seconds for bot to wait before responding."
+  )
+  Config.register Config::BooleanValue.new('junkyard.bot_score',
+    :default => false,
+    :desc => "Record scores for bot and 2-player bot matches."
   )
   Config.register Config::IntegerValue.new('junkyard.countdown',
     :default => 15, :validate => Proc.new{|v| v > 2},
@@ -2340,14 +2357,12 @@ plugin = JunkyardPlugin.new
 [ 'brawl', 'junk', 'junkyard' ].each do |scope|
   plugin.map "#{scope} bot",
     :private => false, :action => :add_bot
-  plugin.map "#{scope} cancel",
-    :private => false, :action => :stop_game
-  plugin.map "#{scope} end",
-    :private => false, :action => :stop_game
+  [ 'cancel', 'end', 'halt', 'stop' ].each do |x|
+    plugin.map "#{scope} #{x}",
+      :private => false, :action => :stop_game
+  end
   plugin.map "#{scope} stat[s] [:x [:y]]",
     :action => :show_stats
-  plugin.map "#{scope} stop",
-    :private => false, :action => :stop_game
   plugin.map "#{scope} top [:z]",
     :private => false, :action => :show_stats,
     :defaults => { :x => false, :z => 5 }
