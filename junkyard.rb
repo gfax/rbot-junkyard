@@ -5,7 +5,7 @@
 # Author:: Lite <degradinglight@gmail.com>
 # Copyright:: (C) 2012 gfax.ch
 # License:: GPL
-# Version:: 2013-04-02
+# Version:: 2013-04-03
 #
 
 class Junkyard
@@ -1647,7 +1647,7 @@ class Junkyard
         players.each { |p| return false if p.user == @bot.nick }
         dropouts.each { |p| return false if p.user == @bot.nick }
       end
-      return false if players.first == @bot.nick
+      return false if players.first.user == @bot.nick
     end
     return true
   end
@@ -1997,6 +1997,10 @@ class JunkyardPlugin < Plugin
         m.reply "No one has played #{TITLE} in #{x}."
       elsif x == m.source.nick
         m.reply "You haven't played #{TITLE}"
+      elsif x == @bot.nick.downcase and not @bot.config['junkyard.bot_score']
+        m.reply "I'm not configured to track my own scores."
+      elsif x == @bot.nick.downcase
+        m.reply "I haven't played #{TITLE}"
       else
         m.reply "#{x} hasn't played #{TITLE}"
       end
