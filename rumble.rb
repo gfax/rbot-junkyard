@@ -415,7 +415,7 @@ class Junkyard
         :name => "Holy Hand Grenade",
         :type => :disaster,
         :health => -1,
-        :string => "%{p} lobs #{Bold}The Holy Hand Grenade Of Antioch#{Bold}!" + 
+        :string => "%{p} lobs #{Bold}The Holy Hand Grenade Of Antioch#{Bold}! " + 
 	           "The Grenade soars through the air, accompanied by a short bit " +
 		   "of choral music, then bounces once and explodes.",
         :regex =>  [ /holy/, /hand/, /grenade/ ],
