@@ -100,7 +100,7 @@ class Junkyard
         :string => "%{p} hides behind Your Mom! " +
 		[ "She'll soften the blow", 
 		  "Her #{%w(bosom thighs warts belly gunt hips).sample} will provide much comfort", 
-		  'Her giant ass provides great cushion'
+		  'Her giant ass will provide great cushion'
                 ].sample +
 		". ;)",
         :regex => [ /mom/, /card/ ],
@@ -412,12 +412,16 @@ class Junkyard
                  "attacks a random player that isn't you."
       },
       :earthquake => {
+        :name => "Holy Hand Grenade",
         :type => :disaster,
         :health => -1,
-        :string => "%{p} shakes everybody up with an earthquake!",
-        :regex =>  [ /earth/, /quake/ ],
-        :help => "An earthquake shakes the entire #{TITLE} " +
-                 "1 damage to everyone, starting with yourself."
+        :string => "%{p} lobs #{Bold}The Holy Hand Grenade Of Antioch#{Bold}!" + 
+	           "The Grenade soars through the air, accompanied by a short bit " +
+		   "of choral music, then bounces once and explodes.",
+        :regex =>  [ /holy/, /hand/, /grenade/ ],
+        :help => 'Arthur then holds up the Holy Hand Grenade and cries out "ONE! TWO! FIVE!" ' + 
+	         'Sir Galahad corrects him, shouting "Three, sir!". Arthur then yells "THREE!" ' + 
+		 'and hurls the grenade at the killer rabbit. 1 damage to everyone, starting with yourself.'
       },
       :multiball => {
         :name => 'TERROR!',
