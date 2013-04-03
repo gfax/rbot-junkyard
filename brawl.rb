@@ -2304,6 +2304,8 @@ class JunkyardPlugin < Plugin
         m.reply "You haven't played #{title(m)}"
       elsif x == @bot.nick.downcase and not @bot.config['junkyard.bot_score']
         m.reply "I'm not configured to track my own scores."
+      elsif x == @bot.nick.downcase
+        m.reply "I haven't played #{title}"
       else
         m.reply "#{x} hasn't played #{title(m)}"
       end
