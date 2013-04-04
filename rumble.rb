@@ -1740,7 +1740,7 @@ class Junkyard
     if p.health >= MAX_HP
       p.bonuses += 1
       p.damage += p.health
-      b_string << "Health bonus: +#{p.health}. "
+      b_string << "FLAWLESS VICTORY!: +#{p.health}. "
     end
     # Multi-Deflector bonus:
     if p.deflectors > 1
