@@ -456,10 +456,14 @@ class Junkyard
                  "every turn until victim uses a support card."
       },
       :toolbox => {
+	:name => "Tax Return",
         :type => :disaster,
-        :string => "%{p} pulls %{n} cards from the deck.",
-        :regex => [ /tool/, /box/, /bag/ ],
-        :help => "Draw until you have 8 cards in your hand."
+        :string => ["%{p} suddenly receives a mysterious envelope from the #{Bold}IRS#{Bold}.",
+		    "The Tax Man appears on %{p}'s doorstep, personally delivers a #{Bold}Tax Return#{Bold}!",
+		    "Opening an envelope from the #{Bold}IRS#{Bold} produces cards and giggles from %{p}."
+	           ].sample,
+        :regex => [ /tax/, /return/ ],
+        :help => "Draw until you have 8 cards in your hand. Yay tax returns!"
       },
       :windy => {
         :name => 'Hockey Night',
