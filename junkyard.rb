@@ -5,7 +5,7 @@
 # Author:: Lite <degradinglight@gmail.com>
 # Copyright:: (C) 2012 gfax.ch
 # License:: GPL
-# Version:: 2013-04-03
+# Version:: 2013-04-05
 #
 
 class Junkyard
@@ -44,7 +44,7 @@ class Junkyard
                  "lived a better life than all you fools.",
                  "gives his last regards to Chanserv.",
                  "goes to meet that ol' pi in the sky.",
-                 "wills his pancake collection to %{r}",
+                 "wills his pancake collection to %{r}.",
                  "wills his belongings to no one!",
                  "died the most honorable death.",
                  "can't feel his legs, but only because he has none."
@@ -605,7 +605,12 @@ class Junkyard
       player.damage = 0
       update_user_stats(player, 0)
       if player.user == @bot.nick
-        @bot.action channel, BOT_DEATHS.sample % { :r => players.first.user }
+        r = if players.first.user == @bot.nick
+              players.last.user
+            else 
+              players.first.user
+            end
+        @bot.action channel, BOT_DEATHS.sample % { :r => r }
       else
         say DEATHS.sample % { :p => player }
       end
@@ -1532,6 +1537,7 @@ class Junkyard
   end
 
   def end_game
+    finishing_time = Time.now.to_i - started.to_i
     p = players.first
     b_string = ''
     # Brutality bonus:
@@ -1579,7 +1585,7 @@ class Junkyard
       b_string << "NOPE bonus: +#{p.blocks}. "
     end
     # Speed bonus:
-    if Time.now.to_i - started.to_i <= 60
+    if finishing_time <= 60
       p.bonuses += 1
       p.damage += 10
       b_string << "Speed bonus: +10. "
@@ -1603,8 +1609,10 @@ class Junkyard
                     end
     say "#{p} wins after #{elapsed_time}, using #{p.turns} turns! " +
         "#{b_string}Damage done: #{p.damage}#{reveal_string}"
+    @started = finishing_time # for records
     update_chan_stats(p.damage)
     update_user_stats(p)
+    update_records(p)
     @plugin.remove_game(channel)
   end
 
@@ -1657,11 +1665,63 @@ class Junkyard
     if @registry.has_key? channel.name
       @registry[channel.name] = [ @registry[channel.name][0] + 1,
                                   @registry[channel.name][1] + damage,
-                                  @registry[channel.name][2]
+                                  @registry[channel.name][2],
+                                  @registry[channel.name][3] || {}
                                 ]
     else
-      @registry[channel.name] = [ 1, damage, {} ]
+      # Registry hierarchy:
+      # { #channel1, #channel2, player1, player2, player3, :records }
+      #      |                  V                             |-->--|
+      #      v  [ nick(proper caps), wins, games, damage, bonuses ] |
+      #      |                                                      v
+      #      |-> [ games played, accumulated damage,                |
+      #            {player stats} {channel-specific records} ]      |
+      #             |              V                                v
+      #             |    { :most_turns, :least_time,                |
+      #             v      :most_time, :most_damage... } <---<---<--|
+      #             |
+      #             |-> [ nick(proper caps), wins, games, damage, bonuses ]
+      #
+      @registry[channel.name] = [ 1, damage, {}, {} ]
     end
+  end
+
+  def update_records(player)
+    return unless update_scores? and @registry.has_key? channel.name
+    r1 = @registry[:records] || {}
+    r2 = @registry[channel.name][3] || {}
+    # Fill in any empty records.
+    [ r1, r2 ].each do |r|
+      r[:least_time_user] = r[:least_time_user] || player.user,
+      r[:least_time] = r[:least_time] || started,
+      r[:most_time_user] = r[:most_time_user] || player.user,
+      r[:most_time] = r[:most_time] || started,
+      r[:most_damage_user] = r[:most_damage_user] || player.user,
+      r[:most_damage] = r[:most_damage] || player.damage,
+      r[:most_turns_user] = r[:most_turns_user] || player.user,
+      r[:most_turns] = r[:most_turns] || player.turns
+      if started < r[:least_time]
+        r[:least_time_user] = player.user
+        r[:least_time] = started
+      elsif started > r[:most_time]
+        r[:most_time_user] = player.user
+        r[:most_time] = started
+      end
+      if player.damage > r[:most_damage]
+        r[:most_damage_user] = player.user
+        r[:most_damage] = player.damage
+      end
+      if player.turns > r[:most_turns]
+        r[:most_turns_user] = player.user
+        r[:most_turns] = player.turns
+      end
+    end
+    @registry[:records] = r1
+    @registry[channel.name] = [ @registry[channel.name][0],
+                                @registry[channel.name][1],
+                                @registry[channel.name][2],
+                                r2
+                              ]
   end
 
   def update_user_stats(player, win=1)
@@ -1669,7 +1729,7 @@ class Junkyard
     c = channel.name
     nick = player.user.to_s
     p = player.user.downcase
-    @registry[channel.name] = [ 0, 0, {} ] unless @registry.has_key? c
+    @registry[channel.name] = [ 0, 0, {}, {} ] unless @registry.has_key? c
     # Player's channel damage:
     player_hash = @registry[c][2]
     if player_hash.has_key? p
@@ -1688,7 +1748,11 @@ class Junkyard
                          :bonuses => player.bonuses
                        }
     end
-    @registry[c] = [ @registry[c][0], @registry[c][1], player_hash ]
+    @registry[c] = [ @registry[c][0],
+                     @registry[c][1],
+                     player_hash,
+                     @registry[c][3] || {}
+                   ]
     # Player's network-wide damage:
     if @registry.has_key? p
       b = @registry[p][:bonuses] || 0
@@ -1708,31 +1772,27 @@ end
 
 class JunkyardPlugin < Plugin
 
-  Config.register Config::BooleanValue.new('junkyard.average_hp',
+  Config.register Config::BooleanValue.new 'junkyard.average_hp',
     :default => false,
     :desc => "Should players joining mid-game receive full health " +
              "or an averaged amount of health from current players?"
-  )
-  Config.register Config::BooleanValue.new('junkyard.bot',
+  Config.register Config::BooleanValue.new 'junkyard.bot',
     :default => true,
     :desc => "Enables or disables the AI."
-  )
-  Config.register Config::IntegerValue.new('junkyard.bot_delay',
-    :default => 3, :validate => Proc.new{|v| v.between?(0,60)},
+  Config.register Config::IntegerValue.new 'junkyard.bot_delay',
+    :default => 3,
+    :validate => Proc.new{|v| v.between?(0,60)},
     :desc => "Number of seconds for bot to wait before responding."
-  )
-  Config.register Config::BooleanValue.new('junkyard.bot_score',
+  Config.register Config::BooleanValue.new 'junkyard.bot_score',
     :default => false,
     :desc => "Record scores for bot and 2-player bot matches."
-  )
-  Config.register Config::IntegerValue.new('junkyard.countdown',
-    :default => 15, :validate => Proc.new{|v| v > 2},
+  Config.register Config::IntegerValue.new 'junkyard.countdown',
+    :default => 15,
+    :validate => Proc.new{|v| v > 2},
     :desc => "Number of seconds before starting a game of Junkyard."
-  )
-  Config.register Config::BooleanValue.new('junkyard.reveal_cards',
+  Config.register Config::BooleanValue.new 'junkyard.reveal_cards',
     :default => false,
     :desc => "Reveal a player's hand cards when dropped or killed."
-  )
 
   TITLE = Junkyard::TITLE
   MAX_HP = Junkyard::MAX_HP
@@ -1859,8 +1919,10 @@ class JunkyardPlugin < Plugin
       "have another user in the channel take your place in the game."
     when /stat/, 'top'
       "#{b}Stats:#{b} #{prefix}#{plugin} stats <nick> - network-wide stats, " +
-      "#{prefix}#{plugin} stats #channel <nick> - channel-specific stats, " +
-      "#{prefix}#{plugin} top <num> - top <num> players"
+      "#{prefix}#{plugin} stats #channel <nick> - channel-specific stats; " +
+      "#{prefix}#{plugin} top <num> - top <num> players; " +
+      "#{prefix}#{plugin} records <#chan> - special records set, " +
+      "#{prefix}#{plugin} records all - network-wide records set."
     when 'stop', /^end/, 'halt'
       "#{prefix}#{plugin} stop - stops the current game of #{TITLE}"
     else
@@ -1983,11 +2045,57 @@ class JunkyardPlugin < Plugin
     end
   end
 
+  def show_records(m, params)
+    x = params[:x]
+    if m.private? and x.nil?
+      m.reply "Specify a channel name or say " +
+              "'all' for network-wide records."
+      return
+    elsif x.nil?
+      x = m.channel.name
+    elsif x.downcase  == 'all'
+      x = :records
+    else
+      x = '#' + x unless x[0] == '#'
+    end
+    records = @registry[x] || @registry[x.to_s.downcase]
+    if records.class == Array
+      records = records[3]
+      if records.nil? or records.empty?
+        m.reply "No records for #{x} yet."
+        return
+      else
+        @bot.say m.replyto, "#{Bold}Top records for #{x}:"
+      end
+    elsif records.nil? or records.empty?
+      m.reply "No network records set yet."
+      return
+    else
+      @bot.say m.replyto, "#{Bold}Network-wide records:"
+    end
+    if records[:most_damage]
+      @bot.say m.replyto, "Most damage: #{records[:most_damage_user]} " +
+                          "with #{records[:most_damage]} damage."
+    end
+    if records[:most_turns]
+      @bot.say m.replyto, "Most turns: #{records[:most_turns_user]} " +
+                          "with #{records[:most_turns]} turns."
+    end
+    if records[:least_time]
+      @bot.say m.replyto, "Quickest winner: #{records[:least_time_user]} " +
+                          "after #{records[:least_time]} seconds."
+    end
+    if records[:most_time]
+      @bot.say m.replyto, "Slowest winner: #{records[:most_time_user]} " +
+                          "after #{records[:most_time]} seconds."
+    end
+  end
+
   def show_stats(m, params)
     if params[:x].nil?
       x = m.source.nick
     elsif params[:x] == false
-      x = m.channel.name.to_s
+      x = m.channel.name
     else
       x = params[:x].to_s
     end
@@ -2016,19 +2124,19 @@ class JunkyardPlugin < Plugin
         a = a.to_a.each { |e| e.slice!(0) }
         a.flatten!
         a.sort! { |x,y| y[:damage] <=> x[:damage] }
-        z = params[:z] || 4
+        z = params[:z] || 5
         z = if z.to_i.between?(1,10) then z.to_i - 1 else 4 end
         top_players = a[0..z]
         n = 1
         top_players.each do |k|
-          @bot.say m.channel, "#{Bold}#{n}. #{k[:nick]}#{Bold} - " +
+          @bot.say m.replyto, "#{Bold}#{n}. #{k[:nick]}#{Bold} - " +
                               "#{k[:damage]} dmg (#{k[:wins]}/" +
                               "#{k[:games]} games won)"
           n += 1
           end
         return
       else
-        @bot.say m.channel, "#{Bold}#{@registry[xd][:nick]}#{Bold} -- " +
+        @bot.say m.replyto, "#{Bold}#{@registry[xd][:nick]}#{Bold} -- " +
                             "Wins: #{@registry[xd][:wins]}, " +
                             "games: #{@registry[xd][:games]}, " +
                             "damage: #{@registry[xd][:damage]}, " +
@@ -2041,7 +2149,7 @@ class JunkyardPlugin < Plugin
       "They haven't played a game in this channel, #{m.source.nick}"
       return
     end
-    @bot.say m.channel, "#{Bold}#{@registry[x][2][y][:nick]}#{Bold} " +
+    @bot.say m.replyto, "#{Bold}#{@registry[x][2][y][:nick]}#{Bold} " +
                         "(in #{x}) -- Wins: #{@registry[x][2][y][:wins]}, " +
                         "games: #{@registry[x][2][y][:games]}, " +
                         "damage: #{@registry[x][2][y][:damage]}, " +
@@ -2060,6 +2168,8 @@ plugin = JunkyardPlugin.new
     plugin.map "#{scope} #{x}",
       :private => false, :action => :stop_game
   end
+  plugin.map "#{scope} record[s] [:x]",
+    :action => :show_records
   plugin.map "#{scope} stat[s] [:x [:y]]",
     :action => :show_stats
   plugin.map "#{scope} top [:z]",
