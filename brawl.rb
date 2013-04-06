@@ -2014,6 +2014,7 @@ class Junkyard
 
   def update_user_stats(player, win=1)
     return unless update_scores?
+    return if @bot.config['junkyard.bot_score'] == false and player.user == @bot.nick
     c = channel.name
     nick = player.user.to_s
     p = player.user.downcase
