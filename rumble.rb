@@ -5,7 +5,7 @@
 # Author:: Lite <degradinglight@gmail.com>
 # Copyright:: (C) 2012 gfax.ch
 # License:: GPL
-# Version:: 2013-04-05
+# Version:: 2013-04-06
 #
 
 class Junkyard
@@ -423,15 +423,6 @@ class Junkyard
 	         'Sir Galahad corrects him, shouting "Three, sir!". Arthur then yells "THREE!" ' + 
 		 'and hurls the grenade at the killer rabbit. 1 damage to everyone, starting with yourself.'
       },
-      :multiball => {
-        :name => 'TERROR!',
-        :type => :disaster,
-        :string => ["%{p} brings the #{Bold}TERROR#{Bold}! Everyone turns pale with fright.",
-		    "%{p} tells a horror story about #{Bold}ANT, NAKED#{Bold}! Everyone is paralyzed with fear!"
-		   ].sample,
-        :regex => [ /terror/ ],
-        :help => "Take an extra turn after your turn. Let 'em HAVE IT."
-      },
       :reverse => {
         :type => :disaster,
         :string => "%{p} reverses the table!",
@@ -445,6 +436,15 @@ class Junkyard
         :string => "%{p} waves a hand in mysterious fashion, while deftly #{Bold}swapping cards#{Bold} with %{o}!",
         :regex => [ /jedi/, /mind/, /trick/ ],
         :help => "Swap hand cards with a random player."
+      },
+      :spare_bolts => {
+        :name => 'TERROR!',
+        :type => :disaster,
+        :string => ["%{p} brings the #{Bold}TERROR#{Bold}! Everyone turns pale with fright.",
+		    "%{p} tells a horror story about #{Bold}ANT, NAKED#{Bold}! Everyone is paralyzed with fear!"
+		   ].sample,
+        :regex => [ /terror/ ],
+        :help => "Take an extra turn after your turn. Let 'em HAVE IT."
       },
       :the_bees => {
         :name => 'THE ANTS',
@@ -536,7 +536,7 @@ class Junkyard
 
     attr_accessor :user, :bees, :blocks, :bonuses, :cards, :crane,
                   :damage, :deflector, :deflectors, :discard,
-                  :glutton, :grabbed, :hand_max, :health, :multiball,
+                  :glutton, :go_again, :grabbed, :hand_max, :health,
                   :skips, :skip_count, :turns, :turn_wizard
 
     def initialize(user, health=MAX_HP)
@@ -554,7 +554,7 @@ class Junkyard
       @grabbed = false    # currently being grabbed
       @hand_max = 5       # maximum number of cards to deal up to
       @health = health    # initial health
-      @multiball = false  # gets to go again when true
+      @go_again = false   # gets to go again when true
       @skips = 0          # skips player when > 0
       @skip_count = 0     # counter for "Where's-the-fight?" bonus
       @turns = 0          # turns spent playing this game
@@ -664,7 +664,7 @@ class Junkyard
       @deck << Card.new(:crane)
       @deck << Card.new(:deflector)
       @deck << Card.new(:earthquake)
-      @deck << Card.new(:multiball)
+      @deck << Card.new(:spare_bolts)
       @deck << Card.new(:reverse)
       @deck << Card.new(:shifty_business)
       @deck << Card.new(:the_bees)
@@ -741,7 +741,7 @@ class Junkyard
     if players.length == 2
       countdown = @bot.config['junkyard.countdown']
       @bot.timer.add_once(countdown) { start_game }
-      say "Game will start in #{Bold}#{countdown}#{Bold} seconds." 
+      say "Game will start in #{Bold}#{countdown}#{Bold} seconds."
       say "Let's get ready to #{Bold}RUMBLE!#{Bold}"
     end
   end
@@ -990,11 +990,11 @@ class Junkyard
     c_hash = { :support => [], :surgery => [],
                :counter => [], :dodge => [], :grab => [], :insurance => [],
                :unstoppable => [], :attack => [], :disaster => [],
-               :deflector => [], :multiball => [], :toolbox => []
+               :deflector => [], :spare_bolts => [], :toolbox => []
              }
     player.cards.each do |c|
       case c.id
-      when :deflector, :dodge, :grab, :insurance, :multiball, :surgery, :toolbox
+      when :deflector, :dodge, :grab, :insurance, :spare_bolts, :surgery, :toolbox
         c_hash[c.id] << c
       else
         c_hash[c.type] << c
@@ -1017,8 +1017,8 @@ class Junkyard
     a << players[n].user.to_s
     # Pick the best card to play.
     c_hash = bot_inventory(p)
-    card = if c_hash[:deflector].any? or c_hash[:multiball].any?
-             c_hash[:deflector].first || c_hash[:multiball].first
+    card = if c_hash[:deflector].any? or c_hash[:spare_bolts].any?
+             c_hash[:deflector].first || c_hash[:spare_bolts].first
            elsif c_hash[:toolbox].any?
              c_hash[:toolbox].first
            elsif p.health == 1 and c_hash[:surgery].any?
@@ -1386,9 +1386,6 @@ class Junkyard
       check_health(player)
       say p_health
       check_health
-    when :multiball
-      player.multiball = true
-      say card.string % { :p => player }
     when :reverse
       say card.string % { :p => player }
       # Yank the turn back in two-player games (Uno style).
@@ -1411,6 +1408,9 @@ class Junkyard
       say card.string % { :p => player, :o => players[n] }
       player.cards, players[n].cards = players[n].cards, player.cards
       notify(players[n], p_cards(players[n])) unless players[n] == players.first
+    when :spare_bolts
+      player.go_again = true
+      say card.string % { :p => player }
     when :the_bees
       n = rand(players.length)
       players[n].bees = card
@@ -1681,8 +1681,8 @@ class Junkyard
     players.first.discard = nil
     players.first.grabbed = false
     players.first.turns += 1
-    if players.first.multiball
-      players.first.multiball = false
+    if players.first.go_again
+      players.first.go_again = false
     else
       @players << @players.shift
     end
@@ -1873,27 +1873,27 @@ class Junkyard
     r2 = @registry[channel.name][3] || {}
     # Fill in any empty records.
     [ r1, r2 ].each do |r|
-      r[:least_time_user] = r[:least_time_user] || player.user,
+      r[:least_time_user] = r[:least_time_user] || player.user.to_s,
       r[:least_time] = r[:least_time] || started,
-      r[:most_time_user] = r[:most_time_user] || player.user,
+      r[:most_time_user] = r[:most_time_user] || player.user.to_s,
       r[:most_time] = r[:most_time] || started,
-      r[:most_damage_user] = r[:most_damage_user] || player.user,
+      r[:most_damage_user] = r[:most_damage_user] || player.user.to_s,
       r[:most_damage] = r[:most_damage] || player.damage,
-      r[:most_turns_user] = r[:most_turns_user] || player.user,
+      r[:most_turns_user] = r[:most_turns_user] || player.user.to_s,
       r[:most_turns] = r[:most_turns] || player.turns
       if started < r[:least_time]
-        r[:least_time_user] = player.user
+        r[:least_time_user] = player.user.to_s
         r[:least_time] = started
       elsif started > r[:most_time]
-        r[:most_time_user] = player.user
+        r[:most_time_user] = player.user.to_s
         r[:most_time] = started
       end
       if player.damage > r[:most_damage]
-        r[:most_damage_user] = player.user
+        r[:most_damage_user] = player.user.to_s
         r[:most_damage] = player.damage
       end
       if player.turns > r[:most_turns]
-        r[:most_turns_user] = player.user
+        r[:most_turns_user] = player.user.to_s
         r[:most_turns] = player.turns
       end
     end
@@ -1907,6 +1907,7 @@ class Junkyard
 
   def update_user_stats(player, win=1)
     return unless update_scores?
+    return if @bot.config['junkyard.bot_score'] == false and player.user == @bot.nick
     c = channel.name
     nick = player.user.to_s
     p = player.user.downcase
