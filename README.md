@@ -16,4 +16,4 @@ http://wiki.gfax.ch/Junkyard
 ##TODO
 
 * Bee Bonus: kill someone with bees
-* Highest-damage record?
+* Redo turn incrementing (consistently increment when player drops)
