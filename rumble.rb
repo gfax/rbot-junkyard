@@ -5,7 +5,7 @@
 # Author:: Lite <degradinglight@gmail.com>
 # Copyright:: (C) 2012 gfax.ch
 # License:: GPL
-# Version:: 2013-03-06
+# Version:: 2013-04-06
 #
 
 class Junkyard
@@ -14,7 +14,7 @@ class Junkyard
   MAX_HP = 10
   COLORS = { :attack => Bold + Irc.color(:lightgray,:black),
              :counter => Bold + Irc.color(:green,:black),
-             :power => Bold + Irc.color(:brown,:black),
+             :disaster => Bold + Irc.color(:brown,:black),
              :support => Bold + Irc.color(:teal,:black),
              :unstoppable => Bold + Irc.color(:yellow,:black),
              :skips => Irc.color(:purple),
@@ -44,7 +44,7 @@ class Junkyard
                  "lived a better life than all you fools.",
                  "gives his last regards to Chanserv.",
                  "goes to meet that ol' pi in the sky.",
-                 "wills his pancake collection to %{r}",
+                 "wills his pancake collection to %{r}.",
                  "wills his belongings to no one!",
                  "died the most honorable death.",
                  "can't feel his legs, but only because he has none."
@@ -58,12 +58,18 @@ class Junkyard
   # Add to or modify these as you wish.
   CARDS = {
       :block => {
-	:name => "NO!",
+	:name => 'NO!',
         :type => :counter,
-        :string => "%{p} says NO!!! ..blocking %{o}'s %{c} with #{[ 'a stern exclamation', 
-								    'sheer WILL POWER', 
-								    'a defiant attitude' 
-  								  ].sample}!",
+        :string => "%{p} says #{Bold}NO!!!#{Bold} ..blocking %{o}'s %{c} with " + 
+		[ 'a stern exclamation', 
+		  'sheer WILL POWER', 
+		  'a defiant attitude', 
+		  'a steely glance',
+		  'a pathetic whimper',
+		  "a hero's charisma",
+		  'BALLS of STEEL',
+  		].sample +
+		"!",
         :regex => 'no',
         :help => "Blocks a basic attack card when played against you. Can be " +
                  "used against a grab to nullify the grab's proceeding attack."
@@ -77,14 +83,11 @@ class Junkyard
       },
       :grab => {
         :type => :counter,
-        :string => "%{p} #{[ 'grabs',
-			     'grapples',
-			     'seizes',
-			     'grips',
-			     'clutches'
-			   ].sample } %{o}. #{[ "Respond or pass", 
-			   			"Pass or respond" 
-			   		      ].sample }, %{o}.",
+        :string => "%{p} #{%w(grabs grapples seizes grips clutches).sample} %{o}. " + 
+		[ "Respond or pass", 
+		  "Pass or respond" 
+		].sample +
+		", %{o}.",
         :regex => 'grab',
         :help => "Play this as a counter so you can attack back. This " +
                  "cannot be dodged. Also note this can be played before " +
@@ -94,10 +97,12 @@ class Junkyard
 	:name => "The Mom Card",
         :type => :counter,
         :health => 2,
-        :string => "%{p} hides behind Your Mom! #{[ 'She softens the blow', 
-						    'Her bosom provides much comfort', 
-						    'Her giant ass provides great cushion'
-                                                  ].sample}. ;)",
+        :string => "%{p} hides behind #{Bold}Your Mom#{Bold}! " +
+		[ "She'll soften the blow", 
+		  "Her #{%w(bosom thighs warts belly gunt hips).sample} will provide much comfort", 
+		  'Her giant ass will provide great cushion'
+                ].sample +
+		". ;)",
         :regex => [ /mom/, /card/ ],
         :help => "Hide behind your opponent's mom! Her soft, supple body reduces opponent's attack by 2 points."
       },
@@ -106,7 +111,7 @@ class Junkyard
         :type => :counter,
         :health => 5,
         :string => "%{p} invokes universal health insurance and " +
-                  "is restored to 5 health! THANKS, OBAMA!",
+                  "is restored to 5 health! #{Bold}THANKS, OBAMA!#{Bold}",
         :regex => [ /obamacare/ ],
         :help => "Can only be used against a blockable, " +
                  "killing blow. Resets you to 5 health points."
@@ -114,11 +119,11 @@ class Junkyard
       :wrench => {
 	:name => "Meeting Time",
         :type => :attack,
-        :string => [ "%{p} reminds %{o} that (s)he's late for a meeting!",
-		     "%{o} is abruptly called away for a meeting.",
-		     "%{o} inexplicably goes AFK.",
-		     "%{p} poses as a customer, complaining to %{o}'s boss. %{o} is called in to 'discuss the matter'.",
-		     "DAMN MEETINGS, ${o} would rather be playing Rumble!"].sample,
+        :string => [ "%{p} reminds %{o} that (s)he's late for a #{Bold}meeting#{Bold}!",
+		     "%{o} is abruptly called away for a #{Bold}meeting#{Bold}.",
+		     "%{o} inexplicably goes #{Bold}AFK#{Bold}.",
+		     "%{p} poses as a customer, complaining to %{o}'s boss. %{o} is called in to '#{Bold}discuss the matter#{Bold}'.",
+		     "#{Bold}DAMN MEETINGS#{Bold}, %{o} would rather be playing Rumble!"].sample,
         :skips => 2,
         :regex => [ /meeting/ ],
         :help => "Send your opponent to a meeting, where they can't" +
@@ -127,7 +132,7 @@ class Junkyard
       :nose_bleed => {
         :type => :attack,
         :health => -3,
-        :string => "%{p} pops %{o} in the nose, spraying blood everywhere.",
+        :string => "%{p} pops %{o} in the #{Bold}nose#{Bold}, spraying #{Bold}blood#{Bold} everywhere.",
         :skips => 1,
         :regex => [ /nose/, /bleed/ ],
         :help => "Opponent loses a turn to clean it up."
@@ -136,13 +141,16 @@ class Junkyard
 	:name => "Bitch Slap",
         :type => :attack,
         :health => -2,
-        :string => "%{p} #{[ 'slaps',
-	       		     'backhands',	
-	       		     'pimp smacks',	
-      			   ].sample} %{o} like a #{[ 'female dog in HEAT',
-			  			     'BEACH',
-						     'HORNY CANINE' 
-						   ].sample}.",
+        :string => "%{p} " +
+		[ 'slaps',
+	       	  'backhands',	
+	       	  'pimp smacks',	
+      		].sample +
+	       " %{o} like a " +
+	       	[ 'female dog in HEAT',
+		  'BEACH',
+		  'HORNY CANINE' 
+		].sample,
         :regex => [ /bitch/, 'slap' ],
         :help => "Basic attack."
       },
@@ -150,20 +158,31 @@ class Junkyard
 	:name => 'Kroddychop',
         :type => :attack,
         :health => -3,
-        :string => "HIIIIIYA! In a splendid display of martial arts, %{p} whacks %{o} in the #{[ 'face', 
-											      'liver', 
-											      'privates', 
-											      'kidneys', 
-											      'neck', 
-											      'spleen', 
-											      'solar plexus', 
-											      'rib cage', 
-											      'motherboard', 
-											      'shins', 
-											      'knees', 
-											      'forehead',
-											      'boobs'
-											    ].sample} REALLY REALLY hard!",
+        :string => "#{%w(HIIIIIYA WHAM POW BAM HAAAAA).sample}! In a" +
+		[ ' splendid',
+		  'n unorthodox',
+		  ' stereotypical',
+		  ' wicked',
+		  'n uncommon',
+		  ' banal',
+		  ' seemingly well practiced',
+		].sample +
+		" display of martial arts, %{p} #{%w(whacks chops hits thwaps punches jabs).sample} %{o} in the " + 
+		[ 'face', 
+		  'liver', 
+		  'privates', 
+		  'kidneys', 
+		  'neck', 
+		  'spleen', 
+		  'solar plexus', 
+		  'rib cage', 
+		  'motherboard', 
+		  'shins', 
+		  'knees', 
+		  'forehead',
+		  'boobs'
+		].sample + 
+		" #{Bold}REALLY REALLY#{Bold} hard!",
         :regex => [ /kroddy( ?)chop/ ],
         :help => "Slightly more powerful attack " +
                  "directed at a random region of your opponent."
@@ -172,7 +191,7 @@ class Junkyard
 	:name => "Leg Sweep",
         :type => :attack,
         :health => -2,
-        :string => "%{p} sweeps %{o} off of their feet!",
+        :string => "%{p} #{Bold}sweeps#{Bold} %{o} off of their feet!",
         :skips => 1,
         :regex => [ /leg sweep/ ],
         :help => "Duck down and sweep your opponent onto the ground! They'll spend a turn getting back up."
@@ -181,23 +200,16 @@ class Junkyard
 	:name => 'Roundhouse Kick',
         :type => :attack,
         :health => -4,
-        :string => "%{p} channels #{[ 'Chuck Norris',
-				      'Jet Li',
-				      'Fong Sai Yuk',
-				      'Jackie Chan',
-				      'Bruce Lee'
-      				    ].sample} and #{[ 'violently',
-				    		      'hurtfully',
-						      'dramatically',
-						      'woefully',
-						      'devestatingly'
-						    ].sample} #{[ 'delivers',
-						    		  'connects',
-								  'applys',
-								  'whacks',
-								  'plants',
-								  'impacts'
-     								].sample} a BOOT to %{o}'s HEAD.",
+        :string => "%{p} channels " + 
+		[ 'Chuck Norris',
+		  'Jet Li',
+		  'Fong Sai Yuk',
+		  'Jackie Chan',
+		  'Bruce Lee',
+		  'Chun Li'
+      		].sample + 
+		" and #{%w(violently hurtfully dramatically woefully devestatingly).sample} " +
+		"#{%w(delivers connects applys whacks plants impacts).sample} a #{Bold}BOOT#{Bold} to %{o}'s #{Bold}HEAD#{Bold}.",
         :regex => [ /roundhouse/, /kick/ ],
         :help => "Major damage due to a swift BOOT TO THE HEAD. " +
                  "Because not all players have balls."
@@ -206,32 +218,39 @@ class Junkyard
 	:name => "SHORYUKEN!",
         :type => :attack,
         :health => -5,
-        :string => "%{o} receives #{[ 'an INCREDIBLE', 
-				      'a REMARKABLE',
-				      'a SPLENDID',
-				      'a FANTASTIC',
-				      'an AMAZING',
-				      'an UNBELIEVABLE',
-				      'a TOTALLY AWESOME',
-				      'a surprisingly plain looking',
-				      'a SPECTACULAR'
-      				    ].sample } uppercut from %{p}.",
+        :string =>[ "%{p} catches fire and screams #{Bold}SSSSSSSSSSSSSSSSSSSSHHHHHHHHHHHHHHHHOOOOOOOOOOOOORRRRRRRRRYYYYYYYYYUUUUUUUKKKKKKKKKKKKEEEEEEEEENNNNNNNNNNNN!!!!!!!!!!!!!!!!!!!11#{Bold} on %{o}",
+	       	"%{o} receives " +
+			[ 'an INCREDIBLE', 
+			  'a REMARKABLE',
+			  'a SPLENDID',
+			  'a FANTASTIC',
+			  'an AMAZING',
+			  'an UNBELIEVABLE',
+			  'a TOTALLY AWESOME',
+			  'a surprisingly plain looking',
+			  'a SPECTACULAR'
+	      		].sample +
+		" #{Bold}uppercut#{Bold} from %{p}.",
+      		].sample,
         :regex => [ /upper/ ],
         :help => "Ultimate attack."
       },
       :slot_machine => {
 	:name => "Derby Girls",
         :type => :attack,
-        :string => "%{p} momentarily teleports %{o} to the middle of a #{[ 'RINK RUMBLE', 
-									   'SKATE GIRL SHOWDOWN', 
-									   "ROLLERBLADER'S BRAWL"
-      									 ].sample }!" + 
-                   "%{o} tries hard to dodge those #{[ 'crazy ladies', 
-			   			    'wild women', 
-						    'buxom brawlers',
-						    'foxy flailers',
-						    "hip-checkin' hotties" 
-      						  ].sample}. ",
+        :string => "%{p} momentarily teleports %{o} to the middle of a #{Bold}" + 
+		[ 'RINK RUMBLE', 
+		  'SKATE GIRL SHOWDOWN', 
+		  "ROLLERSKATER'S SCUFFLE"
+      		].sample + 
+                "#{Bold}! %{o} tries hard to dodge all those " +
+		[ 'crazy ladies', 
+		  'wild women', 
+		  'buxom brawlers',
+		  'foxy flailers',
+		  "hip-checkin' hotties" 
+      		].sample +
+		". ",
         :regex => [ /derby/, /girls/ ],
         :help => "Multi-dimentional BATTLE MAGIC Sends your opponent into the RINK. " +
                  "High velocity skate warriors do 0 to 3 damage each. Dodge if you can!"
@@ -239,31 +258,38 @@ class Junkyard
       :bulldozer => {
 	:name => "Force Push",
         :type => :unstoppable,
-        :string => "%{p} uses the Force, and ejects all the cards out of %{o}'s hand!",
+        :string => "%{p} uses the #{Bold}Force#{Bold}, and ejects all the cards out of %{o}'s hand!",
         :regex => [ /force/, /push/ ],
         :help => "Are you a Jedi? Use the Force to cause all of your opponent's cards into " +
                  "the discard, leaving him vulnerable to attack."
       },
       :crane => {
+	:name => 'RC Quadcopter',
         :type => :unstoppable,
-        :string => "%{p}'s crane dumps some garbage cards on %{o}.",
-        :regex => [ /crane/ ],
-        :help => "Pick up all your cards you don't want and dump them on an " +
-                 "opponent. The opponent won't get any new cards until " +
-                 "he manages to get his hand below 5 cards again."
+        :string => "%{p} loads cargo into a little #{Bold}RC chopper#{Bold}, flies over to %{o}, and jettisons the hold into %{o}'s hand.",
+        :regex => [ /((quad)?copter|chopper)/ ],
+        :help => "Before launching your sortie, specify the cards you don't want, then " + 
+	         "fly them over to, and dump them on an opponent. The opponent won't " + 
+		 "get any new cards until he manages to get his hand below 5 cards again."
       },
       :tire => {
+	:name => 'Ice Freeze',
         :type => :unstoppable,
-        :string => "%{p} throws a tire around %{o}.",
+        :string => "#{Bold}Sub-Zero#{Bold} emerges from the shadows and " +
+		[ 'performs Down, Forward, Low Punch on %{o}.',
+	       	  'suddenly, %{o} stops moving.',
+		  "%{o}'s animated gif comes to a halt.",
+		  'frozen water emits from his hands, covering %{o}'
+		].sample,
         :skips => 1,
-        :regex => [ /tire(d|s)?\b/ ],
-        :help => "Throw a tire around your opponent, impeding " +
-                 "his movement and causing him to lose a turn."
+        :regex => [ /ice( )?freeze/ ],
+        :help => "Sub-Zero visits to cast Ice Freeze on your opponent, " +
+                 "causing him to lose a turn."
       },
       :trout_slap => {
         :type => :unstoppable,
         :health => -1,
-        :string => "%{p} slaps %{o} around a bit with a large trout.",
+        :string => "%{p} slaps %{o} around a bit with a #{Bold}large trout#{Bold}.",
         :regex => [ /trout/, /slap/ ],
         :help => "An mIRC-inspired attack. Slap your opponent with a trout."
       },
@@ -271,10 +297,13 @@ class Junkyard
 	:name => 'Laser Blaster',
         :type => :unstoppable,
         :health => -2,
-        :string => "%{p} #{[ 'shoots',
-			     "pew pew's",
-			     "blasts"
-			   ].sample} %{o} in the FRICKIN' FACE.",
+        :string => "%{p} " +
+		[ 'shoots',
+		  "pew pew's",
+		  "blasts",
+      		  'zaps',
+		].sample +
+		" %{o} in the FACE!",
         :regex => [ /laser/, /blaster/ ],
         :help => "Can't dodge a gun^H^H^HFRICKIN LASER. Simple as that."
       },
@@ -282,15 +311,18 @@ class Junkyard
 	:name => "IBM Model M Keyboard",
         :type => :unstoppable,
         :health => -3,
-        :string => "%{p} whacks %{o} in the #{[ 'head',
-	       					'face',
-						'noggin',
-					        'brain case',	
-						'SPLEEN'
-      					      ].sample} with an IBM Model M Keyboard. #{[ 'OUCH!',
-										   "%{p} then resumes typing.",
-										   "That's gotta hurt!"
-      										 ].sample}",
+        :string => "%{p} whacks %{o} in the " +
+		[ 'head',
+	       	  'face',
+	   	  'noggin',
+	          'brain case',	
+		  'SPLEEN'
+      		].sample +
+		" with an #{Bold}IBM Model M Keyboard#{Bold}. " +
+		[ 'OUCH!',
+		  "%{p} then resumes typing.",
+		  "That's gotta hurt!"
+      		].sample,
         :regex => [ /[Mm]odel [Mm]/, 'keyboard' ],
         :help => "Beat your defenseless opponent senseless with the world's " +  
 		 "most industrial strength piece of computing hardware."
@@ -298,22 +330,18 @@ class Junkyard
       :meal_steal => {
 	:name => 'Mouse Raid',
         :type => :unstoppable,
-        :string => "%{p} #{[ 'sends',
-	       		     'dispatches',
-		     	     'conscripts',
-			     'orders',
-			     'marches',
-			     'sneaks'	     
-      			   ].sample} #{[ 'ninja',
-			  		 'kabuki',
-					 'ants dressed as',
-					 'clockwork',
-					 'PS/2',
-					 'USB',
-					 'Knock-Out',
-					 'genetically altered',
-					 'invisible'
-      				       ].sample} mice into %{o}'s lunchbox to swipe coffee and bacon.",
+        :string => "%{p} #{%w(sends dispatches conscripts orders marches sneaks).sample} " +  
+      		[ 'ninja',
+		  'kabuki',
+		  'ants dressed as',
+		  'clockwork',
+		  'PS/2',
+		  'USB',
+		  'Knock-Out',
+		  'genetically altered',
+		  'invisible'
+      		].sample +
+		" #{Bold}mice#{Bold} into %{o}'s lunchbox to swipe coffee and bacon.",
         :regex => [ /mouse raid/ ],
         :help => "Steal all of an opponent's coffee and bacon, " +
                  "if he has any, and use them on yourself."
@@ -322,19 +350,14 @@ class Junkyard
 	:name => "Coffee",
         :type => :support,
         :health => 1,
-        :string => "%{p} sips on some #{[ 'delicious', 
-					  'expensive',
-					  'burnt',
-					  'strong',
-					  'tepid',
-					  'iced',
-					  'counterfeit' 
-      					].sample} #{[ 'Starbucks',
-						      "Seattle's Best",
-						      "Pete's",
-						      "Folgers",
-						      "Jamacian Blue Mountain"
-      						    ].sample} coffee, and relaxes. aaahhh...",
+        :string => "%{p} sips on some #{%w(delicious expensive burnt strong tepid iced counterfeit).sample} " + 
+		[ 'Starbucks',
+	          "Seattle's Best",
+	          "Pete's",
+	          "Folgers",
+	          "Jamacian Blue Mountain"
+      	        ].sample +
+		" #{Bold}coffee#{Bold}, and relaxes. aaahhh...",
         :regex => [ /coffee/ ],
         :help => "Take a sip. Relax. Gain up to #{MAX_HP} health."
       },
@@ -348,31 +371,33 @@ class Junkyard
                  "up to a maximum of #{MAX_HP}."
       },
       :armor => {
+	:name => "Anabolic Steroids",
         :type => :support,
         :health => 5,
-        :string => "%{p} buckles on some armor.",
+        :string => "%{p} pops some conspicuous looking pills. Suddenly, #{Bold}STRONGER#{Bold}!",
         :regex => 'armor',
         :help => "Adds 5 extra points to your health on top of your maximum. " +
-                 "Your main HP will be protected until the armor is depleted."
+                 "Your main HP will be protected until the steroid is depleted."
       },
       :surgery => {
 	:name => "St. Jeffgus",
         :type => :support,
         :health => MAX_HP - 1,
-        :string => "Saint Jeffgus aknowledges %{p}'s pain, and his miraculous tears HEAL %{p} COMPLETELY!",
+        :string => "Saint Jeffgus aknowledges %{p}'s pain, and his miraculous tears #{Bold}HEAL#{Bold} %{p} #{Bold}COMPLETELY#{Bold}!",
         :regex => [ /(st|saint) jeffgus/ ],
         :help => "Used only when you have 1 health. " +
                  "Resets health to #{MAX_HP}."
       },
       :avalanche => {
 	:name => "The Shiny Red Button",
-        :type => :power,
+        :type => :disaster,
         :health => -6,
-        :string => [ "Hmm, %{p} wonders what THIS button does.. %{o} finds out!!",
-	       	     "%{p} PUSHES THE BUTTON. Klaxons go off! Alarms Sound! Something bad happens to %{o}",
-		     "A distinct click is heard. %{o} screams out in agony!",
-		     "%{p} dares touch the history eraser button. You fool! %{o} suddenly can't remember anything!",
-		     "The beautiful, shiny button? The jolly, candy-like button? Will he hold out, folks? Can he hold out? NO! Poor %{o}."
+        :string => [ "Hmm, %{p} wonders what #{Bold}THIS button#{Bold} does.. %{o} finds out!!",
+	       	     "%{p} #{Bold}PUSHES THE BUTTON#{Bold}. Klaxons go off! Alarms Sound! Something bad happens to %{o}",
+		     "%{p} succumbs to temptation, a #{Bold}button gets pressed#{Bold}. A distinct click is heard and %{o} screams out in agony!",
+		     "%{p} dares touch the history eraser button. #{Bold}You fool!#{Bold} Suddenly, %{o}'s life is greatly diminished!",
+		     "The beautiful, shiny button? The jolly, candy-like button? Will %{p} hold out, folks? Can %{p} hold out? #{Bold}NO!#{Bold} Poor %{o}.",
+		     'A disembodied voice says "That was easy!" as %{p} pushes #{Bold}the button#{Bold}. Suddenly, %{o} cries out!' 
       		   ].sample,
         :regex => [ /shiny red button/ ],
         :help => "Can you keep from pressing the SHINY RED BUTTON " +
@@ -380,79 +405,92 @@ class Junkyard
 		 "WHO KNOWS whom it'll do it to! DON'T PRESS IT!"
       },
       :deflector => {
-        :type => :power,
+        :type => :disaster,
         :string => "%{p} raises a deflector shield!",
         :regex => [ /deflect/ ],
         :help => "Next attack played against you automatically " +
                  "attacks a random player that isn't you."
       },
       :earthquake => {
-        :type => :power,
+        :name => "Holy Hand Grenade",
+        :type => :disaster,
         :health => -1,
-        :string => "%{p} shakes everybody up with an earthquake!",
-        :regex =>  [ /earth/, /quake/ ],
-        :help => "An earthquake shakes the entire #{TITLE} " +
-                 "1 damage to everyone, starting with yourself."
-      },
-      :multiball => {
-        :name => 'TERROR!',
-        :type => :power,
-        :string => "%{p} brings the TERROR! Everyone turns pale with fright.",
-        :regex => [ /terror/ ],
-        :help => "Take an extra turn after your turn. Let 'em HAVE IT."
+        :string => "%{p} lobs #{Bold}The Holy Hand Grenade Of Antioch#{Bold}! " + 
+	           "The Grenade soars through the air, accompanied by a short bit " +
+		   "of choral music, then bounces once and explodes.",
+        :regex =>  [ /holy/, /hand/, /grenade/ ],
+        :help => 'Arthur then holds up the Holy Hand Grenade and cries out "ONE! TWO! FIVE!" ' + 
+	         'Sir Galahad corrects him, shouting "Three, sir!". Arthur then yells "THREE!" ' + 
+		 'and hurls the grenade at the killer rabbit. 1 damage to everyone, starting with yourself.'
       },
       :reverse => {
-        :type => :power,
+        :type => :disaster,
         :string => "%{p} reverses the table!",
         :regex => [ /reverse/ ],
         :help => "REVERSE playing order. Skip " +
                  "opponent's turn if a 2-player game."
       },
       :shifty_business => {
-        :type => :power,
-        :string => "%{p} swaps hands with %{o}!",
-        :regex => [ /shift/, /business/ ],
+	:name => "Jedi Mind Trick",
+        :type => :disaster,
+        :string => "%{p} waves a hand in mysterious fashion, while deftly #{Bold}swapping cards#{Bold} with %{o}!",
+        :regex => [ /jedi/, /mind/, /trick/ ],
         :help => "Swap hand cards with a random player."
+      },
+      :spare_bolts => {
+        :name => 'TERROR!',
+        :type => :disaster,
+        :string => ["%{p} brings the #{Bold}TERROR#{Bold}! Everyone turns pale with fright.",
+		    "%{p} tells a horror story about #{Bold}ANT, NAKED#{Bold}! Everyone is paralyzed with fear!"
+		   ].sample,
+        :regex => [ /terror/ ],
+        :help => "Take an extra turn after your turn. Let 'em HAVE IT."
       },
       :the_bees => {
         :name => 'THE ANTS',
-        :type => :power,
-        :string => "%{p} drops an ant farm on %{o}'s head...",
+        :type => :disaster,
+        :string => "%{p} drops #{Bold}the ant farm#{Bold} on %{o}'s head...",
         :regex => [ /the/, /ants/ ],
         :help => "Random player is bitten by ants and must do " +
                  "their best Aquabats impression! 1 damage " +
                  "every turn until victim uses a support card."
       },
       :toolbox => {
-        :type => :power,
-        :string => "%{p} pulls %{n} cards from the deck.",
-        :regex => [ /tool/, /box/, /bag/ ],
-        :help => "Draw until you have 8 cards in your hand."
+	:name => "Tax Return",
+        :type => :disaster,
+        :string => ["%{p} suddenly receives a mysterious envelope from the #{Bold}IRS#{Bold}.",
+		    "The Tax Man appears on %{p}'s doorstep, personally delivers a #{Bold}Tax Return#{Bold}!",
+		    "Opening an envelope from the #{Bold}IRS#{Bold} produces cards and giggles from %{p}."
+	           ].sample,
+        :regex => [ /tax/, /return/ ],
+        :help => "Draw until you have 8 cards in your hand. Yay tax returns!"
       },
       :windy => {
-        :name => 'It\'s Getting Windy',
-        :type => :power,
-        :string => "%{p} turns up the ceiling fan too high and blows up " +
-                  "a gust! Every player passes a random card forward.",
-        :regex => [ /it\'?s\b/, /getting/, /windy/ ],
+        :name => 'Hockey Night',
+        :type => :disaster,
+        :string => "%{p} discards, and #{Bold}*POOF*#{Bold}, the #{%w(Bruins Sabres Canadiens Senators Hurricaines Panthers Lightning Capitals Jets).sample}" +
+      		  " and the #{%w(Canucks DUCKS Oilers Avalanche Predators Stars Kings Coyotes Sharks).sample} magically" +
+                  " appear and get into a big fight. In the confusion #{Bold}some cards#{Bold} get" +
+		  " tossed around!",
+        :regex => [ /Hockey (night)?/ ],
         :help => "All players choose a random card " +
                  "from the player previous to them."
       },
       :whirlwind => {
 	:name => "Smoke Break",
-        :type => :power,
-        :string => "Grifter compels everyone, to chill out for a bit." + "After passing a #{[ 'joint',
-											      'bong',
-											      'glass pipe',
-											      'vaporizor',
-											      'wooden pipe',
-											      'apple with a hole in it',
-											      'slightly crushed soda can',
-											      'metal pipe'
-											    ].sample} around, everyone grabs the wrong cards!",
+        :type => :disaster,
+        :string => "Grifter compels everyone to chill out for a bit. After passing a" +
+		[ ' joint',
+		  " #{%w(glass ceramic leaky plastic complicated simple short tall pretty).sample} bong",
+		  " #{%W(glass ceramic wooden metal).sample} pipe",
+		  ' vaporizor',
+		  'n apple with a hole in it',
+		  ' slightly crushed soda can',
+		].sample +
+		" around a few times, #{Bold}everybody grabs the wrong cards#{Bold} and resumes playing!",
         :regex => [ /smoke( )?break/ ],
-        :help => "Grifter gets everyone stoned. Every player shifts their hand cards " +
-                 "in the confusion."
+        :help => "Grifter gets everyone stoned. Every player shifts the cards in their hand" +
+                 " in the confusion."
       }
   }
 
@@ -477,18 +515,18 @@ class Junkyard
     def to_s
       color = COLORS[type]
       hs = if health.zero? then ''
-           elsif health < 0 then COLORS[:-] + health.to_s
-           else COLORS[:+] + '+' + health.to_s
+           elsif health < 0 then COLORS[:-] + ' ' + health.to_s
+           else COLORS[:+] + ' +' + health.to_s
            end
       ss = if skips.zero?
              ''
            elsif hs == ''
-             COLORS[:skips] + skips.to_s
+             COLORS[:skips] + ' ' + skips.to_s
            else
              Irc.color(:white) + '/' +
              COLORS[:skips] + skips.to_s
            end
-      color + "#{name} #{hs}#{ss}" + NormalText
+      color + "#{name}#{hs}#{ss}" + NormalText
     end
 
   end
@@ -496,28 +534,31 @@ class Junkyard
 
   class Player
 
-    attr_reader :user
-    attr_accessor :bees, :bonuses, :cards, :damage, :deflector, :deflectors,
-                  :discard, :garbage, :glutton, :grabbed, :health, :multiball,
-                  :skips, :skip_count, :turns
+    attr_accessor :user, :bees, :blocks, :bonuses, :cards, :crane,
+                  :damage, :deflector, :deflectors, :discard,
+                  :glutton, :go_again, :grabbed, :hand_max, :health,
+                  :skips, :skip_count, :turns, :turn_wizard
 
-    def initialize(user)
+    def initialize(user, health=MAX_HP)
       @user = user        # p.user => unbolded, p.to_s => bolded
       @bees = false       # player is attacked by bees when true
+      @blocks = 0         # counter for "NOPE" bonus
       @bonuses = 0        # counter for end-of-game bonuses
       @cards = []         # hand cards
+      @crane = nil        # array of cards played with Crane
       @damage = 0         # total damage dished out
       @deflector = false  # deflects attacks when true
-      @deflectors = 0     # counter for end-of-game bonuses
+      @deflectors = 0     # counter for "Deflector" bonus
       @discard = nil      # card the player just played
-      @garbage = nil      # array of Garbage Man garbage cards
-      @glutton = 0        # counter for end-of-game bonuses
+      @glutton = 0        # counter for "Glutton" bonus
       @grabbed = false    # currently being grabbed
-      @health = MAX_HP    # initial health
-      @multiball = false  # gets to go again when true
+      @hand_max = 5       # maximum number of cards to deal up to
+      @health = health    # initial health
+      @go_again = false   # gets to go again when true
       @skips = 0          # skips player when > 0
-      @skip_count = 0     # counter for end-of-game bonuses
-      @turns = 0           # turns spent playing this game
+      @skip_count = 0     # counter for "Where's-the-fight?" bonus
+      @turns = 0          # turns spent playing this game
+      @turn_wizard = 0    # counter for "Turn Wizard" bonus
     end
 
     def delete_cards(request)
@@ -623,7 +664,7 @@ class Junkyard
       @deck << Card.new(:crane)
       @deck << Card.new(:deflector)
       @deck << Card.new(:earthquake)
-      @deck << Card.new(:multiball)
+      @deck << Card.new(:spare_bolts)
       @deck << Card.new(:reverse)
       @deck << Card.new(:shifty_business)
       @deck << Card.new(:the_bees)
@@ -636,6 +677,7 @@ class Junkyard
   end
 
   def deal(player, n=1)
+    return if n < 1
     if deck.length < n
       n -= deck.length
       cards = @deck.pop(deck.length)
@@ -657,12 +699,8 @@ class Junkyard
   def start_game
     @players.shuffle!
     @started = Time.now
-    say p_turn
-    players.each { |p| notify p, p_cards(p) }
-    Thread.new do
-      sleep(@bot.config['junkyard.bot_delay'])
-      bot_move
-    end
+    increment_turn
+    players.each { |p| notify p, p_cards(p) unless p = players.first }
   end
 
   def add_player(user)
@@ -684,7 +722,14 @@ class Junkyard
         return
       end
     end
-    p = Player.new(user)
+    if started and @bot.config['junkyard.average_hp']
+      n = 0
+      players.each { |e| n += e.health }
+    hp = (n / players.length + 0.5).to_i
+    else
+    hp = MAX_HP
+    end
+    p = Player.new(user, hp)
     @players << p
     if manager.nil?
       @manager = p
@@ -692,19 +737,31 @@ class Junkyard
     else
       say "#{p} joins the #{TITLE}"
     end
-    deal(p, 5)
+    deal(p, p.hand_max)
     if players.length == 2
       countdown = @bot.config['junkyard.countdown']
       @bot.timer.add_once(countdown) { start_game }
-      say "Game will start in #{Bold}#{countdown}#{Bold} seconds." 
+      say "Game will start in #{Bold}#{countdown}#{Bold} seconds."
       say "Let's get ready to #{Bold}RUMBLE!#{Bold}"
     end
   end
 
-  def drop_player(dropper, player, killed=true)
+  def drop_player(player, dropper=false)
     unless dropper == false or dropper == manager or dropper == player
       say "Only the game manager is allowed to drop others, #{dropper}."
       return
+    end
+    # Pass any attacks on before removing a dropped player.
+    n = 0
+    n += 1 until players[n] == player
+    n = next_turn(n)
+    if player == manager and players.length > 2
+      unless players[n].user == @bot.nick
+        @manager = players[n]
+      else
+        @manager = players[next_turn(n)]
+      end
+      say "#{manager} is now game manager."
     end
     if dropper
       # If the manager drops the only other player, end the game.
@@ -713,43 +770,68 @@ class Junkyard
         @plugin.remove_game(channel)
         return
       end
-    end
-    if killed
+      say "#{player} has been removed from the game."
+      # Pass any existing attacks to the next player (as
+      # long as the next player isn't the one attacking).
+      unless player == players.first
+        if players[n] == players.first
+          @attacked = players[next_turn(n)] if player == attacked
+          players[next_turn(n)].grabbed = true if player.grabbed
+        else
+          @attacked = players[n] if player == attacked
+          players[n].grabbed = true if player.grabbed
+        end
+      end
+    else
       player.damage = 0
       update_user_stats(player, 0)
       if player.user == @bot.nick
-        @bot.action channel, BOT_DEATHS.sample % { :r => players.first.user }
+        r = if players.first.user == @bot.nick
+              players.last.user
+            else 
+              players.first.user
+            end
+        @bot.action channel, BOT_DEATHS.sample % { :r => r }
       else
         say DEATHS.sample % { :p => player }
       end
-    else
-      say "#{player} has been removed from the game."
     end
-    if player == attacked and not killed
-      # Pass any attacks on before removing player.
-      n = 0
-      n += 1 until players[n] == player
-      if next_turn(n).zero?
-        @manager = players.first if player == manager
-        increment_turn
-      else
-        players[next_turn(n)].grabbed = true if attacked.grabbed = true
-        attacked.discard, attacked.grabbed = nil
-        @attacked = players[next_turn(n)]
-        @manager = players[next_turn(n)] if player == manager
-        say p_turn
-      end
-    elsif player == players.first
-      increment_turn
+    if @bot.config['junkyard.reveal_cards']
+      reveal_string = if player.cards.length > 0
+                        "#{player} had #{player.cards.join(', ')}"
+                      else
+                         "#{player} had no cards"
+                      end
+      reveal_string << " and an active #{player.deflector}" if player.deflector
+      reveal_string << " while suffering from #{player.bees}" if player.bees
+      reveal_string << "."
+      say reveal_string
     end
+    player.discard = nil
+    player.discard, player.grabbed = nil
     @discard |= player.cards
+    @discard |= player.crane if player.crane
+    @discard << player.bees if player.bees
     @discard << player.deflector if player.deflector
     @dropouts << player
     @players.delete(player)
-    end_game if players.length == 1
+    if players.length < 2
+      end_game
+      return
+    elsif not dropper
+      if attacked
+        attacked.discard = nil
+        attacked.grabbed = false
+        @attacked = nil
+      end
+    else
+      say p_turn
+      bot_thread_counter
+      bot_thread_move
+    end
   end
 
-  def get_player(user)
+  def get_player(user, source=nil)
     case user
     when User
       players.each do |p|
@@ -758,6 +840,11 @@ class Junkyard
     when String
       players.each do |p|
         return p if p.user.irc_downcase == user.irc_downcase(channel.casemap)
+      end
+      players.each do |p|
+        if p.user.irc_downcase =~ /^#{user.irc_downcase(channel.casemap)}/
+          return p unless p.user.irc_downcase == source
+        end
       end
     else
       get_player(user.to_s)
@@ -810,10 +897,13 @@ class Junkyard
   end
 
   def p_cards(player)
-    n = 0
-    c = Bold + Irc.color(:white,:black)
-    cards = player.cards.map { |k| n += 1; "#{c}#{n}.\)#{Bold} #{k}"}
-    return cards.join(" ")
+    if player.cards.length > 0
+      n, b = 0, Bold
+      cards = player.cards.map { |c| n += 1; "#{b}#{n}.\)#{b} #{c}"}
+      return cards.join(' ')
+    else
+      return "#{Bold}(You have no cards!)#{Bold}"
+    end
   end
 
   def p_damage
@@ -849,11 +939,11 @@ class Junkyard
 
   def check_health(player=nil)
     unless player.nil?
-      drop_player(false, player) if player.health < 1
+      drop_player(player) if player.health < 1
       return
     end
     players.each do |p|
-      drop_player(false, p) if p.health < 1
+      drop_player(p) if p.health < 1
     end
   end
 
@@ -882,7 +972,7 @@ class Junkyard
     player.delete_cards(c)
     s = if c.length == 1 then '' else 's' end
     say "#{player} discards #{c.length} card#{s}."
-    deal(player, c.length)
+    deal(player, player.hand_max - player.cards.length)
     increment_turn
   end
 
@@ -899,12 +989,12 @@ class Junkyard
     # Make an inventory of what the bot has.
     c_hash = { :support => [], :surgery => [],
                :counter => [], :dodge => [], :grab => [], :insurance => [],
-               :unstoppable => [], :attack => [], :power => [],
-               :deflector => [], :multiball => [], :toolbox => []
+               :unstoppable => [], :attack => [], :disaster => [],
+               :deflector => [], :spare_bolts => [], :toolbox => []
              }
     player.cards.each do |c|
       case c.id
-      when :deflector, :dodge, :grab, :insurance, :multiball, :surgery, :toolbox
+      when :deflector, :dodge, :grab, :insurance, :spare_bolts, :surgery, :toolbox
         c_hash[c.id] << c
       else
         c_hash[c.type] << c
@@ -912,12 +1002,14 @@ class Junkyard
       end
     end
     c_hash[:support].reverse!
-    c_hash
+    debug "Created card inventory."
+    return c_hash
   end
 
   def bot_move
     p = players.first
     return unless p.user == @bot.nick
+    return if players.length < 2 or p.grabbed
     a = [] # array to pass to play_move
     # For now, just make the bot pick on a random player.
     n = rand(players.length)
@@ -925,8 +1017,8 @@ class Junkyard
     a << players[n].user.to_s
     # Pick the best card to play.
     c_hash = bot_inventory(p)
-    card = if c_hash[:deflector].any? or c_hash[:multiball].any?
-             c_hash[:deflector].first || c_hash[:multiball].first
+    card = if c_hash[:deflector].any? or c_hash[:spare_bolts].any?
+             c_hash[:deflector].first || c_hash[:spare_bolts].first
            elsif c_hash[:toolbox].any?
              c_hash[:toolbox].first
            elsif p.health == 1 and c_hash[:surgery].any?
@@ -934,17 +1026,20 @@ class Junkyard
            elsif p.bees and c_hash[:support].any?
              c_hash[:support].first
            elsif c_hash[:grab].any? and c_hash[:unstoppable].any? and c_hash[:attack].any?
-             c_hash[:grab].any?
+             c_hash[:grab].first
            elsif c_hash[:unstoppable].any?
              c_hash[:unstoppable].first
            elsif c_hash[:attack].any?
              c_hash[:attack].first
            elsif p.health < (MAX_HP - 1) and c_hash[:support].any?
              c_hash[:support].first
-           elsif c_hash[:power].any?
-             c_hash[:power].first
+           elsif c_hash[:disaster].any?
+             c_hash[:disaster].first
            else nil
            end
+    z = 'cards: '
+    p.cards.each { |c| z << "- #{c.id.upcase}" }
+    debug z
     # Find out which card in the deck this is,
     # if we have indeed found a suitable card.
     unless card.nil?
@@ -956,30 +1051,30 @@ class Junkyard
       a << n
       n2 = rand(p.cards.length)
       if card.id == :crane and p.cards.length > 1
-        # Throw a random card at the player
-        # just for the heck of it!
+        # Throw a random card at the
+        # player just for the heck of it!
         n2 = rand(p.cards.length) while n == n2
         a << n2
       elsif card.id == :grab
         until p.cards[n2].type == :unstoppable or p.cards[n2].type == :attack
           n2 = rand(p.cards.length)
         end
-        a << n2
+        a << n2 + 1
       end
     end
     # Play the card or otherwise discard.
     if a.length > 1
+      debug "playing #{a.join(' ')} "
       play_move(a)
     else
       a = Array.new(p.cards.length) { |i| i + 1 }
-      # Don't discard the first card in the hand if we can help it.
+      # Don't discard the first card
+      # in the hand if we can help it.
       a.shift unless a.length < 2
+      debug "discarding #{a.join(' ')}"
       discard(a)
     end
-    Thread.new do
-      sleep(@bot.config['junkyard.bot_delay'])
-      bot_move if card.type == :power
-    end
+    bot_thread_move if card.type == :disaster
   end
 
   def bot_counter
@@ -1001,16 +1096,18 @@ class Junkyard
     c_hash = bot_inventory(p)
     if valid_insurance?(p, o) and c_hash[:insurance].any?
       card = c_hash[:insurance].first
+    elsif o.discard.id == :crane
+      card = nil
     elsif p.bees and c_hash[:grab].any? and c_hash[:support].any?
       card = c_hash[:grab].first
       card2 = c_hash[:support].first
     elsif not p.grabbed and c_hash[:dodge].any?
       card = c_hash[:dodge].first
+    elsif p.health <= (MAX_HP/2) and c_hash[:counter].any?
+      card = c_hash[:counter].first
     elsif p.health <= (MAX_HP/2) and c_hash[:grab].any? and c_hash[:support].any?
       card = c_hash[:grab].first
       card2 = c_hash[:support].first
-    elsif p.health <= (MAX_HP/2) and c_hash[:counter].any?
-      card = c_hash[:counter].first
     elsif c_hash[:counter].any?
       card = if o.discard.health <= -3
                c_hash[:counter].first
@@ -1025,7 +1122,7 @@ class Junkyard
       when 0..2
         card = c_hash[:grab].first
         card2 = c_hash[:unstoppable].first
-      else 
+      else
         card = nil
       end
     elsif c_hash[:grab].any? and c_hash[:attack].any?
@@ -1039,6 +1136,9 @@ class Junkyard
     else
       card = nil
     end
+    z = 'cards: '
+    p.cards.each { |c| z << "- #{c.id.upcase} " }
+    debug z
     # Find out which card in the deck this is,
     # if we have indeed found a suitable card.
     unless card.nil?
@@ -1058,13 +1158,30 @@ class Junkyard
       end
     end
     # Play the card or otherwise discard.
-    # TODO: Playing Block breaks bot, but why?
-    #debug p.cards.join(' ')
-    #debug "playing #{a.join(' ')}"
     if a.length > 0
-      play_counter(p, a)
+      if p == players.first
+        debug "counter-countering with #{a.join(' ')}"
+        play_move(a)
+      else
+        debug "countering with #{a.join(' ')}"
+        play_counter(p, a)
+      end
     else
       pass(p)
+    end
+  end
+
+  def bot_thread_counter
+    Thread.new do
+      sleep(2)
+      bot_counter
+    end
+  end
+
+  def bot_thread_move
+    Thread.new do
+      sleep(@bot.config['junkyard.bot_delay'])
+      bot_move
     end
   end
 
@@ -1074,20 +1191,20 @@ class Junkyard
     if players.length == 2
       # If just two players are playing, the opponent
       # is assumed to be the player not attacking.
-      a.delete_at(0) if get_player(a[0])
+      a.delete_at(0) if get_player(a[0], player.user.downcase)
       opponent = players[1]
     else
       if attacked
         opponent = attacked
       else
-        # Don't really need an opponent if power/support card.
+        # Don't really need an opponent if disaster/support card.
         temp_card = a[0].to_i - 1
         if temp_card.between?(0, player.cards.length-1)
           temp_card = player.cards[temp_card]
-          if temp_card.type == :power or temp_card.type == :support
+          if temp_card.type == :disaster or temp_card.type == :support
             opponent = players[1]
           else
-            opponent = get_player(a[0])
+            opponent = get_player(a[0], player.user.downcase)
             if opponent.nil?
               say "There is no player '#{a[0]}'."
               return
@@ -1095,7 +1212,7 @@ class Junkyard
             a.delete_at(0)
           end
         else
-          opponent = get_player(a[0])
+          opponent = get_player(a[0], player.user.downcase)
           if opponent.nil?
             say "There is no player '#{a[0]}'."
             return
@@ -1140,8 +1257,8 @@ class Junkyard
         notify player, "That's not an attack card."
         return
       end
-    elsif c[0].type == :power
-      do_power(player, c[0])
+    elsif c[0].type == :disaster
+      do_disaster(player, c[0])
       return
     else
     end
@@ -1154,8 +1271,9 @@ class Junkyard
     end
     @discard << c[0]
     player.discard = c[0]
+    # Don't discard crane cards.
     if player.discard.id == :crane
-      player.garbage = c[1..-1]
+      player.crane = c[1..-1]
     end
     player.delete_cards(c[0])
     # Deflector, (by our interpretation of the rules,) automatically
@@ -1163,16 +1281,18 @@ class Junkyard
     # to respond, therefore we execute the attack and increment_turn.
     deflecting = if opponent.deflector then true else false end
     do_move(player, opponent)
-    if opponent.grabbed == false and deflecting
-      increment_turn
-    elsif c[0].type == :support or c[0].type == :unstoppable
-      increment_turn
+    unless opponent.health < 1 or player.health < 1
+      if opponent.grabbed == false and deflecting
+        increment_turn
+      elsif c[0].type == :support or c[0].type == :unstoppable
+        increment_turn
+      end
     end
   end
 
   def play_counter(player, a)
     c = []
-    a.delete_at(0) if get_player(a[0])
+    a.delete_at(0) if get_player(a[0], player.user.downcase)
     a.each do |e|
       n = e.to_i
       if n < 1
@@ -1186,8 +1306,8 @@ class Junkyard
         return
       end
     end
-    if c[0].type == :power
-      do_power(player, c[0])
+    if c[0].type == :disaster
+      do_disaster(player, c[0])
       return
     elsif player.discard
       say "You already played a card."
@@ -1196,15 +1316,14 @@ class Junkyard
       notify player, "Wait your turn, #{player.user}."
       return
     end
-    opponent = players.first
-    do_counter(player, opponent, c)
+    do_counter(player, players.first, c)
   end
 
   def do_grab(player, opponent, c)
     if c[1].nil?
       notify player, "Play an attack when grabbing."
       return
-    elsif c[1].type == :counter or c[1].type == :power
+    elsif c[1].type == :counter or c[1].type == :disaster
       notify player, "You can't play a #{c[1].type} card when grabbing."
       return
     elsif c[1].id == :surgery
@@ -1214,27 +1333,32 @@ class Junkyard
         return
       end
     elsif c[1].id == :crane
-      player.garbage = c[2..-1]
+      player.crane = c[2..-1]
     end
-    do_move(opponent, player, wait=false) if player == attacked
-    return if player.health < 1 # In case a player dies trying to grab.
+    do_move(opponent, player, wait=false) if player == attacked or opponent.discard
+    # In case player dies trying to grab.
+    return if player.health < 1
     @discard |= [ c[0], c[1] ]
     player.discard = c[1]
     do_slots(player)
     player.delete_cards([c[0], c[1]])
+    # In case player being grabbed dies when
+    # being grabbed (ie., from Deflector).
+    if opponent.health < 1
+      increment_turn
+      return
+    end
     @attacked = opponent unless attacked
     opponent.grabbed = true
     say c[0].string % { :p => player, :o => opponent }
     notify opponent, p_cards(opponent)
-    Thread.new do
-      sleep(2)
-      bot_counter
-    end
+    bot_thread_counter
   end
 
-  def do_power(player, card)
+  def do_disaster(player, card)
     unless attacked.nil?
-      notify player, "You cannot play power cards in the middle of an attack."
+      notify player, "You cannot play disaster " +
+                     "cards in the middle of an attack."
       return
     end
     # Bees/Deflector are discarded when used up.
@@ -1257,11 +1381,25 @@ class Junkyard
         p.health += card.health
         player.damage += card.health.abs
       end
+      # First player to die from Earthquake is
+      # always the player that played the card.
+      check_health(player)
       say p_health
       check_health
-    when :multiball
-      player.multiball = true
+    when :reverse
       say card.string % { :p => player }
+      # Yank the turn back in two-player games (Uno style).
+      if players.length == 2 and player != players.first
+        player.turn_wizard += 1
+        increment_turn
+        return
+      elsif players.length > 2
+        tmp = @players.reverse
+        (tmp.length-1).times do
+          tmp << tmp.shift
+        end
+        @players = tmp
+      end
     when :shifty_business
       n = rand(players.length)
       while players[n] == player
@@ -1269,7 +1407,10 @@ class Junkyard
       end
       say card.string % { :p => player, :o => players[n] }
       player.cards, players[n].cards = players[n].cards, player.cards
-      notify(player, p_cards(player)) unless player == players.first
+      notify(players[n], p_cards(players[n])) unless players[n] == players.first
+    when :spare_bolts
+      player.go_again = true
+      say card.string % { :p => player }
     when :the_bees
       n = rand(players.length)
       players[n].bees = card
@@ -1307,18 +1448,6 @@ class Junkyard
         @players[n].cards << e
         notify players[n], p_cards(players[n]) unless players[n] == player
         n += 1
-      end
-    when :reverse
-      say card.string % { :p => player }
-      if players.length == 2 and player != players.first
-        increment_turn
-        return
-      elsif players.length > 2
-        tmp = @players.reverse
-        (tmp.length-1).times do
-          tmp << tmp.shift
-        end
-        @players = tmp
       end
     end
     # In the rare event the current player has
@@ -1360,16 +1489,13 @@ class Junkyard
         say "#{player} plays #{player.discard}. Respond or pass, #{opponent}."
         notify opponent, p_cards(opponent)
         @attacked = opponent
-        Thread.new do
-          sleep(2)
-          bot_counter
-        end
+        bot_thread_counter
         return
       end
       damage = 0
       # Determine amount of damage.
       if player.discard.id == :slot_machine
-        string = "#{player} sprinkles pixie dust on #{opponent}. MAGIC OCCURS!"
+        string = "#{player} sprinkles pixie dust on #{opponent}. SUDDENLY, #{Bold}SKATE CHICKS#{Bold}!" 
         slots.each do |slot|
           damage -= slot
           string << " #{slot}."
@@ -1404,6 +1530,8 @@ class Junkyard
       if opponent.discard
         if opponent.discard.type == :counter
           say "#{opponent}'s #{opponent.discard} was thwarted!"
+          @discard << opponent.discard
+          opponent.discard = nil
         end
       end
       case player.discard.id
@@ -1416,11 +1544,11 @@ class Junkyard
           end
         end
       when :crane
-        @discard |= player.garbage
-        opponent.cards |= player.garbage
-        player.delete_cards(player.garbage)
-        deal(player, player.garbage.length)
-        player.garbage = nil
+        @discard |= player.crane
+        opponent.cards |= player.crane
+        player.delete_cards(player.crane)
+        deal(player, player.crane.length)
+        player.crane = nil
       when :meal_steal
         h, temp_deck = player.health, []
         opponent.cards.each do |e|
@@ -1449,7 +1577,9 @@ class Junkyard
     end
     # Announce attack
     say player.discard.string % { :p => player, :o => opponent }
+    # Tally up turns being missed
     opponent.skips += player.discard.skips
+    player.turn_wizard += player.discard.skips
     # Redemption tokens
     if opponent.discard
       if opponent.discard.id == :insurance
@@ -1462,7 +1592,7 @@ class Junkyard
     if player.discard.type == :support or player.discard.id == :meal_steal
       if player.discard.id == :meal_steal
         if temp_deck.length > 0
-          say "A ninja mouse brings #{player} some #{temp_deck.join(', ')}, and it is delicious!!"
+          say "A mouse minion brings #{player} some #{temp_deck.join(', ')}, and it is #{%w(delicious!! stale.. rotten!! passable.. AWESOME! wonderful! tastey! sabroso! fantastic! meh.. vegan! good. ).sample}"
           bee_recover(player)
         end
       end
@@ -1504,10 +1634,8 @@ class Junkyard
         say "#{player} jumps out of the way and passes " +
             "#{opponent.user}'s attack onto #{players[n]}!"
         @attacked = players[n]
-        Thread.new do
-          sleep(2)
-          bot_counter
-        end
+        notify players[n], p_cards(players[n])
+        bot_thread_counter
       end
       return
     when :block
@@ -1516,6 +1644,7 @@ class Junkyard
         player.delete_cards(c[0])
         say c[0].string % { :p => player, :o => opponent,
                             :c => opponent.discard }
+        player.blocks += 1 # increment Blocks used
         increment_turn
         return
       end
@@ -1531,7 +1660,7 @@ class Junkyard
     player.delete_cards(c[0])
     player.discard = c[0]
     do_move(opponent, player, wait=false)
-    increment_turn
+    increment_turn unless player.health < 1 or opponent.health < 1
   end
 
   def elapsed_time
@@ -1552,15 +1681,15 @@ class Junkyard
     players.first.discard = nil
     players.first.grabbed = false
     players.first.turns += 1
-    if players.first.multiball
-      players.first.multiball = false
+    if players.first.go_again
+      players.first.go_again = false
     else
       @players << @players.shift
     end
     # Deal the new player some cards.
     player = players.first
-    if player.cards.length < 5
-      n = 5 - player.cards.length
+    if player.cards.length < player.hand_max
+      n = player.hand_max - player.cards.length
       deal(player, n)
     end
     if player.bees
@@ -1577,12 +1706,9 @@ class Junkyard
       player.skip_count += 1
       increment_turn
     else
-      say p_turn
+      say p_turn unless players.length < 2 or not started
       notify player, p_cards(player)
-      Thread.new do
-        sleep(@bot.config['junkyard.bot_delay'])
-        bot_move
-      end
+      bot_thread_move
     end
   end
 
@@ -1592,13 +1718,14 @@ class Junkyard
   end
 
   def end_game
+    finishing_time = Time.now.to_i - started.to_i
     p = players.first
     b_string = ''
     # Brutality bonus:
     if p.damage >= 30
       p.bonuses += 1
       p.damage += MAX_HP
-      b_string << "Brutality bonus: +#{MAX_HP}. "
+      b_string << "BRUTALITY! bonus: +#{MAX_HP}. "
     end
     # Close-call bonus:
     if p.health == 1
@@ -1623,7 +1750,7 @@ class Junkyard
     if p.health >= MAX_HP
       p.bonuses += 1
       p.damage += p.health
-      b_string << "Health bonus: +#{p.health}. "
+      b_string << "FLAWLESS VICTORY!: +#{p.health}. "
     end
     # Multi-Deflector bonus:
     if p.deflectors > 1
@@ -1632,28 +1759,54 @@ class Junkyard
       p.damage += b
       b_string << "Multi-Deflector bonus: +#{b}. "
     end
+    # NOPE bonus:
+    if p.blocks >= 7
+      p.bonuses += 1
+      p.damage += p.blocks
+      b_string << "NOPE bonus: +#{p.blocks}. "
+    end
     # Speed bonus:
-    if Time.now.to_i - started.to_i <= 60
+    if finishing_time <= 60
       p.bonuses += 1
       p.damage += 10
       b_string << "Speed bonus: +10. "
     end
+    # Turn-Wizard bonus:
+    if p.turn_wizard >= 7
+      p.bonuses += 1
+      p.damage += p.turn_wizard
+      b_string << "Turn-Wizard bonus: +#{p.turn_wizard}. "
+    end
     # Where's-the-fight? bonus:
-    if p.skip_count >= 7
+    if p.skip_count >= 6
       p.bonuses += 1
       p.damage += p.skip_count * 2
       b_string << "Where's-the-fight? bonus: +#{p.skip_count * 2}. "
     end
+    # String revealing winner's remaining cards:
+    reveal_string = if @bot.config['junkyard.reveal_cards'] and not p.cards.empty?
+                      " -- Cards left: #{p.cards.join(', ')}"
+                    else ''
+                    end
     say "#{p} wins after #{elapsed_time}, using #{p.turns} turns! " +
-        "#{b_string}Damage done: #{p.damage}"
+        "#{b_string}Damage done: #{p.damage}#{reveal_string}"
+    @started = finishing_time # for records
     update_chan_stats(p.damage)
     update_user_stats(p)
+    update_records(p)
     @plugin.remove_game(channel)
   end
 
-  def replace_player(player, a)
-
-
+  def replace_player(player, new_player)
+    if player.user == new_player.nick
+      say "You're already playing, #{player.user}"
+    elsif get_player(new_player.nick)
+      say "#{new_player.nick} is already playing #{TITLE}."
+    else
+      say "#{player} was replaced by #{Bold + new_player.nick + Bold}!"
+      player.user = new_player
+      say "#{player} is now game manager." if player == manager
+    end
   end
 
   def transfer_management(player, a)
@@ -1665,7 +1818,7 @@ class Junkyard
     [ 'game', 'manager', 'management', 'ownership', 'to' ].each do |w|
       a.delete_at(0) if a.first == w
     end
-    new_manager = get_player(a.first)
+    new_manager = get_player(a.first, manager.user.downcase)
     if new_manager.nil?
       say "'#{a.first}' is not playing #{TITLE}"
       return
@@ -1677,22 +1830,88 @@ class Junkyard
     say "#{new_manager} is now game manager."
   end
 
+  def update_scores?
+    unless @bot.config['junkyard.bot_score']
+      unless players.length + dropouts.length > 2
+        players.each { |p| return false if p.user == @bot.nick }
+        dropouts.each { |p| return false if p.user == @bot.nick }
+      end
+      return false if players.first.user == @bot.nick
+    end
+    return true
+  end
+
   def update_chan_stats(damage)
+    return unless update_scores?
     if @registry.has_key? channel.name
       @registry[channel.name] = [ @registry[channel.name][0] + 1,
                                   @registry[channel.name][1] + damage,
-                                  @registry[channel.name][2]
+                                  @registry[channel.name][2],
+                                  @registry[channel.name][3] || {}
                                 ]
     else
-      @registry[channel.name] = [ 1, damage, {} ]
+      # Registry hierarchy:
+      # { #channel1, #channel2, player1, player2, player3, :records }
+      #      |                  V                             |-->--|
+      #      v  [ nick(proper caps), wins, games, damage, bonuses ] |
+      #      |                                                      v
+      #      |-> [ games played, accumulated damage,                |
+      #            {player stats} {channel-specific records} ]      |
+      #             |              V                                v
+      #             |    { :most_turns, :least_time,                |
+      #             v      :most_time, :most_damage... } <---<---<--|
+      #             |
+      #             |-> [ nick(proper caps), wins, games, damage, bonuses ]
+      #
+      @registry[channel.name] = [ 1, damage, {}, {} ]
     end
   end
 
+  def update_records(player)
+    return unless update_scores? and @registry.has_key? channel.name
+    r1 = @registry[:records] || {}
+    r2 = @registry[channel.name][3] || {}
+    # Fill in any empty records.
+    [ r1, r2 ].each do |r|
+      r[:least_time_user] = r[:least_time_user] || player.user.to_s,
+      r[:least_time] = r[:least_time] || started,
+      r[:most_time_user] = r[:most_time_user] || player.user.to_s,
+      r[:most_time] = r[:most_time] || started,
+      r[:most_damage_user] = r[:most_damage_user] || player.user.to_s,
+      r[:most_damage] = r[:most_damage] || player.damage,
+      r[:most_turns_user] = r[:most_turns_user] || player.user.to_s,
+      r[:most_turns] = r[:most_turns] || player.turns
+      if started < r[:least_time]
+        r[:least_time_user] = player.user.to_s
+        r[:least_time] = started
+      elsif started > r[:most_time]
+        r[:most_time_user] = player.user.to_s
+        r[:most_time] = started
+      end
+      if player.damage > r[:most_damage]
+        r[:most_damage_user] = player.user.to_s
+        r[:most_damage] = player.damage
+      end
+      if player.turns > r[:most_turns]
+        r[:most_turns_user] = player.user.to_s
+        r[:most_turns] = player.turns
+      end
+    end
+    @registry[:records] = r1
+    @registry[channel.name] = [ @registry[channel.name][0],
+                                @registry[channel.name][1],
+                                @registry[channel.name][2],
+                                r2
+                              ]
+  end
+
   def update_user_stats(player, win=1)
+    return unless update_scores?
+    return if @bot.config['junkyard.bot_score'] == false and player.user == @bot.nick
     c = channel.name
     nick = player.user.to_s
     p = player.user.downcase
-    @registry[channel.name] = [ 0, 0, {} ] unless @registry.has_key? c
+    @registry[channel.name] = [ 0, 0, {}, {} ] unless @registry.has_key? c
     # Player's channel damage:
     player_hash = @registry[c][2]
     if player_hash.has_key? p
@@ -1711,7 +1930,11 @@ class Junkyard
                          :bonuses => player.bonuses
                        }
     end
-    @registry[c] = [ @registry[c][0], @registry[c][1], player_hash ]
+    @registry[c] = [ @registry[c][0],
+                     @registry[c][1],
+                     player_hash,
+                     @registry[c][3] || {}
+                   ]
     # Player's network-wide damage:
     if @registry.has_key? p
       b = @registry[p][:bonuses] || 0
@@ -1731,15 +1954,27 @@ end
 
 class JunkyardPlugin < Plugin
 
-  Config.register Config::BooleanValue.new('junkyard.bot',
+  Config.register Config::BooleanValue.new 'junkyard.average_hp',
     :default => false,
-    :desc => "Enables or disables the AI.")
-  Config.register Config::IntegerValue.new('junkyard.bot_delay',
-    :default => 3, :validate => Proc.new{|v| v.between?(-1,61)},
-    :desc => "Number of seconds for bot to wait before responding.")
-  Config.register Config::IntegerValue.new('junkyard.countdown',
-    :default => 20, :validate => Proc.new{|v| v > 2},
-    :desc => "Number of seconds before starting a game of Junkyard.")
+    :desc => "Should players joining mid-game receive full health " +
+             "or an averaged amount of health from current players?"
+  Config.register Config::BooleanValue.new 'junkyard.bot',
+    :default => true,
+    :desc => "Enables or disables the AI."
+  Config.register Config::IntegerValue.new 'junkyard.bot_delay',
+    :default => 3,
+    :validate => Proc.new{|v| v.between?(0,60)},
+    :desc => "Number of seconds for bot to wait before responding."
+  Config.register Config::BooleanValue.new 'junkyard.bot_score',
+    :default => false,
+    :desc => "Record scores for bot and 2-player bot matches."
+  Config.register Config::IntegerValue.new 'junkyard.countdown',
+    :default => 15,
+    :validate => Proc.new{|v| v > 2},
+    :desc => "Number of seconds before starting a game of Junkyard."
+  Config.register Config::BooleanValue.new 'junkyard.reveal_cards',
+    :default => false,
+    :desc => "Reveal a player's hand cards when dropped or killed."
 
   TITLE = Junkyard::TITLE
   MAX_HP = Junkyard::MAX_HP
@@ -1788,7 +2023,7 @@ class JunkyardPlugin < Plugin
     b, cl = Bold, NormalText
     a = Junkyard::COLORS[:attack]
     c = Junkyard::COLORS[:counter]
-    p = Junkyard::COLORS[:power]
+    p = Junkyard::COLORS[:disaster]
     s = Junkyard::COLORS[:support]
     u = Junkyard::COLORS[:unstoppable]
     case topic.downcase
@@ -1819,7 +2054,7 @@ class JunkyardPlugin < Plugin
       "of cards: #{a}Attack#{cl} cards are played against other players on " +
       "your turn. #{u}Unstoppable#{cl} cards are as well, but cannot be " +
       "countered by the opponent. #{s}Support#{cl} cards heal you. " +
-      "#{c}Counter#{cl} cards counter attacks against you. #{p}Power#{cl} " +
+      "#{c}Counter#{cl} cards counter attacks against you. #{p}Disaster#{cl} " +
       "cards either affect all players or a random player. They do not " +
       "consume a turn. Play these cards at the beginning of anyone's turn. " +
       "Use #{prefix}help #{plugin} <card> for card-specific info."
@@ -1830,7 +2065,7 @@ class JunkyardPlugin < Plugin
       "d/discard - discard cards, drop <me>/<bot>/<nick> - remove " +
       "yourself/#{@bot.nick}/player from the game, " +
       "pa/pass - pass, " +
-      "p/play - play cards, "
+      "p/play - play cards, " +
       "replace [with] <nick> - give your spot in game to another player, " +
       "s/score - show score, " +
       "t/turn - show current turn/order/health, " +
@@ -1848,7 +2083,7 @@ class JunkyardPlugin < Plugin
       "can't dodge when being grabbed. If the card you played while " +
       "grabbing them turns out to be an #{u}Unstoppable#{cl} attack, any " +
       "counter card they play will be nullified and discarded."
-    when /manage/
+    when /manage/, /transfer/, /xfer/
       "#{b}Manage:#{b} The player that starts the game is the game manager. " +
       "Game managers may stop the game at any time, or transfer ownership " +
       "by typing 'transfer [game to] <player>'."
@@ -1861,10 +2096,15 @@ class JunkyardPlugin < Plugin
       "hand. Example: 'p Frank 4' to attack Frank with your 4th card. " +
       "You only need to specify a username when there are more than 2 " +
       "players playing the game."
+    when /replace/
+      "#{b}Replace:#{b} type 'replace [me with] <nick>' mid-game to " +
+      "have another user in the channel take your place in the game."
     when /stat/, 'top'
       "#{b}Stats:#{b} #{prefix}#{plugin} stats <nick> - network-wide stats, " +
-      "#{prefix}#{plugin} stats #channel <nick> - channel-specific stats, " +
-      "#{prefix}#{plugin} top <num> - top <num> players"
+      "#{prefix}#{plugin} stats #channel <nick> - channel-specific stats; " +
+      "#{prefix}#{plugin} top <num> - top <num> players; " +
+      "#{prefix}#{plugin} records <#chan> - special records set, " +
+      "#{prefix}#{plugin} records all - network-wide records set."
     when 'stop', /^end/, 'halt'
       "#{prefix}#{plugin} stop - stops the current game of #{TITLE}"
     else
@@ -1898,13 +2138,13 @@ class JunkyardPlugin < Plugin
       victim = case a[0]
                when 'me', nil then p
                when 'bot' then g.get_player(@bot.nick)
-               else g.get_player(a[0])
+               else g.get_player(a[0], m.sourcenick.downcase)
                end
       unless victim
         m.reply "There is no one playing named '#{a[0]}'."
         return
       end
-      g.drop_player(p, victim, false)
+      g.drop_player(victim, p)
     when /^(pa|pass)( |\z)/
       return unless g.attacked and p
       g.pass(p) if g.attacked == p or p.grabbed
@@ -1916,8 +2156,17 @@ class JunkyardPlugin < Plugin
       else
         g.play_counter(p, a)
       end
-    when /^(od?|order)( |\z)/, /^(tu?|turn)( |\z)/
+    when /^(tu?|turn)( |\z)/
       @bot.say m.channel, g.p_order if g.started
+    when /^replace( |\z)/
+      return if p.nil? or a.length.zero?
+      [ "me", "with" ].each { |e| a.delete_at(0) if a.first == e }
+      new_player = m.channel.get_user(a.first)
+      if new_player.nil?
+        m.reply "There is no one here named '#{a.first}'"
+      else
+        g.replace_player(p, new_player)
+      end
     when /^(sc?|scores?)( |\z)/
       @bot.say m.channel, g.p_damage if g.started
     when /^ti(me)?( |\z)/
@@ -1926,7 +2175,7 @@ class JunkyardPlugin < Plugin
       else
         m.reply TITLE + " hasn't started yet."
       end
-    when /^transfer?( |\z)/
+    when /^transfer( |\z)/
       return if p.nil? or a.length.zero?
       g.transfer_management(p, a)
     end
@@ -1968,15 +2217,67 @@ class JunkyardPlugin < Plugin
       m.reply "There is no #{TITLE} here."
       return
     end
-    remove_game(m.channel)
-    m.reply "#{TITLE} stopped."
+    manager = @games[m.channel].manager
+    player = @games[m.channel].get_player(m.source.nick)
+    if manager == player or @bot.auth.irc_to_botuser(m.source).owner?
+      remove_game(m.channel)
+      @bot.say m.channel, "#{TITLE} stopped."
+    else
+      m.reply "Only game managers may stop the game."
+    end
+  end
+
+  def show_records(m, params)
+    x = params[:x]
+    if m.private? and x.nil?
+      m.reply "Specify a channel name or say " +
+              "'all' for network-wide records."
+      return
+    elsif x.nil?
+      x = m.channel.name
+    elsif x.downcase  == 'all'
+      x = :records
+    else
+      x = '#' + x unless x[0] == '#'
+    end
+    records = @registry[x] || @registry[x.to_s.downcase]
+    if records.class == Array
+      records = records[3]
+      if records.nil? or records.empty?
+        m.reply "No records for #{x} yet."
+        return
+      else
+        @bot.say m.replyto, "#{Bold}Top records for #{x}:"
+      end
+    elsif records.nil? or records.empty?
+      m.reply "No network records set yet."
+      return
+    else
+      @bot.say m.replyto, "#{Bold}Network-wide records:"
+    end
+    if records[:most_damage]
+      @bot.say m.replyto, "Most damage: #{records[:most_damage_user]} " +
+                          "with #{records[:most_damage]} damage."
+    end
+    if records[:most_turns]
+      @bot.say m.replyto, "Most turns: #{records[:most_turns_user]} " +
+                          "with #{records[:most_turns]} turns."
+    end
+    if records[:least_time]
+      @bot.say m.replyto, "Quickest winner: #{records[:least_time_user]} " +
+                          "after #{records[:least_time]} seconds."
+    end
+    if records[:most_time]
+      @bot.say m.replyto, "Slowest winner: #{records[:most_time_user]} " +
+                          "after #{records[:most_time]} seconds."
+    end
   end
 
   def show_stats(m, params)
     if params[:x].nil?
       x = m.source.nick
     elsif params[:x] == false
-      x = m.channel.name.to_s
+      x = m.channel.name
     else
       x = params[:x].to_s
     end
@@ -1986,6 +2287,10 @@ class JunkyardPlugin < Plugin
         m.reply "No one has played #{TITLE} in #{x}."
       elsif x == m.source.nick
         m.reply "You haven't played #{TITLE}"
+      elsif x == @bot.nick.downcase and not @bot.config['junkyard.bot_score']
+        m.reply "I'm not configured to track my own scores."
+      elsif x == @bot.nick.downcase
+        m.reply "I haven't played #{TITLE}"
       else
         m.reply "#{x} hasn't played #{TITLE}"
       end
@@ -2001,19 +2306,19 @@ class JunkyardPlugin < Plugin
         a = a.to_a.each { |e| e.slice!(0) }
         a.flatten!
         a.sort! { |x,y| y[:damage] <=> x[:damage] }
-        z = params[:z] || 4
+        z = params[:z] || 5
         z = if z.to_i.between?(1,10) then z.to_i - 1 else 4 end
         top_players = a[0..z]
         n = 1
         top_players.each do |k|
-          @bot.say m.channel, "#{Bold}#{n}. #{k[:nick]}#{Bold} - " +
-                              "#{k[:damage]} dmg (#{k[:wins]}/ " +
+          @bot.say m.replyto, "#{Bold}#{n}. #{k[:nick]}#{Bold} - " +
+                              "#{k[:damage]} dmg (#{k[:wins]}/" +
                               "#{k[:games]} games won)"
           n += 1
           end
         return
       else
-        @bot.say m.channel, "#{Bold}#{@registry[xd][:nick]}#{Bold} -- " +
+        @bot.say m.replyto, "#{Bold}#{@registry[xd][:nick]}#{Bold} -- " +
                             "Wins: #{@registry[xd][:wins]}, " +
                             "games: #{@registry[xd][:games]}, " +
                             "damage: #{@registry[xd][:damage]}, " +
@@ -2026,7 +2331,7 @@ class JunkyardPlugin < Plugin
       "They haven't played a game in this channel, #{m.source.nick}"
       return
     end
-    @bot.say m.channel, "#{Bold}#{@registry[x][2][y][:nick]}#{Bold} " +
+    @bot.say m.replyto, "#{Bold}#{@registry[x][2][y][:nick]}#{Bold} " +
                         "(in #{x}) -- Wins: #{@registry[x][2][y][:wins]}, " +
                         "games: #{@registry[x][2][y][:games]}, " +
                         "damage: #{@registry[x][2][y][:damage]}, " +
@@ -2041,14 +2346,14 @@ plugin = JunkyardPlugin.new
 [ 'rumble' ].each do |scope|
   plugin.map "#{scope} bot",
     :private => false, :action => :add_bot
-  plugin.map "#{scope} cancel",
-    :private => false, :action => :stop_game
-  plugin.map "#{scope} end",
-    :private => false, :action => :stop_game
+  [ 'cancel', 'end', 'halt', 'stop' ].each do |x|
+    plugin.map "#{scope} #{x}",
+      :private => false, :action => :stop_game
+  end
+  plugin.map "#{scope} record[s] [:x]",
+    :action => :show_records
   plugin.map "#{scope} stat[s] [:x [:y]]",
     :action => :show_stats
-  plugin.map "#{scope} stop",
-    :private => false, :action => :stop_game
   plugin.map "#{scope} top [:z]",
     :private => false, :action => :show_stats,
     :defaults => { :x => false, :z => 5 }
