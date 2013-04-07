@@ -626,7 +626,7 @@ class Junkyard
       say reveal_string
     end
     player.discard = nil
-    player.discard, player.grabbed = nil
+    player.grabbed = false
     @discard |= player.cards
     @discard |= player.crane if player.crane
     @discard << player.bees if player.bees
