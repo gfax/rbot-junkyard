@@ -1873,13 +1873,13 @@ class Junkyard
     r2 = @registry[channel.name][3] || {}
     # Fill in any empty records.
     [ r1, r2 ].each do |r|
-      r[:least_time_user] = r[:least_time_user] || player.user.to_s,
-      r[:least_time] = r[:least_time] || started,
-      r[:most_time_user] = r[:most_time_user] || player.user.to_s,
-      r[:most_time] = r[:most_time] || started,
-      r[:most_damage_user] = r[:most_damage_user] || player.user.to_s,
-      r[:most_damage] = r[:most_damage] || player.damage,
-      r[:most_turns_user] = r[:most_turns_user] || player.user.to_s,
+      r[:least_time_user] = r[:least_time_user] || player.user.to_s
+      r[:least_time] = r[:least_time] || started
+      r[:most_time_user] = r[:most_time_user] || player.user.to_s
+      r[:most_time] = r[:most_time] || started
+      r[:most_damage_user] = r[:most_damage_user] || player.user.to_s
+      r[:most_damage] = r[:most_damage] || player.damage
+      r[:most_turns_user] = r[:most_turns_user] || player.user.to_s
       r[:most_turns] = r[:most_turns] || player.turns
       if started < r[:least_time]
         r[:least_time_user] = player.user.to_s
