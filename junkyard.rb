@@ -5,7 +5,7 @@
 # Author:: Lite <degradinglight@gmail.com>
 # Copyright:: (C) 2012 gfax.ch
 # License:: GPL
-# Version:: 2013-04-06
+# Version:: 2013-04-16
 #
 
 class Junkyard
@@ -768,17 +768,20 @@ class Junkyard
   def discard(a)
     player = players.first
     if attacked
-      say "You can only discard at the start of your turn."
+      notify player, 'You can only discard at the start of your turn.'
       return
     elsif a.length.zero?
-      say "Specify which card(s) you wish to discard."
+      notify player, 'Specify which card(s) you wish to discard.'
       return
+    end
+    if a.first.downcase == 'a' or a.first.downcase == 'all'
+      a = (1..player.cards.length).to_a
     end
     c = []
     a.each do |e|
       n = e.to_i
       if n < 1
-        notify player, "Specify a card number."
+        notify player, 'Specify a card number.'
         return
       elsif n > player.cards.length
         notify player, "You don't even have #{n} cards."
