@@ -1609,7 +1609,7 @@ class Junkyard
 
   def do_counter(player, opponent, c)
     unless c[0].type == :counter
-      say "Play a counter or pass."
+      notify player, "Play a counter or pass."
       return
     end
     case c[0].id
@@ -1667,11 +1667,8 @@ class Junkyard
   end
 
   def elapsed_time
-    if started
-      Utils.secs_to_string(Time.now-started).gsub(/\[|\]|"/,'')
-    else
-      nil
-    end
+    return nil unless started
+    Utils.secs_to_string(Time.now-started).gsub(/\[|\]|"/,'')
   end
 
   def increment_turn
@@ -2266,13 +2263,13 @@ class JunkyardPlugin < Plugin
       @bot.say m.replyto, "Most turns: #{records[:most_turns_user]} " +
                           "with #{records[:most_turns]} turns."
     end
-    if records[:least_time]
+    if t = records[:least_time]
       @bot.say m.replyto, "Quickest winner: #{records[:least_time_user]} " +
-                          "after #{records[:least_time]} seconds."
+                          "after #{Utils.secs_to_string(t).gsub(/\[|\]|"/,'')}."
     end
-    if records[:most_time]
+    if t = records[:most_time]
       @bot.say m.replyto, "Slowest winner: #{records[:most_time_user]} " +
-                          "after #{records[:most_time]} seconds."
+                          "after #{Utils.secs_to_string(t).gsub(/\[|\]|"/,'')}."
     end
   end
 
