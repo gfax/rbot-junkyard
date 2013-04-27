@@ -1486,7 +1486,7 @@ class Junkyard
 
   def elapsed_time
     return nil unless started
-    Utils.secs_to_string(Time.now-started).gsub(/\[|\]|"/,'')
+    return Utils.secs_to_string(Time.now-started)
   end
 
   def increment_turn
@@ -2083,11 +2083,11 @@ class JunkyardPlugin < Plugin
     end
     if t = records[:least_time]
       @bot.say m.replyto, "Quickest winner: #{records[:least_time_user]} " +
-                          "after #{Utils.secs_to_string(t).gsub(/\[|\]|"/,'')}."
+                          "after #{Utils.secs_to_string(t)}."
     end
     if t = records[:most_time]
       @bot.say m.replyto, "Slowest winner: #{records[:most_time_user]} " +
-                          "after #{Utils.secs_to_string(t).gsub(/\[|\]|"/,'')}."
+                          "after #{Utils.secs_to_string(t)}."
     end
   end
 
