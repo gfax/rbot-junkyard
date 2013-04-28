@@ -5,7 +5,7 @@
 # Author:: Lite <degradinglight@gmail.com>
 # Copyright:: (C) 2012 gfax.ch
 # License:: GPL
-# Version:: 2013-04-16
+# Version:: 2013-04-28
 #
 
 class Junkyard
@@ -1075,8 +1075,9 @@ class Junkyard
         return
       end
       # Numbers are converted into cards.
-      c << player.cards[n-1].dup
+      c << player.cards[n-1]
     end
+    @discard |= c
     player.delete_cards(c)
     s = if c.length == 1 then '' else 's' end
     say "#{player} discards #{c.length} card#{s}."
