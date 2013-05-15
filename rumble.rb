@@ -103,7 +103,7 @@ class Junkyard
 		  'Her giant ass will provide great cushion'
                 ].sample +
 		". ;)",
-        :regex => [ /mom/, /card/ ],
+        :regex => [ /mom/ ],
         :help => "Hide behind your opponent's mom! Her soft, supple body reduces opponent's attack by 2 points."
       },
       :insurance => {
@@ -112,7 +112,7 @@ class Junkyard
         :health => 5,
         :string => "%{p} invokes universal health insurance and " +
                   "is restored to 5 health! #{Bold}THANKS, OBAMA!#{Bold}",
-        :regex => [ /obamacare/ ],
+        :regex => [ /obama/ ],
         :help => "Can only be used against a blockable, " +
                  "killing blow. Resets you to 5 health points."
       },
@@ -193,7 +193,7 @@ class Junkyard
         :health => -2,
         :string => "%{p} #{Bold}sweeps#{Bold} %{o} off of their feet!",
         :skips => 1,
-        :regex => [ /leg sweep/ ],
+        :regex => [ /sweep/ ],
         :help => "Duck down and sweep your opponent onto the ground! They'll spend a turn getting back up."
       },
       :kickball => {
@@ -210,7 +210,7 @@ class Junkyard
       		].sample + 
 		" and #{%w(violently hurtfully dramatically woefully devestatingly).sample} " +
 		"#{%w(delivers connects applys whacks plants impacts).sample} a #{Bold}BOOT#{Bold} to %{o}'s #{Bold}HEAD#{Bold}.",
-        :regex => [ /roundhouse/, /kick/ ],
+        :regex => [ /roundhouse/ ],
         :help => "Major damage due to a swift BOOT TO THE HEAD. " +
                  "Because not all players have balls."
       },
@@ -232,7 +232,7 @@ class Junkyard
 	      		].sample +
 		" #{Bold}uppercut#{Bold} from %{p}.",
       		].sample,
-        :regex => [ /upper/ ],
+        :regex => [ /upper/, /shoryuken/ ],
         :help => "Ultimate attack."
       },
       :slot_machine => {
@@ -342,7 +342,7 @@ class Junkyard
 		  'invisible'
       		].sample +
 		" #{Bold}mice#{Bold} into %{o}'s lunchbox to swipe coffee and bacon.",
-        :regex => [ /mouse raid/ ],
+        :regex => [ /mouse/, /raid/ ],
         :help => "Steal all of an opponent's coffee and bacon, " +
                  "if he has any, and use them on yourself."
       },
@@ -384,7 +384,7 @@ class Junkyard
         :type => :support,
         :health => MAX_HP - 1,
         :string => "Saint Jeffgus aknowledges %{p}'s pain, and his miraculous tears #{Bold}HEAL#{Bold} %{p} #{Bold}COMPLETELY#{Bold}!",
-        :regex => [ /(st|saint) jeffgus/ ],
+        :regex => [ /jeffgus/ ],
         :help => "Used only when you have 1 health. " +
                  "Resets health to #{MAX_HP}."
       },
@@ -399,7 +399,7 @@ class Junkyard
 		     "The beautiful, shiny button? The jolly, candy-like button? Will %{p} hold out, folks? Can %{p} hold out? #{Bold}NO!#{Bold} Poor %{o}.",
 		     'A disembodied voice says "That was easy!" as %{p} pushes #{Bold}the button#{Bold}. Suddenly, %{o} cries out!' 
       		   ].sample,
-        :regex => [ /shiny red button/ ],
+        :regex => [ /shiny/, /button/ ],
         :help => "Can you keep from pressing the SHINY RED BUTTON " +
                  "that beckons you even now? WHO KNOWS what it'll do? " +
 		 "WHO KNOWS whom it'll do it to! DON'T PRESS IT!"
@@ -418,7 +418,7 @@ class Junkyard
         :string => "%{p} lobs #{Bold}The Holy Hand Grenade Of Antioch#{Bold}! " + 
 	           "The Grenade soars through the air, accompanied by a short bit " +
 		   "of choral music, then bounces once and explodes.",
-        :regex =>  [ /holy/, /hand/, /grenade/ ],
+        :regex =>  [ /holy/, /grenade/ ],
         :help => 'Arthur then holds up the Holy Hand Grenade and cries out "ONE! TWO! FIVE!" ' + 
 	         'Sir Galahad corrects him, shouting "Three, sir!". Arthur then yells "THREE!" ' + 
 		 'and hurls the grenade at the killer rabbit. 1 damage to everyone, starting with yourself.'
@@ -450,7 +450,7 @@ class Junkyard
         :name => 'THE ANTS',
         :type => :disaster,
         :string => "%{p} drops #{Bold}the ant farm#{Bold} on %{o}'s head...",
-        :regex => [ /the/, /ants/ ],
+        :regex => [ /ants/ ],
         :help => "Random player is bitten by ants and must do " +
                  "their best Aquabats impression! 1 damage " +
                  "every turn until victim uses a support card."
@@ -482,7 +482,7 @@ class Junkyard
         :string => "Grifter compels everyone to chill out for a bit. After passing a" +
 		[ ' joint',
 		  " #{%w(glass ceramic leaky plastic complicated simple short tall pretty).sample} bong",
-		  " #{%W(glass ceramic wooden metal).sample} pipe",
+		  " #{%W(glass ceramic wooden clogged metal).sample} pipe",
 		  ' vaporizor',
 		  'n apple with a hole in it',
 		  ' slightly crushed soda can',
@@ -1695,7 +1695,7 @@ class Junkyard
     end
     if player.bees
       player.health -= 1
-      say "#{player} is bitten by THE ANTS."
+      say "#{player} is bitten by #{Bold}THE ANTS#{Bold}."
       say p_health(player)
       check_health(player)
       # Turn will increment when they are dropped.
