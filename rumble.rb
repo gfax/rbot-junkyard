@@ -397,7 +397,7 @@ class Junkyard
 		     "%{p} succumbs to temptation, a #{Bold}button gets pressed#{Bold}. A distinct click is heard and %{o} screams out in agony!",
 		     "%{p} dares touch the history eraser button. #{Bold}You fool!#{Bold} Suddenly, %{o}'s life is greatly diminished!",
 		     "The beautiful, shiny button? The jolly, candy-like button? Will %{p} hold out, folks? Can %{p} hold out? #{Bold}NO!#{Bold} Poor %{o}.",
-		     'A disembodied voice says "That was easy!" as %{p} pushes #{Bold}the button#{Bold}. Suddenly, %{o} cries out!' 
+		     "A disembodied voice says \"That was easy!\" as %{p} pushes #{Bold}the button#{Bold}. Suddenly, %{o} cries out!" 
       		   ].sample,
         :regex => [ /shiny/, /button/ ],
         :help => "Can you keep from pressing the SHINY RED BUTTON " +
@@ -417,7 +417,7 @@ class Junkyard
         :health => -1,
         :string => "%{p} lobs #{Bold}The Holy Hand Grenade Of Antioch#{Bold}! " + 
 	           "The Grenade soars through the air, accompanied by a short bit " +
-		   "of choral music, then bounces once and explodes.",
+		   "of choral music, then bounces once and explodes. #{Bold}Everybody#{Bold} takes damage!",
         :regex =>  [ /holy/, /grenade/ ],
         :help => 'Arthur then holds up the Holy Hand Grenade and cries out "ONE! TWO! FIVE!" ' + 
 	         'Sir Galahad corrects him, shouting "Three, sir!". Arthur then yells "THREE!" ' + 
@@ -479,7 +479,7 @@ class Junkyard
       :whirlwind => {
 	:name => "Smoke Break",
         :type => :disaster,
-        :string => "Grifter compels everyone to chill out for a bit. After passing a" +
+        :string => "#{Bold}Grifter#{Bold} compels everyone to chill out for a bit. After passing a" +
 		[ ' joint',
 		  " #{%w(glass ceramic leaky plastic complicated simple short tall pretty).sample} bong",
 		  " #{%W(glass ceramic wooden clogged metal).sample} pipe",
