@@ -5,7 +5,7 @@
 # Author:: Lite <degradinglight@gmail.com>
 # Copyright:: (C) 2012 gfax.ch
 # License:: GPL
-# Version:: 2013-04-06
+# Version:: 2013-04-28
 #
 
 class Junkyard
@@ -1055,25 +1055,29 @@ class Junkyard
   def discard(a)
     player = players.first
     if attacked
-      say "You can only discard at the start of your turn."
+      notify player, 'You can only discard at the start of your turn.'
       return
     elsif a.length.zero?
-      say "Specify which card(s) you wish to discard."
+      notify player, 'Specify which card(s) you wish to discard.'
       return
+    end
+    if a.first.downcase == 'a' or a.first.downcase == 'all'
+      a = (1..player.cards.length).to_a
     end
     c = []
     a.each do |e|
       n = e.to_i
       if n < 1
-        notify player, "Specify a card number."
+        notify player, 'Specify a card number.'
         return
       elsif n > player.cards.length
         notify player, "You don't even have #{n} cards."
         return
       end
       # Numbers are converted into cards.
-      c << player.cards[n-1].dup
+      c << player.cards[n-1]
     end
+    @discard |= c
     player.delete_cards(c)
     s = if c.length == 1 then '' else 's' end
     say "#{player} discards #{c.length} card#{s}."
@@ -1711,7 +1715,7 @@ class Junkyard
 
   def do_counter(player, opponent, c)
     unless c[0].type == :counter
-      say "Play a counter or pass."
+      notify player, "Play a counter or pass."
       return
     end
     case c[0].id
@@ -1769,11 +1773,8 @@ class Junkyard
   end
 
   def elapsed_time
-    if started
-      Utils.secs_to_string(Time.now-started).gsub(/\[|\]|"/,'')
-    else
-      nil
-    end
+    return nil unless started
+    return Utils.secs_to_string(Time.now-started)
   end
 
   def increment_turn
@@ -2385,13 +2386,13 @@ class JunkyardPlugin < Plugin
       @bot.say m.replyto, "Most turns: #{records[:most_turns_user]} " +
                           "with #{records[:most_turns]} turns."
     end
-    if records[:least_time]
+    if t = records[:least_time]
       @bot.say m.replyto, "Quickest winner: #{records[:least_time_user]} " +
-                          "after #{records[:least_time]} seconds."
+                          "after #{Utils.secs_to_string(t)}."
     end
-    if records[:most_time]
+    if t = records[:most_time]
       @bot.say m.replyto, "Slowest winner: #{records[:most_time_user]} " +
-                          "after #{records[:most_time]} seconds."
+                          "after #{Utils.secs_to_string(t)}."
     end
   end
 
