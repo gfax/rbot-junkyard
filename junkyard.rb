@@ -2,10 +2,10 @@
 #
 # :title: Junkyard
 #
-# Author:: Lite <degradinglight@gmail.com>
-# Copyright:: (C) 2012 gfax.ch
+# Author:: Lite <jay@gfax.ch>
+# Copyright:: (C) 2014 gfax.ch
 # License:: GPL
-# Version:: 2013-04-28
+# Version:: 2014-08-23
 #
 
 class Junkyard
@@ -86,6 +86,12 @@ class Junkyard
         :regex => [ /mattres/ ],
         :help => "Reduces opponent's attack by 2 points."
       },
+      :mirror => {
+        :type => :counter,
+        :string => "%{p} takes %{o}'s %{c} and mirrors it back!",
+        :regex => [ /mirr/ ],
+        :help => "Mirror your opponent's attack, after taking the damage to yourself."
+      },
       :insurance => {
         :type => :counter,
         :health => 5,
@@ -103,13 +109,13 @@ class Junkyard
         :help => "Throw a wrench in your opponents' machinery. " +
                  "He must spend 2 turns finding what jammed his gears."
       },
-      :nose_bleed => {
+      :grease_bucket => {
         :type => :attack,
         :health => -2,
-        :string => "%{p} pops %{o} in the nose, spraying blood everywhere.",
+        :string => "%{p} drops a bucket of grease on %{o}. %{o} goes to wash up.",
         :skips => 1,
-        :regex => [ /nose/, /bleed/ ],
-        :help => "Opponent loses a turn to clean it up."
+        :regex => [ /greas/, /buck/ ],
+        :help => "Even more painful than it is messy."
       },
       :gutpunch => {
         :type => :attack,
@@ -126,13 +132,13 @@ class Junkyard
         :help => "Slightly more powerful attack " +
                  "directed at the neck of your opponent."
       },
-      :battery_acid => {
+      :acid_coffee => {
         :type => :attack,
         :health => -3,
-        :string => "%{p} throws battery acid in %{o}'s eyes.",
+        :string => "%{p} puts some battery acid in %{o}'s coffee. %{o} starts to feel ill...",
         :skips => 1,
-        :regex => [ /battery/, /acid/ ],
-        :help => "Opponent is burned by battery acid and blinded for a turn."
+        :regex => [ /acid/, /cof(f)ee/ ],
+        :help => "Opponent gets sick for a turn due to battery acid being poured in his coffee."
       },
       :kickball => {
         :type => :attack,
@@ -261,6 +267,12 @@ class Junkyard
         :help => "An earthquake shakes the entire #{TITLE} " +
                  "1 damage to everyone, starting with yourself."
       },
+      :propeller => {
+        :type => :disaster,
+        :string => "%{p} spins up %{o}'s propeller...",
+        :regex => [ /propel/ ],
+        :help => "Double the effects of a random player’s next Attack/Support."
+      },
       :reverse => {
         :type => :disaster,
         :string => "%{p} reverses the table!",
@@ -355,29 +367,30 @@ class Junkyard
 
     attr_accessor :user, :bees, :blocks, :bonuses, :cards, :crane,
                   :damage, :deflector, :deflectors, :discard,
-                  :glutton, :go_again, :grabbed, :hand_max, :health,
+                  :glutton, :go_again, :grabbed, :hand_max, :health, :propeller,
                   :skips, :skip_count, :turns, :turn_wizard
 
     def initialize(user, health=MAX_HP)
-      @user = user        # p.user => unbolded, p.to_s => bolded
-      @bees = false       # player is attacked by bees when true
-      @blocks = 0         # counter for "NOPE" bonus
-      @bonuses = 0        # counter for end-of-game bonuses
-      @cards = []         # hand cards
-      @crane = nil        # array of cards played with Crane
-      @damage = 0         # total damage dished out
-      @deflector = false  # deflects attacks when true
-      @deflectors = 0     # counter for "Deflector" bonus
-      @discard = nil      # card the player just played
-      @glutton = 0        # counter for "Glutton" bonus
-      @grabbed = false    # currently being grabbed
-      @hand_max = 5       # maximum number of cards to deal up to
-      @health = health    # initial health
-      @go_again = false   # gets to go again when true
-      @skips = 0          # skips player when > 0
-      @skip_count = 0     # counter for "Where's-the-fight?" bonus
-      @turns = 0          # turns spent playing this game
-      @turn_wizard = 0    # counter for "Turn Wizard" bonus
+      @user = user       # p.user => unbolded, p.to_s => bolded
+      @bees = false      # player is attacked by bees when true
+      @blocks = 0        # counter for "NOPE" bonus
+      @bonuses = 0       # counter for end-of-game bonuses
+      @cards = []        # hand cards
+      @crane = nil       # array of cards played with Crane
+      @damage = 0        # total damage dished out
+      @deflector = nil   # holds instance of deflector card when player has active deflector
+      @deflectors = 0    # counter for "Deflector" bonus
+      @discard = nil     # card the player just played
+      @glutton = 0       # counter for "Glutton" bonus
+      @grabbed = false   # currently being grabbed
+      @hand_max = 5      # maximum number of cards to deal up to
+      @health = health   # initial health
+      @go_again = false  # gets to go again when true
+      @propeller = nil   # instance of propeller card if player has active propeller
+      @skips = 0         # skips player when > 0
+      @skip_count = 0    # counter for "Where's-the-fight?" bonus
+      @turns = 0         # turns spent playing this game
+      @turn_wizard = 0   # counter for "Turn Wizard" bonus
     end
 
     def delete_cards(request)
@@ -405,7 +418,14 @@ class Junkyard
         d1 = ''
         d2 = ''
       end
-      d1 + Bold + @user.to_s + Bold + d2
+      if propeller
+        p1 = Irc.color(:brown) + "+" + NormalText
+        p2 = Irc.color(:brown) + "+" + NormalText
+      else
+        p1 = ''
+        p2 = ''
+      end
+      d1 + p1 + Bold + @user.to_s + Bold + p2 + d2
     end
 
   end
@@ -462,14 +482,15 @@ class Junkyard
     end
     3.times do
       @deck << Card.new(:mattress)
-      @deck << Card.new(:nose_bleed)
+      @deck << Card.new(:grease_bucket)
       @deck << Card.new(:soup)
     end
     2.times do
       @deck << Card.new(:a_gun)
-      @deck << Card.new(:battery_acid)
+      @deck << Card.new(:acid_coffee)
       @deck << Card.new(:insurance)
       @deck << Card.new(:meal_steal)
+      @deck << Card.new(:mirror)
       @deck << Card.new(:slot_machine)
       @deck << Card.new(:surgery)
       @deck << Card.new(:tire)
@@ -483,6 +504,7 @@ class Junkyard
       @deck << Card.new(:crane)
       @deck << Card.new(:deflector)
       @deck << Card.new(:earthquake)
+      @deck << Card.new(:propeller)
       @deck << Card.new(:spare_bolts)
       @deck << Card.new(:reverse)
       @deck << Card.new(:shifty_business)
@@ -714,6 +736,17 @@ class Junkyard
     return false
   end
 
+  def propeller(player)
+    debug = "Player propeller is #{player.propeller}."
+    if player.propeller
+      say "#{player} lets loose the #{player.propeller}!"
+      @discard << player.propeller
+      player.propeller = nil
+      return 2
+    end
+    return 1
+  end
+
   def p_cards(player)
     if player.cards.length > 0
       n, b = 0, Bold
@@ -774,7 +807,7 @@ class Junkyard
       notify player, 'Specify which card(s) you wish to discard.'
       return
     end
-    if a.first.downcase == 'a' or a.first.downcase == 'all'
+    if ['a', 'all'].include? a.first.to_s.downcase
       a = (1..player.cards.length).to_a
     end
     c = []
@@ -824,7 +857,7 @@ class Junkyard
       end
     end
     c_hash[:support].reverse!
-    debug "Created card inventory."
+    debug "Created bot's card inventory."
     return c_hash
   end
 
@@ -859,7 +892,7 @@ class Junkyard
              c_hash[:disaster].first
            else nil
            end
-    z = 'cards: '
+    z = 'Bot\'s cards: '
     p.cards.each { |c| z << "- #{c.id.upcase}" }
     debug z
     # Find out which card in the deck this is,
@@ -886,14 +919,14 @@ class Junkyard
     end
     # Play the card or otherwise discard.
     if a.length > 1
-      debug "playing #{a.join(' ')} "
+      debug "Bot's playing #{a.join(' ')} "
       play_move(a)
     else
       a = Array.new(p.cards.length) { |i| i + 1 }
       # Don't discard the first card
       # in the hand if we can help it.
       a.shift unless a.length < 2
-      debug "discarding #{a.join(' ')}"
+      debug "Bot's discarding #{a.join(' ')}"
       discard(a)
     end
     bot_thread_move if card.type == :disaster
@@ -994,17 +1027,17 @@ class Junkyard
   end
 
   def bot_thread_counter
-    Thread.new do
+    #Thread.new do
       sleep(2)
       bot_counter
-    end
+    #end
   end
 
   def bot_thread_move
-    Thread.new do
+    #Thread.new do
       sleep(@bot.config['junkyard.bot_delay'])
       bot_move
-    end
+    #end
   end
 
   def play_move(a)
@@ -1056,7 +1089,7 @@ class Junkyard
         return
       end
       # Numbers are converted into cards.
-      c << player.cards[n-1].dup
+      c << player.cards[n-1]
       if e.nil?
         notify player, "You don't even have #{n} cards."
         return
@@ -1165,7 +1198,7 @@ class Junkyard
     do_slots(player)
     player.delete_cards([c[0], c[1]])
     # In case player being grabbed dies when
-    # being grabbed (ie., from Deflector).
+    # when being grabbed (ie., from Deflector).
     if opponent.health < 1
       increment_turn
       return
@@ -1184,7 +1217,7 @@ class Junkyard
       return
     end
     # Bees/Deflector are discarded when used up.
-    @discard << card unless card.id == :deflector or card.id == :the_bees
+    @discard << card unless [:deflector, :the_bees, :propeller].include? card.id
     player.delete_cards(card)
     case card.id
     when :avalanche
@@ -1208,6 +1241,10 @@ class Junkyard
       check_health(player)
       say p_health
       check_health
+    when :propeller
+      lucky_victim = players[rand(players.length)]
+      lucky_victim.propeller = card
+      say card.string % { :p => player, :o => lucky_victim }
     when :reverse
       say card.string % { :p => player }
       # Yank the turn back in two-player games (Uno style).
@@ -1288,7 +1325,7 @@ class Junkyard
     end
   end
 
-  def do_move(player, opponent, wait=true)
+  def do_move(player, opponent, wait=true, multiplier=1)
     # Exercise deflectors.
     if opponent.deflector and player.discard.type != :support
       n = rand(players.length)
@@ -1304,6 +1341,16 @@ class Junkyard
       @attacked, opponent = players[n], players[n]
       wait = false
     end
+    # Let loose the propeller if there is no wait on the attack.
+    if multiplier == 1
+      if wait and player.discard.type == :attack
+        multiplier = 1
+      else
+        multiplier = propeller(player)
+      end
+    end
+    debug "#{player}'s card is #{player.discard}, " +
+          "wait is #{wait}, multiplier is #{multiplier}."
     case player.discard.type
     when :attack
       if wait
@@ -1319,12 +1366,12 @@ class Junkyard
       if player.discard.id == :slot_machine
         string = "#{player} pulls #{opponent}'s lever..."
         slots.each do |slot|
-          damage -= slot
-          string << " #{slot}."
+          damage -= slot * multiplier
+          string << " #{slot * multiplier}."
         end
         say string
       else
-        damage += player.discard.health
+        damage += player.discard.health * multiplier
       end
       # Adjust damage depending if opponent has a mattress.
       if opponent.discard
@@ -1338,9 +1385,9 @@ class Junkyard
       player.damage += damage.abs
     when :support
       if player.discard.id == :armor
-        player.health += player.discard.health
+        player.health += player.discard.health * multiplier
       else
-        n = player.discard.health
+        n = player.discard.health * multiplier
         until player.health >= MAX_HP or n < 1
           player.health += 1
           n -= 1
@@ -1376,7 +1423,7 @@ class Junkyard
         opponent.cards.each do |e|
           if e.id == :soup or e.id == :sub
             temp_deck << e
-            h += e.health
+            h += e.health * multiplier
           end
         end
         if temp_deck.length > 0
@@ -1393,15 +1440,15 @@ class Junkyard
           end
         end
       else
-        opponent.health += player.discard.health
-        player.damage += player.discard.health.abs
+        opponent.health += player.discard.health * multiplier
+        player.damage += player.discard.health.abs * multiplier
       end
     end
     # Announce attack
     say player.discard.string % { :p => player, :o => opponent }
     # Tally up turns being missed
-    opponent.skips += player.discard.skips
-    player.turn_wizard += player.discard.skips
+    opponent.skips += player.discard.skips * multiplier
+    player.turn_wizard += player.discard.skips * multiplier
     # Redemption tokens
     if opponent.discard
       if opponent.discard.id == :insurance
@@ -1422,6 +1469,17 @@ class Junkyard
     elsif player.discard.id != :crane and player.discard.id != :bulldozer
       say p_health(opponent)
       check_health(opponent)
+    end
+    if opponent.discard
+      if opponent.discard.id == :mirror
+        say opponent.discard.string %
+          { :p => opponent, :o => player, :c => player.discard }
+        @discard << opponent.discard
+        opponent.discard = player.discard.dup
+        player.discard = nil
+        # Mirror the attack, passing on any possible multiplier.
+        do_move(opponent, player, wait=false, multiplier)
+      end
     end
     player.discard = nil
   end
@@ -1451,6 +1509,11 @@ class Junkyard
       if players[n] == opponent
         say "#{player} dodged and nullified " +
             "#{opponent.user}'s #{opponent.discard}!"
+        if opponent.propeller
+          say "#{player} discards #{player.propeller}."
+          @discard << opponent.propeller
+          opponent.propeller = nil
+        end
         increment_turn
       else
         say "#{player} jumps out of the way and passes " +
@@ -1467,6 +1530,11 @@ class Junkyard
         say c[0].string % { :p => player, :o => opponent,
                             :c => opponent.discard }
         player.blocks += 1 # increment Blocks used
+        if opponent.propeller
+          say "#{player} discards #{player.propeller}."
+          @discard << opponent.propeller
+          opponent.propeller = nil
+        end
         increment_turn
         return
       end
@@ -1482,7 +1550,13 @@ class Junkyard
     player.delete_cards(c[0])
     player.discard = c[0]
     do_move(opponent, player, wait=false)
-    increment_turn unless player.health < 1 or opponent.health < 1
+    unless player.health < 1 or opponent.health < 1
+      if player.discard
+        increment_turn unless player.discard.id == :mirror
+      else
+        increment_turn
+      end
+    end
   end
 
   def elapsed_time
