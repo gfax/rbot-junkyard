@@ -5,7 +5,7 @@
 # Author:: Lite <jay@gfax.ch>
 # Copyright:: (C) 2014 gfax.ch
 # License:: GPL
-# Version:: 2014-08-23
+# Version:: 2014-08-24
 #
 
 class Junkyard
@@ -179,18 +179,18 @@ class Junkyard
       },
       :tire => {
         :type => :unstoppable,
-        :string => "%{p} throws a tire around %{o}.",
         :skips => 1,
+        :string => "%{p} throws a tire around %{o}.",
         :regex => [ /tire(d|s)?\b/ ],
         :help => "Throw a tire around your opponent, impeding " +
                  "his movement and causing him to lose a turn."
       },
-      :trout_slap => {
+      :cheap_shot => {
         :type => :unstoppable,
         :health => -1,
-        :string => "%{p} slaps %{o} around a bit with a large trout.",
-        :regex => [ /trout/, /slap/ ],
-        :help => "An mIRC-inspired attack. Slap your opponent with a trout."
+        :string => "%{p} takes a cheap shot at %{o}.",
+        :regex => [ /ch(e)ap/, /shot/ ],
+        :help => "Hit your opponent when he least expects it."
       },
       :a_gun => {
         :type => :unstoppable,
@@ -266,6 +266,13 @@ class Junkyard
         :regex =>  [ /earth/, /quake/ ],
         :help => "An earthquake shakes the entire #{TITLE} " +
                  "1 damage to everyone, starting with yourself."
+      },
+      :gas_spill => {
+        :type => :disaster,
+        :skips => 2,
+        :string => "%{p} knocks a leak in %{o}'s gas tank! %{o} goes to find a hose and ash tray.",
+        :regex => [ /spil/],
+        :help => "Random player misses 2 turns."
       },
       :propeller => {
         :type => :disaster,
@@ -488,13 +495,13 @@ class Junkyard
     2.times do
       @deck << Card.new(:a_gun)
       @deck << Card.new(:acid_coffee)
+      @deck << Card.new(:cheap_shot)
       @deck << Card.new(:insurance)
       @deck << Card.new(:meal_steal)
       @deck << Card.new(:mirror)
       @deck << Card.new(:slot_machine)
       @deck << Card.new(:surgery)
       @deck << Card.new(:tire)
-      @deck << Card.new(:trout_slap)
       @deck << Card.new(:wrench)
     end
     1.times do
@@ -504,6 +511,7 @@ class Junkyard
       @deck << Card.new(:crane)
       @deck << Card.new(:deflector)
       @deck << Card.new(:earthquake)
+      @deck << Card.new(:gas_spill)
       @deck << Card.new(:propeller)
       @deck << Card.new(:spare_bolts)
       @deck << Card.new(:reverse)
@@ -1241,6 +1249,10 @@ class Junkyard
       check_health(player)
       say p_health
       check_health
+    when :gas_spill
+      victim = players[rand(players.length)]
+      victim.skips += card.skips
+      say card.string % { :p => player, :o => victim }
     when :propeller
       lucky_victim = players[rand(players.length)]
       lucky_victim.propeller = card

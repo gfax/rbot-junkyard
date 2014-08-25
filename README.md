@@ -97,9 +97,13 @@ Inventory:
   5 – Blocks, Uppercuts
   3 – Mattresses, Grease Buckets, Soups
   2 – A Guns, Battery Acids, Cheap Shots, Insurances, Meal Steals, Mirrors, Slot Machines, Surgeries, Siphons, Tires, Wrenches
-  1 – Armor, Avalanche, Bulldozer, Crane, Deflector, Earthquake, Energy Drinks, Gas Spills, It’s Getting Windy, Magnet, Propeller, Reverse, Sleep, Spare Bolts, The Bees, Tire Iron, Toolbox, Whirlwind
+  1 – Armor, Avalanche, Bulldozer, Crane, Deflector, Earthquake, Energy Drink, Gas Spills, It’s Getting Windy, Magnet, Propeller, Reverse, Sleep, Spare Bolts, The Bees, Tire Iron, Toolbox, Whirlwind
 
 ##TODO
 
+* Implement Energy Drink
+* Implement Magnet
+* Implement Siphon
 * Bee Bonus: kill someone with bees
 * Redo turn incrementing (consistently increment when player drops)
+* Update Junkyard deck to new help text
