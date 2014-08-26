@@ -81,7 +81,7 @@ Disaster Cards:
   Earthquake (-1) – An earthquake shakes the entire Junkyard! 1 damage to everyone, starting with you.
   Gas Spill (miss-2) – Random player misses 2 turns.
   It’s Getting Windy – All players choose a random card from the player preceding them.
-  Propeller (x2) (x2) – Double the effects of a random player’s next Attack/Support.
+  Propeller (x2) (x2) – Double the effects of a random player’s next successful Attack/Support.
   Reverse – REVERSE playing order. Skips opponent’s turn if a 2-player game.
   Spare Bolts – Take an extra turn after your turn. [They're not pack rats – they're just open-minded collectors.]
   THE BEES (-1) – Random player is stung by bees! Victim holds onto this card and takes 1 damage every turn until using a support card. [Oh no! Not the bees! Not the bees! AAAAHHH!]

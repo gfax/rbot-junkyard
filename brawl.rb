@@ -5,7 +5,7 @@
 # Author:: Lite <jay@gfax.ch>
 # Copyright:: (C) 2014 gfax.ch
 # License:: GPL
-# Version:: 2014-08-24
+# Version:: 2014-08-25
 #
 
 class Junkyard
@@ -179,6 +179,12 @@ class Junkyard
                  "opponent. The opponent won't get any new cards until " +
                  "he manages to get his hand below 5 cards again."
       },
+      :magnet => {
+        :type => :unstoppable,
+        :string => "%{p}'s magnet steals some cards from %{o}.",
+        :regex => [ /magn/ ],
+        :help => "Discard any cards you don’t want and pull out that many from your opponent’s hand."
+      },
       :tire => {
         :type => :unstoppable,
         :skips => 1,
@@ -280,7 +286,7 @@ class Junkyard
         :type => :disaster,
         :string => "%{p} spins up %{o}'s propeller...",
         :regex => [ /propel/ ],
-        :help => "Double the effects of a random player’s next Attack/Support."
+        :help => "Double the effects of a random player’s next successful Attack/Support."
       },
       :reverse => {
         :type => :disaster,
@@ -469,6 +475,12 @@ class Junkyard
                  "opponent. The opponent won't get any new cards until " +
                  "he manages to get his hand below 5 cards again."
       },
+      :magnet => {
+        :type => :unstoppable,
+        :string => "%{p}'s magnet steals some cards from %{o}.",
+        :regex => [ /magn/ ],
+        :help => "Discard any cards you don’t want and pull out that many from your opponent’s hand."
+      },
       :tire => {
         :name => 'Looke Out',
         :type => :unstoppable,
@@ -581,7 +593,7 @@ class Junkyard
         :type => :disaster,
         :string => "%{p} spins up %{o}'s propeller...",
         :regex => [ /propel/ ],
-        :help => "Double the effects of a random player’s next Attack/Support."
+        :help => "Double the effects of a random player’s next successful Attack/Support."
       },
       :reverse => {
         :name => 'You\'re Your Grandfather',
@@ -677,10 +689,10 @@ class Junkyard
 
   class Player
 
-    attr_accessor :user, :bees, :blocks, :bonuses, :cards, :crane,
-                  :damage, :deflector, :deflectors, :discard,
-                  :glutton, :go_again, :grabbed, :hand_max, :health, :propeller,
-                  :skips, :skip_count, :turns, :turn_wizard
+    attr_accessor :user, :bees, :blocks, :bonuses, :cards, :damage,
+                  :deflector, :deflectors, :discard, :garbage,
+                  :glutton, :go_again, :grabbed, :hand_max, :health,
+                  :propeller, :skips, :skip_count, :turns, :turn_wizard
 
     def initialize(user, health=MAX_HP)
       @user = user       # p.user => unbolded, p.to_s => bolded
@@ -688,11 +700,11 @@ class Junkyard
       @blocks = 0        # counter for "NOPE" bonus
       @bonuses = 0       # counter for end-of-game bonuses
       @cards = []        # hand cards
-      @crane = nil       # array of cards played with Crane
       @damage = 0        # total damage dished out
       @deflector = nil   # holds instance of deflector card when player has active deflector
       @deflectors = 0    # counter for "Deflector" bonus
       @discard = nil     # card the player just played
+      @garbage = nil     # array of cards played with Crane/Magnet
       @glutton = 0       # counter for "Glutton" bonus
       @grabbed = false   # currently being grabbed
       @hand_max = 5      # maximum number of cards to deal up to
@@ -818,6 +830,7 @@ class Junkyard
       @deck << Card.new(channel, :deflector)
       @deck << Card.new(channel, :earthquake)
       @deck << Card.new(channel, :gas_spill)
+      @deck << Card.new(channel, :magnet)
       @deck << Card.new(channel, :propeller)
       @deck << Card.new(channel, :spare_bolts)
       @deck << Card.new(channel, :reverse)
@@ -964,7 +977,7 @@ class Junkyard
     player.discard = nil
     player.grabbed = false
     @discard |= player.cards
-    @discard |= player.crane if player.crane
+    @discard |= player.garbage if player.garbage
     @discard << player.bees if player.bees
     @discard << player.deflector if player.deflector
     @dropouts << player
@@ -1051,7 +1064,6 @@ class Junkyard
   end
 
   def propeller(player)
-    debug = "Player propeller is #{player.propeller}."
     if player.propeller
       say "#{player} lets loose the #{player.propeller}!"
       @discard << player.propeller
@@ -1206,11 +1218,9 @@ class Junkyard
              c_hash[:disaster].first
            else nil
            end
-    z = 'Bot\'s cards: '
-    p.cards.each { |c| z << "- #{c.id.upcase}" }
-    debug z
-    # Find out which card in the deck this is,
-    # if we have indeed found a suitable card.
+    debug "Bot's cards: " + p.cards.map{ |c| c.id.upcase }.join(', ')
+    # Find out which hand card this is,
+    # if we have found a suitable card.
     unless card.nil?
       n = 1
       p.cards.each do |c|
@@ -1219,11 +1229,11 @@ class Junkyard
       end
       a << n
       n2 = rand(p.cards.length)
-      if card.id == :crane and p.cards.length > 1
+      if [:crane, :magnet].include? card.id and p.cards.length > 1
         # Throw a random card at the
         # player just for the heck of it!
-        n2 = rand(p.cards.length) while n == n2
-        a << n2
+        n2 = rand(p.cards.length) while n == n2 + 1
+        a << n2 + 1
       elsif card.id == :grab
         until p.cards[n2].type == :unstoppable or p.cards[n2].type == :attack
           n2 = rand(p.cards.length)
@@ -1265,7 +1275,7 @@ class Junkyard
     c_hash = bot_inventory(p)
     if valid_insurance?(p, o) and c_hash[:insurance].any?
       card = c_hash[:insurance].first
-    elsif o.discard.id == :crane
+    elsif [:crane, :magnet].include? o.discard.id
       card = nil
     elsif p.bees and c_hash[:grab].any? and c_hash[:support].any?
       card = c_hash[:grab].first
@@ -1440,9 +1450,9 @@ class Junkyard
     end
     @discard << c[0]
     player.discard = c[0]
-    # Don't discard crane cards.
-    if player.discard.id == :crane
-      player.crane = c[1..-1]
+    # Don't discard the crane/magnet card.
+    if [:crane, :magnet].include? player.discard.id
+      player.garbage = c[1..-1]
     end
     player.delete_cards(c[0])
     # Deflector, (by our interpretation of the rules,) automatically
@@ -1501,8 +1511,8 @@ class Junkyard
         notify player, "You can only use that card with 1 health."
         return
       end
-    elsif c[1].id == :crane
-      player.crane = c[2..-1]
+    elsif [:crane, :magnet].include? c[1].id
+      player.garbage = c[2..-1]
     end
     do_move(opponent, player, wait=false) if player == attacked or opponent.discard
     # In case player dies trying to grab.
@@ -1730,12 +1740,21 @@ class Junkyard
             opponent.delete_cards(c)
           end
         end
-      when :crane
-        @discard |= player.crane
-        opponent.cards |= player.crane
-        player.delete_cards(player.crane)
-        deal(player, player.crane.length)
-        player.crane = nil
+      when :crane, :magnet
+        if player.discard.id == :crane
+          opponent.cards |= player.garbage
+          deal(player, player.garbage.length * multiplier)
+        else
+          # Steal opponen't cards, up to double with propeller.
+          a = opponent.cards.shuffle.pop(player.garbage.length * multiplier)
+          notify player, "#{Bold}You stole:#{Bold} " + a.join(', ')
+          player.cards |= a
+          opponent.delete_cards(a)
+        end
+        @discard |= player.garbage
+        player.delete_cards(player.garbage)
+        player.garbage = nil
+        player.sort_cards
       when :meal_steal
         h, temp_deck = player.health, []
         opponent.cards.each do |e|
@@ -1784,7 +1803,7 @@ class Junkyard
         end
       end
       say p_health(player)
-    elsif player.discard.id != :crane and player.discard.id != :bulldozer
+    elsif not [:bulldozer, :crane, :magnet].include? player.discard.id
       say p_health(opponent)
       check_health(opponent)
     end
