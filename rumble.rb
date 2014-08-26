@@ -60,10 +60,10 @@ class Junkyard
       :block => {
 	:name => 'NO!',
         :type => :counter,
-        :string => "%{p} says #{Bold}NO!!!#{Bold} ..blocking %{o}'s %{c} with " + 
-		[ 'a stern exclamation', 
-		  'sheer WILL POWER', 
-		  'a defiant attitude', 
+        :string => "%{p} says #{Bold}NO!!!#{Bold} ..blocking %{o}'s %{c} with " +
+		[ 'a stern exclamation',
+		  'sheer WILL POWER',
+		  'a defiant attitude',
 		  'a steely glance',
 		  'a pathetic whimper',
 		  "a hero's charisma",
@@ -83,9 +83,9 @@ class Junkyard
       },
       :grab => {
         :type => :counter,
-        :string => "%{p} #{%w(grabs grapples seizes grips clutches).sample} %{o}. " + 
-		[ "Respond or pass", 
-		  "Pass or respond" 
+        :string => "%{p} #{%w(grabs grapples seizes grips clutches).sample} %{o}. " +
+		[ "Respond or pass",
+		  "Pass or respond"
 		].sample +
 		", %{o}.",
         :regex => 'grab',
@@ -98,8 +98,8 @@ class Junkyard
         :type => :counter,
         :health => 2,
         :string => "%{p} hides behind #{Bold}Your Mom#{Bold}! " +
-		[ "She'll soften the blow", 
-		  "Her #{%w(bosom thighs warts belly gunt hips).sample} will provide much comfort", 
+		[ "She'll soften the blow",
+		  "Her #{%w(bosom thighs warts belly gunt hips).sample} will provide much comfort",
 		  'Her giant ass will provide great cushion'
                 ].sample +
 		". ;)",
@@ -149,13 +149,13 @@ class Junkyard
         :health => -2,
         :string => "%{p} " +
 		[ 'slaps',
-	       	  'backhands',	
-	       	  'pimp smacks',	
+	       	  'backhands',
+	       	  'pimp smacks',
       		].sample +
 	       " %{o} like a " +
 	       	[ 'female dog in HEAT',
 		  'BEACH',
-		  'HORNY CANINE' 
+		  'HORNY CANINE'
 		].sample,
         :regex => [ /bitch/, 'slap' ],
         :help => "Basic attack."
@@ -173,21 +173,21 @@ class Junkyard
 		  ' banal',
 		  ' seemingly well practiced',
 		].sample +
-		" display of martial arts, %{p} #{%w(whacks chops hits thwaps punches jabs).sample} %{o} in the " + 
-		[ 'face', 
-		  'liver', 
-		  'privates', 
-		  'kidneys', 
-		  'neck', 
-		  'spleen', 
-		  'solar plexus', 
-		  'rib cage', 
-		  'motherboard', 
-		  'shins', 
-		  'knees', 
+		" display of martial arts, %{p} #{%w(whacks chops hits thwaps punches jabs).sample} %{o} in the " +
+		[ 'face',
+		  'liver',
+		  'privates',
+		  'kidneys',
+		  'neck',
+		  'spleen',
+		  'solar plexus',
+		  'rib cage',
+		  'motherboard',
+		  'shins',
+		  'knees',
 		  'forehead',
 		  'boobs'
-		].sample + 
+		].sample +
 		" #{Bold}REALLY REALLY#{Bold} hard!",
         :regex => [ /kroddy( ?)chop/ ],
         :help => "Slightly more powerful attack " +
@@ -206,14 +206,14 @@ class Junkyard
 	:name => 'Roundhouse Kick',
         :type => :attack,
         :health => -4,
-        :string => "%{p} channels " + 
+        :string => "%{p} channels " +
 		[ 'Chuck Norris',
 		  'Jet Li',
 		  'Fong Sai Yuk',
 		  'Jackie Chan',
 		  'Bruce Lee',
 		  'Chun Li'
-      		].sample + 
+      		].sample +
 		" and #{%w(violently hurtfully dramatically woefully devestatingly).sample} " +
 		"#{%w(delivers connects applys whacks plants impacts).sample} a #{Bold}BOOT#{Bold} to %{o}'s #{Bold}HEAD#{Bold}.",
         :regex => [ /roundhouse/ ],
@@ -226,7 +226,7 @@ class Junkyard
         :health => -5,
         :string =>[ "%{p} catches fire and screams #{Bold}SSSSSSSSSSSSSSSSSSSSHHHHHHHHHHHHHHHHOOOOOOOOOOOOORRRRRRRRRYYYYYYYYYUUUUUUUKKKKKKKKKKKKEEEEEEEEENNNNNNNNNNNN!!!!!!!!!!!!!!!!!!!11#{Bold} on %{o}",
 	       	"%{o} receives " +
-			[ 'an INCREDIBLE', 
+			[ 'an INCREDIBLE',
 			  'a REMARKABLE',
 			  'a SPLENDID',
 			  'a FANTASTIC',
@@ -244,17 +244,17 @@ class Junkyard
       :slot_machine => {
 	:name => "Derby Girls",
         :type => :attack,
-        :string => "%{p} momentarily teleports %{o} to the middle of a #{Bold}" + 
-		[ 'RINK RUMBLE', 
-		  'SKATE GIRL SHOWDOWN', 
+        :string => "%{p} momentarily teleports %{o} to the middle of a #{Bold}" +
+		[ 'RINK RUMBLE',
+		  'SKATE GIRL SHOWDOWN',
 		  "ROLLERSKATER'S SCUFFLE"
-      		].sample + 
+      		].sample +
                 "#{Bold}! %{o} tries hard to dodge all those " +
-		[ 'crazy ladies', 
-		  'wild women', 
+		[ 'crazy ladies',
+		  'wild women',
 		  'buxom brawlers',
 		  'foxy flailers',
-		  "hip-checkin' hotties" 
+		  "hip-checkin' hotties"
       		].sample +
 		". ",
         :regex => [ /derby/, /girls/ ],
@@ -281,8 +281,8 @@ class Junkyard
         :type => :unstoppable,
         :string => "%{p} loads cargo into a little #{Bold}RC chopper#{Bold}, flies over to %{o}, and jettisons the hold into %{o}'s hand.",
         :regex => [ /((quad)?copter|chopper)/ ],
-        :help => "Before launching your sortie, specify the cards you don't want, then " + 
-	         "fly them over to, and dump them on an opponent. The opponent won't " + 
+        :help => "Before launching your sortie, specify the cards you don't want, then " +
+	         "fly them over to, and dump them on an opponent. The opponent won't " +
 		 "get any new cards until he manages to get his hand below 5 cards again."
       },
       :magnet => {
@@ -334,7 +334,7 @@ class Junkyard
 		[ 'head',
 	       	  'face',
 	   	  'noggin',
-	          'brain case',	
+	          'brain case',
 		  'SPLEEN'
       		].sample +
 		" with an #{Bold}IBM Model M Keyboard#{Bold}. " +
@@ -343,13 +343,13 @@ class Junkyard
 		  "That's gotta hurt!"
       		].sample,
         :regex => [ /[Mm]odel [Mm]/, 'keyboard' ],
-        :help => "Beat your defenseless opponent senseless with the world's " +  
+        :help => "Beat your defenseless opponent senseless with the world's " +
 		 "most industrial strength piece of computing hardware."
       },
       :meal_steal => {
 	:name => 'Mouse Raid',
         :type => :unstoppable,
-        :string => "%{p} #{%w(sends dispatches conscripts orders marches sneaks).sample} " +  
+        :string => "%{p} #{%w(sends dispatches conscripts orders marches sneaks).sample} " +
       		[ 'ninja',
 		  'kabuki',
 		  'ants dressed as',
@@ -369,7 +369,7 @@ class Junkyard
 	:name => "Coffee",
         :type => :support,
         :health => 1,
-        :string => "%{p} sips on some #{%w(delicious expensive burnt strong tepid iced counterfeit).sample} " + 
+        :string => "%{p} sips on some #{%w(delicious expensive burnt strong tepid iced counterfeit).sample} " +
 		[ 'Starbucks',
 	          "Seattle's Best",
 	          "Pete's",
@@ -416,7 +416,7 @@ class Junkyard
 		     "%{p} succumbs to temptation, a #{Bold}button gets pressed#{Bold}. A distinct click is heard and %{o} screams out in agony!",
 		     "%{p} dares touch the history eraser button. #{Bold}You fool!#{Bold} Suddenly, %{o}'s life is greatly diminished!",
 		     "The beautiful, shiny button? The jolly, candy-like button? Will %{p} hold out, folks? Can %{p} hold out? #{Bold}NO!#{Bold} Poor %{o}.",
-		     "A disembodied voice says \"That was easy!\" as %{p} pushes #{Bold}the button#{Bold}. Suddenly, %{o} cries out!" 
+		     "A disembodied voice says \"That was easy!\" as %{p} pushes #{Bold}the button#{Bold}. Suddenly, %{o} cries out!"
       		   ].sample,
         :regex => [ /shiny/, /button/ ],
         :help => "Can you keep from pressing the SHINY RED BUTTON " +
@@ -434,12 +434,12 @@ class Junkyard
         :name => "Holy Hand Grenade",
         :type => :disaster,
         :health => -1,
-        :string => "%{p} lobs #{Bold}The Holy Hand Grenade Of Antioch#{Bold}! " + 
+        :string => "%{p} lobs #{Bold}The Holy Hand Grenade Of Antioch#{Bold}! " +
 	           "The Grenade soars through the air, accompanied by a short bit " +
 		   "of choral music, then bounces once and explodes. #{Bold}Everybody#{Bold} takes damage!",
         :regex =>  [ /holy/, /grenade/ ],
-        :help => 'Arthur then holds up the Holy Hand Grenade and cries out "ONE! TWO! FIVE!" ' + 
-	         'Sir Galahad corrects him, shouting "Three, sir!". Arthur then yells "THREE!" ' + 
+        :help => 'Arthur then holds up the Holy Hand Grenade and cries out "ONE! TWO! FIVE!" ' +
+	         'Sir Galahad corrects him, shouting "Three, sir!". Arthur then yells "THREE!" ' +
 		 'and hurls the grenade at the killer rabbit. 1 damage to everyone, starting with yourself.'
       },
       :diesel_spill => {
@@ -833,7 +833,7 @@ class Junkyard
       if player.user == @bot.nick
         r = if players.first.user == @bot.nick
               players.last.user
-            else 
+            else
               players.first.user
             end
         @bot.action channel, BOT_DEATHS.sample % { :r => r }
@@ -897,25 +897,6 @@ class Junkyard
     return nil
   end
 
-  def current_discard
-    return TITLE + " hasn't started yet." unless started
-    d_string = "Current discard is %{c}"
-    g_string = "%{o} has been grabbed by %{p}. " +
-               "Current discard is #{Bold}face down#{Bold}."
-    if attacked
-      if attacked.grabbed
-        return g_string % { :o => attacked.user, :p => players.first }
-      elsif players.first.grabbed
-        return g_string % { :o => players.first.user, :p => attacked }
-      elsif players.first.discard
-        return d_string % { :c => players.first.discard.to_s }
-      else
-        return d_string % { :c => attacked.discard.to_s }
-      end
-    end
-    return "#{players.first} hasn't attacked yet."
-  end
-
   def bee_recover(player)
     if player.bees
       say "#{player} recovers from ant allergies."
@@ -969,6 +950,25 @@ class Junkyard
     return string
   end
 
+  def p_discard
+    return TITLE + " hasn't started yet." unless started
+    d_string = "Current discard is %{c}"
+    g_string = "%{o} has been grabbed by %{p}. " +
+               "Current discard is #{Bold}face down#{Bold}."
+    if attacked
+      if attacked.grabbed and players.first.discard
+        return g_string % { :o => attacked, :p => players.first.user }
+      elsif players.first.grabbed and attacked.discard
+        return g_string % { :o => players.first, :p => attacked.user }
+      elsif players.first.discard
+        return d_string % { :c => players.first.discard.to_s }
+      else
+        return d_string % { :c => attacked.discard.to_s }
+      end
+    end
+    return "#{players.first} hasn't attacked yet."
+  end
+
   def p_health(roster=players, prefix='Roster -- ')
     roster = [*roster].map! {|p| "#{p}: #{p.health}"}
     return roster.first if roster.length == 1
@@ -983,8 +983,11 @@ class Junkyard
   end
 
   def p_turn
-    return "It's #{players.first}'s turn." if attacked.nil?
-    return "Respond to #{players.first.user} or pass, #{attacked}."
+    return "It's #{players.first}'s turn."  if attacked.nil?
+    string = "Respond to %{o} or pass, %{p}."
+    return string % { :o => players.first.user, :p => attacked } if players.first.discard
+    return string % { :o => attacked.user, :p => players.first } if attacked.grabbed
+    return string % { :o => players.first.user, :p => attacked }
   end
 
   def check_health(player=nil)
@@ -1565,7 +1568,7 @@ class Junkyard
       damage = 0
       # Determine amount of damage.
       if player.discard.id == :slot_machine
-        string = "#{player} sprinkles pixie dust on #{opponent}. SUDDENLY, #{Bold}SKATE CHICKS#{Bold}!" 
+        string = "#{player} sprinkles pixie dust on #{opponent}. SUDDENLY, #{Bold}SKATE CHICKS#{Bold}!"
         slots.each do |slot|
           damage -= slot * multiplier
           string << " #{slot * multiplier}."
@@ -2144,7 +2147,7 @@ class JunkyardPlugin < Plugin
       "when it's your turn, you can discard cards you don't want. If you " +
       "have no playable cards, you must discard. After discarding or " +
       "playing an attack, your turn is over."
-    when /attack(ed)?/
+    when /at+ack/
       "#{b}You're Attacked:#{b} #{c}Counter#{cl} cards are played to negate " +
       "or mitigate the damage you receive when being attacked. If you " +
       "counter an attack with a grab you must also play an #{a}Attack#{cl}, " +
@@ -2153,7 +2156,7 @@ class JunkyardPlugin < Plugin
       "counterattack or heal immediately after you are attacked. Your " +
       "opponent must respond to your grab by countering your hidden card or " +
       "by passing and accepting fate."
-    when /bots?/
+    when /bot/
       "#{b}Bot Matches:#{b} #{prefix}#{plugin} bot to start a game with " +
       "#{@bot.nick}. Type the same command mid-game to have #{@bot.nick} " +
       "join a game in progress.#{unless @bot.config['junkyard.bot'] then
@@ -2168,7 +2171,7 @@ class JunkyardPlugin < Plugin
       "cards either affect all players or a random player. They do not " +
       "consume a turn. Play these cards at the beginning of anyone's turn. " +
       "Use #{prefix}help #{plugin} <card> for card-specific info."
-    when /command/
+    when /com+and/
       "#{b}Commands:#{b} " +
       "c/cards - show cards, " +
       "cd - show current discard, " +
@@ -2184,7 +2187,7 @@ class JunkyardPlugin < Plugin
       "#{b}Dropping:#{b} Type 'drop' to drop from the game, or 'drop bot' to " +
       "drop the bot from the game. Only the game manager (the player that " +
       "started the game,) can drop other players."
-    when /grabbing/
+    when /grab+ing/
       "#{b}Grabbing:#{b} Although a Counter card, you can Grab other " +
       "players on your own turn. You must lay your intended " +
       "#{a}Attack#{cl}, #{u}Unstoppable#{cl}, or #{s}Support#{cl} card with " +
@@ -2194,9 +2197,10 @@ class JunkyardPlugin < Plugin
       "grabbing them turns out to be an #{u}Unstoppable#{cl} attack, any " +
       "counter card they play will be nullified and discarded."
     when /manage/, /transfer/, /xfer/
-      "#{b}Manage:#{b} The player that starts the game is the game manager. " +
-      "Game managers may stop the game at any time, or transfer ownership " +
-      "by typing 'transfer [game to] <player>'."
+      "#{b}Manage:#{b} The player that starts the game is the game " +
+      "manager. Game managers may stop the game at any time, or transfer " +
+      "ownership by typing 'transfer [game to] <player>'. Use 'drop " +
+      "<me/nick>' to remove a player from the game"
     when /objective/
       "#{b}Objective:#{b} Every player has #{MAX_HP} health. " +
       "Play cards against an opponent to take away their health. " +
@@ -2234,7 +2238,7 @@ class JunkyardPlugin < Plugin
     when /^(jo?|join)( |\z)/
       g.add_player(m.source)
     when 'cd'
-      @bot.say m.channel, g.current_discard
+      @bot.say m.channel, g.p_discard
     when /^(ca?|cards?)( |\z)/
       if p.nil?
         m.reply Junkyard::RETORTS.sample % { :p => m.source }

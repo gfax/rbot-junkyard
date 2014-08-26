@@ -651,7 +651,7 @@ class Junkyard
       if player.user == @bot.nick
         r = if players.first.user == @bot.nick
               players.last.user
-            else 
+            else
               players.first.user
             end
         @bot.action channel, BOT_DEATHS.sample % { :r => r }
@@ -715,25 +715,6 @@ class Junkyard
     return nil
   end
 
-  def current_discard
-    return TITLE + " hasn't started yet." unless started
-    d_string = "Current discard is %{c}"
-    g_string = "%{o} has been grabbed by %{p}. " +
-               "Current discard is #{Bold}face down#{Bold}."
-    if attacked
-      if attacked.grabbed
-        return g_string % { :o => attacked.user, :p => players.first }
-      elsif players.first.grabbed
-        return g_string % { :o => players.first.user, :p => attacked }
-      elsif players.first.discard
-        return d_string % { :c => players.first.discard.to_s }
-      else
-        return d_string % { :c => attacked.discard.to_s }
-      end
-    end
-    return "#{players.first} hasn't attacked yet."
-  end
-
   def bee_recover(player)
     if player.bees
       say "#{player} recovers from bee allergies."
@@ -787,6 +768,25 @@ class Junkyard
     return string
   end
 
+  def p_discard
+    return TITLE + " hasn't started yet." unless started
+    d_string = "Current discard is %{c}"
+    g_string = "%{o} has been grabbed by %{p}. " +
+               "Current discard is #{Bold}face down#{Bold}."
+    if attacked
+      if attacked.grabbed and players.first.discard
+        return g_string % { :o => attacked, :p => players.first.user }
+      elsif players.first.grabbed and attacked.discard
+        return g_string % { :o => players.first, :p => attacked.user }
+      elsif players.first.discard
+        return d_string % { :c => players.first.discard.to_s }
+      else
+        return d_string % { :c => attacked.discard.to_s }
+      end
+    end
+    return "#{players.first} hasn't attacked yet."
+  end
+
   def p_health(roster=players, prefix='Roster -- ')
     roster = [*roster].map! {|p| "#{p}: #{p.health}"}
     return roster.first if roster.length == 1
@@ -801,8 +801,11 @@ class Junkyard
   end
 
   def p_turn
-    return "It's #{players.first}'s turn." if attacked.nil?
-    return "Respond to #{players.first.user} or pass, #{attacked}."
+    return "It's #{players.first}'s turn."  if attacked.nil?
+    string = "Respond to %{o} or pass, %{p}."
+    return string % { :o => players.first.user, :p => attacked } if players.first.discard
+    return string % { :o => attacked.user, :p => players.first } if attacked.grabbed
+    return string % { :o => players.first.user, :p => attacked }
   end
 
   def check_health(player=nil)
@@ -1955,14 +1958,14 @@ class JunkyardPlugin < Plugin
     s = Junkyard::COLORS[:support]
     u = Junkyard::COLORS[:unstoppable]
     case topic.downcase
-    when 'attacking'
+    when /t+acking/
       "#{b}You're Attacking:#{b} When it's your turn to play, you can play " +
       "an #{a}Attack#{cl} or #{u}Unstoppable#{cl} card to attack a player, " +
       "or a #{s}Support#{cl} card if you wish to heal. Instead of attacking " +
       "when it's your turn, you can discard cards you don't want. If you " +
       "have no playable cards, you must discard. After discarding or " +
       "playing an attack, your turn is over."
-    when /attack(ed)?/
+    when /at+ack/
       "#{b}You're Attacked:#{b} #{c}Counter#{cl} cards are played to negate " +
       "or mitigate the damage you receive when being attacked. If you " +
       "counter an attack with a grab you must also play an #{a}Attack#{cl}, " +
@@ -1971,7 +1974,7 @@ class JunkyardPlugin < Plugin
       "counterattack or heal immediately after you are attacked. Your " +
       "opponent must respond to your grab by countering your hidden card or " +
       "by passing and accepting fate."
-    when /bots?/
+    when /bot/
       "#{b}Bot Matches:#{b} #{prefix}#{plugin} bot to start a game with " +
       "#{@bot.nick}. Type the same command mid-game to have #{@bot.nick} " +
       "join a game in progress.#{unless @bot.config['junkyard.bot'] then
@@ -1986,7 +1989,7 @@ class JunkyardPlugin < Plugin
       "cards either affect all players or a random player. They do not " +
       "consume a turn. Play these cards at the beginning of anyone's turn. " +
       "Use #{prefix}help #{plugin} <card> for card-specific info."
-    when /command/
+    when /com+and/
       "#{b}Commands:#{b} " +
       "c/cards - show cards, " +
       "cd - show current discard, " +
@@ -2002,7 +2005,7 @@ class JunkyardPlugin < Plugin
       "#{b}Dropping:#{b} Type 'drop' to drop from the game, or 'drop bot' to " +
       "drop the bot from the game. Only the game manager (the player that " +
       "started the game,) can drop other players."
-    when /grabbing/
+    when /grab+ing/
       "#{b}Grabbing:#{b} Although a Counter card, you can Grab other " +
       "players on your own turn. You must lay your intended " +
       "#{a}Attack#{cl}, #{u}Unstoppable#{cl}, or #{s}Support#{cl} card with " +
@@ -2012,9 +2015,10 @@ class JunkyardPlugin < Plugin
       "grabbing them turns out to be an #{u}Unstoppable#{cl} attack, any " +
       "counter card they play will be nullified and discarded."
     when /manage/, /transfer/, /xfer/
-      "#{b}Manage:#{b} The player that starts the game is the game manager. " +
-      "Game managers may stop the game at any time, or transfer ownership " +
-      "by typing 'transfer [game to] <player>'."
+      "#{b}Manage:#{b} The player that starts the game is the game " +
+      "manager. Game managers may stop the game at any time, or transfer " +
+      "ownership by typing 'transfer [game to] <player>'. Use 'drop " +
+      "<me/nick>' to remove a player from the game"
     when /objective/
       "#{b}Objective:#{b} Every player has #{MAX_HP} health. " +
       "Play cards against an opponent to take away their health. " +
@@ -2052,7 +2056,7 @@ class JunkyardPlugin < Plugin
     when /^(jo?|join)( |\z)/
       g.add_player(m.source)
     when 'cd'
-      @bot.say m.channel, g.current_discard
+      @bot.say m.channel, g.p_discard
     when /^(ca?|cards?)( |\z)/
       if p.nil?
         m.reply Junkyard::RETORTS.sample % { :p => m.source }
