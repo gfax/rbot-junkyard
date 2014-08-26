@@ -5,7 +5,7 @@
 # Author:: Lite <jay@gfax.ch>
 # Copyright:: (C) 2014 gfax.ch
 # License:: GPL
-# Version:: 2014-08-25
+# Version:: 2014-08-26
 #
 
 class Junkyard
@@ -261,6 +261,13 @@ class Junkyard
         :help => "Multi-dimentional BATTLE MAGIC Sends your opponent into the RINK. " +
                  "High velocity skate warriors do 0 to 3 damage each. Dodge if you can!"
       },
+      :siphon => {
+        :type => :attack,
+        :health => -1,
+        :string => "%{p} siphons %{o}'s gas tank.",
+        :regex => [ /s(i|y)(f|ph)on/ ],
+        :help => "Steal one health from your opponent."
+      },
       :bulldozer => {
 	:name => "Force Push",
         :type => :unstoppable,
@@ -435,11 +442,11 @@ class Junkyard
 	         'Sir Galahad corrects him, shouting "Three, sir!". Arthur then yells "THREE!" ' + 
 		 'and hurls the grenade at the killer rabbit. 1 damage to everyone, starting with yourself.'
       },
-      :gas_spill => {
+      :diesel_spill => {
         :type => :disaster,
         :skips => 2,
-        :string => "%{p} knocks a leak in %{o}'s gas tank! %{o} goes to find a hose and ash tray.",
-        :regex => [ /spil/],
+        :string => "%{p} drops a fuel tank on %{o}'s stuff! %{o} goes to find a hose and ash tray.",
+        :regex => [ /d(ie|ei)sel/, /spil/],
         :help => "Random player misses 2 turns."
       },
       :propeller => {
@@ -594,7 +601,7 @@ class Junkyard
         # array before starting each iteration.
         c = cards.dup
         n = 0
-        n += 1 until c[n].id == r.id
+        n += 1 until c[n].id == r.id unless c[n].nil?
         @cards.delete_at(n)
       end
     end
@@ -686,6 +693,7 @@ class Junkyard
       @deck << Card.new(:insurance)
       @deck << Card.new(:meal_steal)
       @deck << Card.new(:mirror)
+      @deck << Card.new(:siphon)
       @deck << Card.new(:slot_machine)
       @deck << Card.new(:surgery)
       @deck << Card.new(:tire)
@@ -697,8 +705,8 @@ class Junkyard
       @deck << Card.new(:bulldozer)
       @deck << Card.new(:crane)
       @deck << Card.new(:deflector)
+      @deck << Card.new(:diesel_spill)
       @deck << Card.new(:earthquake)
-      @deck << Card.new(:gas_spill)
       @deck << Card.new(:magnet)
       @deck << Card.new(:propeller)
       @deck << Card.new(:spare_bolts)
@@ -847,7 +855,7 @@ class Junkyard
     player.discard = nil
     player.grabbed = false
     @discard |= player.cards
-    @discard |= player.crane if player.crane
+    @discard |= player.garbage if player.garbage
     @discard << player.bees if player.bees
     @discard << player.deflector if player.deflector
     @dropouts << player
@@ -961,15 +969,10 @@ class Junkyard
     return string
   end
 
-  def p_health(player=nil)
-    unless player.nil?
-      return "#{player}: #{player.health}"
-    end
-    string = "Roster -"
-    players.each do |p|
-      string << "- #{p}: #{p.health} "
-    end
-    return string
+  def p_health(roster=players, prefix='Roster -- ')
+    roster = [*roster].map! {|p| "#{p}: #{p.health}"}
+    return roster.first if roster.length == 1
+    return prefix + roster.join(' - ')
   end
 
   def p_order
@@ -1424,6 +1427,10 @@ class Junkyard
     when :deflector
       player.deflector = card
       say card.string % { :p => player }
+    when :diesel_spill
+      victim = players[rand(players.length)]
+      victim.skips += card.skips
+      say card.string % { :p => player, :o => victim }
     when :earthquake
       say card.string % { :p => player }
       players.each do |p|
@@ -1433,12 +1440,8 @@ class Junkyard
       # First player to die from Earthquake is
       # always the player that played the card.
       check_health(player)
-      say p_health
+      say p_health(players, '')
       check_health
-    when :gas_spill
-      victim = players[rand(players.length)]
-      victim.skips += card.skips
-      say card.string % { :p => player, :o => victim }
     when :propeller
       lucky_victim = players[rand(players.length)]
       lucky_victim.propeller = card
@@ -1579,6 +1582,7 @@ class Junkyard
           say opponent.discard.string % { :p => opponent, :o => player }
         end
       end
+      # Add damage to opponent's health and player's score.
       opponent.health += damage
       player.damage += damage.abs
     when :support
@@ -1656,6 +1660,12 @@ class Junkyard
     # Tally up turns being missed
     opponent.skips += player.discard.skips * multiplier
     player.turn_wizard += player.discard.skips * multiplier
+    # Add siphoned health to player, if any.
+    if player.discard.id == :siphon and damage < 0
+      player.health += damage.abs
+      say p_health([player, opponent], '')
+      check_health(opponent)
+    end
     # Redemption tokens
     if opponent.discard
       if opponent.discard.id == :insurance
@@ -1665,13 +1675,13 @@ class Junkyard
       end
     end
     # Announce health
-    if player.discard.type == :support or player.discard.id == :meal_steal
-      if player.discard.id == :meal_steal
-        if temp_deck.length > 0
-          say "A mouse minion brings #{player} some #{temp_deck.join(', ')}, and it is #{%w(delicious!! stale.. rotten!! passable.. AWESOME! wonderful! tastey! sabroso! fantastic! meh.. vegan! good. ).sample}"
-          bee_recover(player)
-        end
+    if player.discard.id == :meal_steal
+      if temp_deck.length > 0
+        say "A mouse minion brings #{player} some #{temp_deck.join(', ')}, and it is #{%w(delicious!! stale.. rotten!! passable.. AWESOME! wonderful! tastey! sabroso! fantastic! meh.. vegan! good. ).sample}"
+        bee_recover(player)
       end
+      say p_health(player)
+    elsif player.discard.type == :support
       say p_health(player)
     elsif not [:bulldozer, :crane, :magnet].include? player.discard.id
       say p_health(opponent)

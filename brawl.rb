@@ -5,7 +5,7 @@
 # Author:: Lite <jay@gfax.ch>
 # Copyright:: (C) 2014 gfax.ch
 # License:: GPL
-# Version:: 2014-08-25
+# Version:: 2014-08-26
 #
 
 class Junkyard
@@ -85,7 +85,7 @@ class Junkyard
         :type => :counter,
         :health => 2,
         :string => "%{p} holds up an old mattress in defense.",
-        :regex => [ /mattres/ ],
+        :regex => [ /mat+res/ ],
         :help => "Reduces opponent's attack by 2 points."
       },
       :mirror => {
@@ -139,7 +139,7 @@ class Junkyard
         :health => -3,
         :string => "%{p} puts some battery acid in %{o}'s coffee. %{o} starts to feel ill...",
         :skips => 1,
-        :regex => [ /acid/, /cof(f)ee/ ],
+        :regex => [ /acid/, /cof+e/ ],
         :help => "Opponent gets sick for a turn due to battery acid being poured in his coffee."
       },
       :kickball => {
@@ -163,6 +163,13 @@ class Junkyard
         :regex => [ /slot/, /machine/ ],
         :help => "Spits out three random attack values from 0 " +
                  "to 3. Attack does the sum of the three numbers."
+      },
+      :siphon => {
+        :type => :attack,
+        :health => -1,
+        :string => "%{p} siphons %{o}'s gas tank.",
+        :regex => [ /s(i|y)(f|ph)on/ ],
+        :help => "Steal one health from your opponent."
       },
       :bulldozer => {
         :type => :unstoppable,
@@ -275,11 +282,11 @@ class Junkyard
         :help => "An earthquake shakes the entire #{TITLE} " +
                  "1 damage to everyone, starting with yourself."
       },
-      :gas_spill => {
+      :diesel_spill => {
         :type => :disaster,
         :skips => 2,
-        :string => "%{p} knocks a leak in %{o}'s gas tank! %{o} goes to find a hose and ash tray.",
-        :regex => [ /spil/],
+        :string => "%{p} drops a fuel tank on %{o}'s stuff! %{o} goes to find a hose and ash tray.",
+        :regex => [ /d(ie|ei)sel/, /spil/],
         :help => "Random player misses 2 turns."
       },
       :propeller => {
@@ -456,6 +463,13 @@ class Junkyard
         :help => "Spits out three random attack values from 0 " +
                  "to 3. Attack does the sum of the three numbers."
       },
+      :siphon => {
+        :type => :attack,
+        :health => -1,
+        :string => "%{p} siphons %{o}'s gas tank.",
+        :regex => [ /s(i|y)(f|ph)on/ ],
+        :help => "Steal one health from your opponent."
+      },
       :bulldozer => {
         :name => 'Flipper',
         :type => :unstoppable,
@@ -582,11 +596,11 @@ class Junkyard
         :regex =>  [ /fire/ ],
         :help => "1 damage to everyone, starting with yourself."
       },
-      :gas_spill => {
+      :diesel_spill => {
         :type => :disaster,
         :skips => 2,
-        :string => "%{p} knocks a leak in %{o}'s gas tank! %{o} goes to find a hose and ash tray.",
-        :regex => [ /spil/],
+        :string => "%{p} drops a fuel tank on %{o}'s stuff! %{o} goes to find a hose and ash tray.",
+        :regex => [ /d(ie|ei)sel/, /spil/],
         :help => "Random player misses 2 turns."
       },
       :propeller => {
@@ -724,7 +738,7 @@ class Junkyard
         # array before starting each iteration.
         c = cards.dup
         n = 0
-        n += 1 until c[n].id == r.id
+        n += 1 until c[n].id == r.id unless c[n].nil?
         @cards.delete_at(n)
       end
     end
@@ -817,6 +831,7 @@ class Junkyard
       @deck << Card.new(channel, :insurance)
       @deck << Card.new(channel, :meal_steal)
       @deck << Card.new(channel, :mirror)
+      @deck << Card.new(channel, :siphon)
       @deck << Card.new(channel, :slot_machine)
       @deck << Card.new(channel, :surgery)
       @deck << Card.new(channel, :tire)
@@ -828,8 +843,8 @@ class Junkyard
       @deck << Card.new(channel, :bulldozer)
       @deck << Card.new(channel, :crane)
       @deck << Card.new(channel, :deflector)
+      @deck << Card.new(channel, :diesel_spill)
       @deck << Card.new(channel, :earthquake)
-      @deck << Card.new(channel, :gas_spill)
       @deck << Card.new(channel, :magnet)
       @deck << Card.new(channel, :propeller)
       @deck << Card.new(channel, :spare_bolts)
@@ -1091,15 +1106,10 @@ class Junkyard
     return string
   end
 
-  def p_health(player=nil)
-    unless player.nil?
-      return "#{player}: #{player.health}"
-    end
-    string = "Roster -"
-    players.each do |p|
-      string << "- #{p}: #{p.health} "
-    end
-    return string
+  def p_health(roster=players, prefix='Roster -- ')
+    roster = [*roster].map! {|p| "#{p}: #{p.health}"}
+    return roster.first if roster.length == 1
+    return prefix + roster.join(' - ')
   end
 
   def p_order
@@ -1554,6 +1564,10 @@ class Junkyard
     when :deflector
       player.deflector = card
       say card.string % { :p => player }
+    when :diesel_spill
+      victim = players[rand(players.length)]
+      victim.skips += card.skips
+      say card.string % { :p => player, :o => victim }
     when :earthquake
       say card.string % { :p => player }
       players.each do |p|
@@ -1563,12 +1577,8 @@ class Junkyard
       # First player to die from Earthquake is
       # always the player that played the card.
       check_health(player)
-      say p_health
+      say p_health(players, '')
       check_health
-    when :gas_spill
-      victim = players[rand(players.length)]
-      victim.skips += card.skips
-      say card.string % { :p => player, :o => victim }
     when :propeller
       lucky_victim = players[rand(players.length)]
       lucky_victim.propeller = card
@@ -1709,6 +1719,7 @@ class Junkyard
           say opponent.discard.string % { :p => opponent, :o => player }
         end
       end
+      # Add damage to opponent's health and player's score.
       opponent.health += damage
       player.damage += damage.abs
     when :support
@@ -1786,6 +1797,12 @@ class Junkyard
     # Tally up turns being missed
     opponent.skips += player.discard.skips * multiplier
     player.turn_wizard += player.discard.skips * multiplier
+    # Add siphoned health to player, if any.
+    if player.discard.id == :siphon and damage < 0
+      player.health += damage.abs
+      say p_health([player, opponent], '')
+      check_health(opponent)
+    end
     # Redemption tokens
     if opponent.discard
       if opponent.discard.id == :insurance
@@ -1795,13 +1812,13 @@ class Junkyard
       end
     end
     # Announce health
-    if player.discard.type == :support or player.discard.id == :meal_steal
-      if player.discard.id == :meal_steal
-        if temp_deck.length > 0
-          say "#{player} steals and consumes #{temp_deck.join(', ')}!!"
-          bee_recover(player)
-        end
+    if player.discard.id == :meal_steal
+      if temp_deck.length > 0
+        say "#{player} steals and consumes #{temp_deck.join(', ')}!!"
+        bee_recover(player)
       end
+      say p_health(player)
+    elsif player.discard.type == :support
       say p_health(player)
     elsif not [:bulldozer, :crane, :magnet].include? player.discard.id
       say p_health(opponent)

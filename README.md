@@ -17,7 +17,7 @@ Discarding: If you decide on your turn to discard instead of attacking, you may 
 
 Drawing: At the beginning of your turn, you immediately draw back up to 5 cards if you have less than 5 in your hand. At the end of your move, you do not draw back the cards you used unless your move was discarding or a card you played specifically grants you the privilege to draw cards.
 
-[Attack Cards and Unstoppable Cards:] As the name implies, Attack cards are played against the opponent you wish to attack. If the card has a red number next to the name, this tells you how much damage that player will receive if they don’t counter the attack. Attack cards may have a (purple?) number by their name as well, which tells you how many turns that opponent will lose if they don’t block or dodge it. Unstoppable cards, as the name implies, are attacks that the opponent cannot counter. They will also have indicators for damage the opponent will receive or amount of turns the opponent will miss. Many attack cards have a special function (see card descriptions for details.)
+Attack Cards and Unstoppable Cards: As the name implies, Attack cards are played against the opponent you wish to attack. If the card has a red number next to the name, this tells you how much damage that player will receive if they don’t counter the attack. Attack cards may have a (purple?) number by their name as well, which tells you how many turns that opponent will lose if they don’t block or dodge it. Unstoppable cards, as the name implies, are attacks that the opponent cannot counter. They will also have indicators for damage the opponent will receive or amount of turns the opponent will miss. Many attack cards have a special function (see card descriptions for details.)
 
 You’re Attacked!: You can decide whether to respond to an Attack card, or pass up the chance and simply accept your fate. Counter cards are played to negate or mitigate the damage you receive when being attacked. If you Counter an attack with a Grab, then you must also play an Attack, Support, or Unstoppable card face down along with it. Grabs do not block Attacks, but they offer a chance to counter-attack or heal immediately after you are attacked. Your opponent must respond to your Grab by countering your hidden card or by passing and accepting fate.
 
@@ -102,8 +102,6 @@ Inventory:
 ##TODO
 
 * Implement Energy Drink
-* Implement Magnet
-* Implement Siphon
 * Bee Bonus: kill someone with bees
 * Redo turn incrementing (consistently increment when player drops)
 * Update Junkyard deck to new help text
