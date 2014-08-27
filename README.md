@@ -101,7 +101,6 @@ Inventory:
 
 ##TODO
 
-* Implement Energy Drink
 * Bee Bonus: kill someone with bees
 * Redo turn incrementing (consistently increment when player drops)
 * Update Junkyard deck to new help text

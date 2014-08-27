@@ -117,7 +117,7 @@ class Junkyard
         :regex => [ /greas/, /buck/ ],
         :help => "Even more painful than it is messy."
       },
-      :gutpunch => {
+      :gut_punch => {
         :type => :attack,
         :health => -2,
         :string => "%{p} punches %{o} in the guts.",
@@ -240,6 +240,14 @@ class Junkyard
         :regex => 'sub',
         :help => "Heal yourself by 2 points, " +
                  "up to a maximum of #{MAX_HP}."
+      },
+      :energy_drink => {
+        :type => :support,
+        :health => 3,
+        :string => "%{p} chugs an energy drink.",
+        :regex => [ /energy/, /drink/ ],
+        :help => "Delayed effect: Gain 1 health this turn " +
+                 "and again the next 2 turns, up to 10 health."
       },
       :armor => {
         :type => :support,
@@ -386,7 +394,7 @@ class Junkyard
   class Player
 
     attr_accessor :user, :bees, :blocks, :bonuses, :cards, :damage,
-                  :deflector, :deflectors, :discard, :garbage,
+                  :deflector, :deflectors, :discard, :energy, :garbage,
                   :glutton, :go_again, :grabbed, :hand_max, :health,
                   :propeller, :skips, :skip_count, :turns, :turn_wizard
 
@@ -400,6 +408,7 @@ class Junkyard
       @deflector = nil   # holds instance of deflector card when player has active deflector
       @deflectors = 0    # counter for "Deflector" bonus
       @discard = nil     # card the player just played
+      @energy = 0        # extra health counter given by Energy Drink
       @garbage = nil     # array of cards played with Crane/Magnet
       @glutton = 0       # counter for "Glutton" bonus
       @grabbed = false   # currently being grabbed
@@ -483,7 +492,7 @@ class Junkyard
 
   def create_deck
     10.times do
-      @deck << Card.new(:gutpunch)
+      @deck << Card.new(:gut_punch)
       @deck << Card.new(:neck_punch)
     end
     8.times do
@@ -526,6 +535,7 @@ class Junkyard
       @deck << Card.new(:deflector)
       @deck << Card.new(:diesel_spill)
       @deck << Card.new(:earthquake)
+      @deck << Card.new(:energy_drink)
       @deck << Card.new(:magnet)
       @deck << Card.new(:propeller)
       @deck << Card.new(:spare_bolts)
@@ -1409,6 +1419,10 @@ class Junkyard
     when :support
       if player.discard.id == :armor
         player.health += player.discard.health * multiplier
+      elsif player.discard.id == :energy_drink
+        n = player.discard.health * multiplier
+        player.energy += n - 1
+        player.health += 1 if player.health < MAX_HP
       else
         n = player.discard.health * multiplier
         until player.health >= MAX_HP or n < 1
@@ -1623,7 +1637,13 @@ class Junkyard
       n = player.hand_max - player.cards.length
       deal(player, n)
     end
-    if player.bees
+    if player.energy > 0
+      player.health += 1 if player.health < MAX_HP
+      player.energy -= 1
+      say "#{player} feels a burst of caffeine kick in."
+      bee_recover(player)
+      say p_health(player)
+    elsif player.bees
       player.health -= 1
       say "#{player} is stung by THE BEES."
       say p_health(player)

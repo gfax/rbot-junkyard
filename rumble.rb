@@ -143,7 +143,7 @@ class Junkyard
         :regex => [ /nose/, /bleed/ ],
         :help => "Opponent loses a turn to clean it up."
       },
-      :gutpunch => {
+      :gut_punch => {
 	:name => "Bitch Slap",
         :type => :attack,
         :health => -2,
@@ -389,6 +389,14 @@ class Junkyard
         :help => "Heal yourself by 2 points, " +
                  "up to a maximum of #{MAX_HP}."
       },
+      :energy_drink => {
+        :type => :support,
+        :health => 3,
+        :string => "%{p} chugs an energy drink.",
+        :regex => [ /energy/, /drink/ ],
+        :help => "Delayed effect: Gain 1 health this turn " +
+                 "and again the next 2 turns, up to 10 health."
+      },
       :armor => {
 	:name => "Anabolic Steroids",
         :type => :support,
@@ -581,6 +589,7 @@ class Junkyard
       @deflector = nil   # holds instance of deflector card when player has active deflector
       @deflectors = 0    # counter for "Deflector" bonus
       @discard = nil     # card the player just played
+      @energy = 0        # extra health counter given by Energy Drink
       @garbage = nil     # array of cards played with Crane/Magnet
       @glutton = 0       # counter for "Glutton" bonus
       @grabbed = false   # currently being grabbed
@@ -664,7 +673,7 @@ class Junkyard
 
   def create_deck
     10.times do
-      @deck << Card.new(:gutpunch)
+      @deck << Card.new(:gut_punch)
       @deck << Card.new(:neck_punch)
     end
     8.times do
@@ -707,6 +716,7 @@ class Junkyard
       @deck << Card.new(:deflector)
       @deck << Card.new(:diesel_spill)
       @deck << Card.new(:earthquake)
+      @deck << Card.new(:energy_drink)
       @deck << Card.new(:magnet)
       @deck << Card.new(:propeller)
       @deck << Card.new(:spare_bolts)
@@ -1591,6 +1601,10 @@ class Junkyard
     when :support
       if player.discard.id == :armor
         player.health += player.discard.health * multiplier
+      elsif player.discard.id == :energy_drink
+        n = player.discard.health * multiplier
+        player.energy += n - 1
+        player.health += 1 if player.health < MAX_HP
       else
         n = player.discard.health * multiplier
         until player.health >= MAX_HP or n < 1
@@ -1805,7 +1819,13 @@ class Junkyard
       n = player.hand_max - player.cards.length
       deal(player, n)
     end
-    if player.bees
+    if player.energy > 0
+      player.health += 1 if player.health < MAX_HP
+      player.energy -= 1
+      say "#{player} feels a burst of caffeine kick in."
+      bee_recover(player)
+      say p_health(player)
+    elsif player.bees
       player.health -= 1
       say "#{player} is bitten by #{Bold}THE ANTS#{Bold}."
       say p_health(player)
@@ -2140,7 +2160,7 @@ class JunkyardPlugin < Plugin
     s = Junkyard::COLORS[:support]
     u = Junkyard::COLORS[:unstoppable]
     case topic.downcase
-    when 'attacking'
+    when /t+acking/
       "#{b}You're Attacking:#{b} When it's your turn to play, you can play " +
       "an #{a}Attack#{cl} or #{u}Unstoppable#{cl} card to attack a player, " +
       "or a #{s}Support#{cl} card if you wish to heal. Instead of attacking " +
