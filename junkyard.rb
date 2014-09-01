@@ -5,7 +5,7 @@
 # Author:: Lite <jay@gfax.ch>
 # Copyright:: (C) 2014 gfax.ch
 # License:: GPL
-# Version:: 2014-08-26
+# Version:: 2014-09-01
 #
 
 class Junkyard
@@ -711,12 +711,24 @@ class Junkyard
         return p if p.user == user
       end
     when String
+      # Iterate through full nicks before trying a fuzzy match.
       players.each do |p|
-        return p if p.user.irc_downcase == user.irc_downcase(channel.casemap)
+        # Bot::nick and User::nick aren't the same thing. That's annoying.
+        if p.respond_to? :nick
+          return p if p.user.nick == user.irc_downcase(channel.casemap)
+        else
+          return p if p.user.irc_downcase == user.irc_downcase(channel.casemap)
+        end
       end
       players.each do |p|
-        if p.user.irc_downcase =~ /^#{user.irc_downcase(channel.casemap)}/
-          return p unless p.user.irc_downcase == source
+        if p.respond_to? :nick
+          if p.user.nick =~ /^#{user.irc_downcase(channel.casemap)}/
+            return p unless p.user.irc_downcase == source
+          end
+        else
+          if p.user.irc_downcase =~ /^#{user.irc_downcase(channel.casemap)}/
+            return p unless p.user.irc_downcase == source
+          end
         end
       end
     else
