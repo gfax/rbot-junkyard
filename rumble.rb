@@ -5,7 +5,7 @@
 # Author:: Lite <jay@gfax.ch>
 # Copyright:: (C) 2014 gfax.ch
 # License:: GPL
-# Version:: 2014-09-01
+# Version:: 2014-09-02
 #
 
 class Junkyard
@@ -1691,8 +1691,12 @@ class Junkyard
     player.turn_wizard += player.discard.skips * multiplier
     # Add siphoned health to player, if any.
     if player.discard.id == :siphon and damage < 0
-      player.health += damage.abs
-      say p_health([player, opponent], '')
+      if player.health + damage.abs >= MAX_HP
+        player.health = MAX_HP
+      else
+        player.health += damage.abs
+      end
+      say p_health(player, '')
       check_health(opponent)
     end
     # Redemption tokens
