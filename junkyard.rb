@@ -5,7 +5,7 @@
 # Author:: Lite <jay@gfax.ch>
 # Copyright:: (C) 2014 gfax.ch
 # License:: GPL
-# Version:: 2014-09-02
+# Version:: 2014-09-06
 #
 
 class Junkyard
@@ -249,6 +249,12 @@ class Junkyard
         :help => "Delayed effect: Gain 1 health this turn " +
                  "and again the next 2 turns, up to 10 health."
       },
+      :sleep => {
+        :type => :support,
+        :string => "%{p} discards %{c} and gets some rest.",
+        :regex => [ /sle+p/ ],
+        :help => "Discard an Attack card to receive its damage as health."
+      },
       :armor => {
         :type => :support,
         :health => 5,
@@ -409,7 +415,7 @@ class Junkyard
       @deflectors = 0    # counter for "Deflector" bonus
       @discard = nil     # card the player just played
       @energy = 0        # extra health counter given by Energy Drink
-      @garbage = nil     # array of cards played with Crane/Magnet
+      @garbage = []      # array of cards played with Crane/Magnet
       @glutton = 0       # counter for "Glutton" bonus
       @grabbed = false   # currently being grabbed
       @hand_max = 5      # maximum number of cards to deal up to
@@ -515,7 +521,6 @@ class Junkyard
       @deck << Card.new(:soup)
     end
     2.times do
-      @deck << Card.new(:a_gun)
       @deck << Card.new(:acid_coffee)
       @deck << Card.new(:cheap_shot)
       @deck << Card.new(:insurance)
@@ -528,6 +533,7 @@ class Junkyard
       @deck << Card.new(:wrench)
     end
     1.times do
+      @deck << Card.new(:a_gun)
       @deck << Card.new(:armor)
       @deck << Card.new(:avalanche)
       @deck << Card.new(:bulldozer)
@@ -538,6 +544,7 @@ class Junkyard
       @deck << Card.new(:energy_drink)
       @deck << Card.new(:magnet)
       @deck << Card.new(:propeller)
+      @deck << Card.new(:sleep)
       @deck << Card.new(:spare_bolts)
       @deck << Card.new(:reverse)
       @deck << Card.new(:shifty_business)
@@ -683,7 +690,7 @@ class Junkyard
     player.discard = nil
     player.grabbed = false
     @discard |= player.cards
-    @discard |= player.garbage if player.garbage
+    @discard |= player.garbage
     @discard << player.bees if player.bees
     @discard << player.deflector if player.deflector
     @dropouts << player
@@ -752,13 +759,15 @@ class Junkyard
   end
 
   def valid_insurance?(player, opponent)
-    bees = if player.bees then -1 else 0 end
-    damage = if opponent.discard then opponent.discard.health else 0 end
-    ensuing_health = player.health + damage + bees
-    if opponent.discard and opponent.discard.id == :slot_machine
-      slots.each { |n| ensuing_health -= n }
+    if opponent.discard
+      damage = opponent.discard.health
+      slots.each { |n| damage -= n } if opponent.discard.id == :slot_machine
+    else
+      damage = 0
     end
-    return true if ensuing_health < 1 and not player.deflector
+    damage *= 2 if opponent.propeller
+    damage -= 1 if player.bees
+    return true if player.health + damage < 1 and not player.deflector
     return false
   end
 
@@ -883,82 +892,72 @@ class Junkyard
   end
 
   def bot_inventory(player)
-    # Make an inventory of what the bot has.
-    c_hash = { :support => [], :surgery => [],
-               :counter => [], :dodge => [], :grab => [], :insurance => [],
-               :unstoppable => [], :attack => [], :disaster => [],
-               :deflector => [], :spare_bolts => [], :toolbox => []
-             }
+    # Make a sorted hash of bot's hand cards.
+    #h = Hash.new([]) ...er
+    h = { :sleep => [], :support => [], :surgery => [],
+      :counter => [], :dodge => [], :grab => [], :insurance => [],
+      :unstoppable => [], :attack => [], :disaster => [],
+      :deflector => [], :spare_bolts => [], :toolbox => []
+    }
     player.cards.each do |c|
       case c.id
-      when :deflector, :dodge, :grab, :insurance, :spare_bolts, :surgery, :toolbox
-        c_hash[c.id] << c
+      when :deflector, :dodge, :grab, :insurance, :sleep, :spare_bolts, :surgery, :toolbox
+        h[c.id] << c
       else
-        c_hash[c.type] << c
-        c_hash[c.type].sort! {|x,y| x.health  <=> y.health }
+        h[c.type] << c
+        h[c.type].sort! {|x,y| x.health <=> y.health }
       end
     end
-    c_hash[:support].reverse!
+    h[:support].reverse!
     debug "Created bot's card inventory."
-    return c_hash
+    return h
   end
 
   def bot_move
     p = players.first
     return unless p.user == @bot.nick
     return if players.length < 2 or p.grabbed
-    a = [] # array to pass to play_move
-    # For now, just make the bot pick on a random player.
-    n = rand(players.length)
-    n = rand(players.length) while players[n] == p
-    a << players[n].user.to_s
-    # Pick the best card to play.
-    c_hash = bot_inventory(p)
-    card = if c_hash[:deflector].any? or c_hash[:spare_bolts].any?
-             c_hash[:deflector].first || c_hash[:spare_bolts].first
-           elsif c_hash[:toolbox].any?
-             c_hash[:toolbox].first
-           elsif p.health == 1 and c_hash[:surgery].any?
-             c_hash[:surgery].first
-           elsif p.bees and c_hash[:support].any?
-             c_hash[:support].first
-           elsif c_hash[:grab].any? and c_hash[:unstoppable].any? and c_hash[:attack].any?
-             c_hash[:grab].first
-           elsif c_hash[:unstoppable].any?
-             c_hash[:unstoppable].first
-           elsif c_hash[:attack].any?
-             c_hash[:attack].first
-           elsif p.health < (MAX_HP - 1) and c_hash[:support].any?
-             c_hash[:support].first
-           elsif c_hash[:disaster].any?
-             c_hash[:disaster].first
-           else nil
-           end
+    cards = [] # array of Card class objects
+    # Pick the "best" card to play.
+    h = bot_inventory(p)
+    if h[:deflector].any? or h[:spare_bolts].any?
+      cards << (h[:deflector] + h[:spare_bolts]).first
+    elsif h[:toolbox].any?
+      cards << h[:toolbox].first
+    elsif p.health == 1 and h[:surgery].any?
+      cards << h[:surgery].first
+    elsif p.bees and h[:support].any?
+      cards << h[:support].first
+    elsif h[:grab].any? and (h[:unstoppable].any? or h[:attack].any?)
+      cards << h[:grab].first if rand(3) == 0
+      cards << (h[:unstoppable] + h[:attack]).first
+    elsif h[:sleep].any? and p.health < (MAX_HP - 2) and (h[:unstoppable].any? or h[:attack].any?)
+      cards << h[:sleep].first
+      cards << (h[:attack] + h[:unstoppable]).first
+    elsif h[:unstoppable].any? || h[:attack].any?
+      cards << (h[:unstoppable] + h[:attack]).first
+    elsif p.health < (MAX_HP - 1) and h[:support].any?
+      cards << h[:support].first
+    elsif h[:disaster].any?
+      cards << h[:disaster].first
+    end
     debug "Bot's cards: " + p.cards.map{ |c| c.id.upcase }.join(', ')
-    # Find out which hand card this is,
-    # if we have found a suitable card.
-    unless card.nil?
-      n = 1
-      p.cards.each do |c|
-        break if c.id == card.id
-        n += 1
-      end
-      a << n
-      n2 = rand(p.cards.length)
-      if [:crane, :magnet].include? card.id and p.cards.length > 1
-        # Throw a random card at the
-        # player just for the heck of it!
-        n2 = rand(p.cards.length) while n == n2 + 1
-        a << n2 + 1
-      elsif card.id == :grab
-        until p.cards[n2].type == :unstoppable or p.cards[n2].type == :attack
-          n2 = rand(p.cards.length)
+    if cards.any? and p.cards.length > 1
+      if [:crane, :magnet].include? cards.last.id
+        # Throw out random card(s) and prune up the bot's hand.
+        p.cards.each do |c|
+          cards << c unless cards.include? c or c.id == :insurance
         end
-        a << n2 + 1
       end
     end
+    # Convert card objects into card numbers.
+    a = cards.map do |c|
+      p.cards.index(p.cards.select { |e| e == c }.first) + 1
+    end
     # Play the card or otherwise discard.
-    if a.length > 1
+    if a.any?
+      # Pick a random victim.
+      a.unshift(players.shuffle.select { |e| e != p }.first.user.to_s)
       debug "Bot's playing #{a.join(' ')} "
       play_move(a)
     else
@@ -969,97 +968,63 @@ class Junkyard
       debug "Bot's discarding #{a.join(' ')}"
       discard(a)
     end
-    bot_thread_move if card.type == :disaster
+    bot_thread_move if cards.first.type == :disaster
   end
 
   def bot_counter
-    p = nil
-    players.each do |player|
-      p = player if player.user == @bot.nick
-    end
+    p = players.select { |player| player.user == @bot.nick }.first
     # Return if the bot's not playing or it's not his turn.
     return if p.nil?
     return if p.discard
     return unless p == attacked or p.grabbed
     o = if p.user == players.first.user
-          attacked
-        else
-          players.first
-        end
+        attacked
+      else
+        players.first
+      end
     # Pick the best card to play.
-    a = [] # hash of cards to play
-    c_hash = bot_inventory(p)
-    if valid_insurance?(p, o) and c_hash[:insurance].any?
-      card = c_hash[:insurance].first
-    elsif [:crane, :magnet].include? o.discard.id
-      card = nil
-    elsif p.bees and c_hash[:grab].any? and c_hash[:support].any?
-      card = c_hash[:grab].first
-      card2 = c_hash[:support].first
-    elsif not p.grabbed and c_hash[:dodge].any?
-      card = c_hash[:dodge].first
-    elsif p.health <= (MAX_HP/2) and c_hash[:counter].any?
-      card = c_hash[:counter].first
-    elsif p.health <= (MAX_HP/2) and c_hash[:grab].any? and c_hash[:support].any?
-      card = c_hash[:grab].first
-      card2 = c_hash[:support].first
-    elsif c_hash[:counter].any?
-      card = if o.discard.health <= -3
-               c_hash[:counter].first
-             else
-               case rand(2)
-               when 0 then c_hash[:counter].first
-               else nil
-               end
-             end
-    elsif c_hash[:grab].any? and c_hash[:unstoppable].any?
-      case rand(4)
-      when 0..2
-        card = c_hash[:grab].first
-        card2 = c_hash[:unstoppable].first
-      else
-        card = nil
+    h = bot_inventory(p)
+    cards = []
+    if valid_insurance?(p, o) and h[:insurance].any?
+      cards << h[:insurance].first
+    elsif p.bees and h[:grab].any? and h[:support].any?
+      cards << h[:grab].first
+      cards << h[:support].first
+    elsif not p.grabbed and h[:dodge].any?
+      cards << h[:dodge].first
+    elsif p.health < (MAX_HP-2) and h[:counter].any?
+      cards << h[:counter].first
+    elsif p.health <= (MAX_HP/2) and h[:grab].any? and h[:sleep].any? and (h[:attack].any? or h[:unstoppable].any?)
+      cards << h[:grab].first
+      cards << h[:sleep].first
+      cards << (h[:attack] + h[:unstoppable]).sort {|x,y| x.health <=> y.health}.first
+    elsif p.health <= (MAX_HP/2) and h[:grab].any? and h[:support].any?
+      debug "THIS BLOCK THIS BLOCK THIS BLOCK"
+      cards << h[:grab].first
+      cards << h[:support].first
+    elsif h[:counter].any? and (o.discard.health <= -3 or rand(2))
+      cards << h[:counter].first
+    elsif h[:grab].any? and (h[:unstoppable].any? or h[:attack].any?)
+      if rand(4) != 0
+        cards << h[:grab].first
+        cards << (h[:unstoppable] + h[:attack]).first
       end
-    elsif c_hash[:grab].any? and c_hash[:attack].any?
-      case rand(4)
-      when 0..2
-        card = c_hash[:grab].first
-        card2 = c_hash[:attack].first
-      else
-        card = nil
-      end
-    else
-      card = nil
     end
-    z = 'cards: '
+    z = 'Cards: '
     p.cards.each { |c| z << "- #{c.id.upcase} " }
-    debug z
-    # Find out which card in the deck this is,
-    # if we have indeed found a suitable card.
-    unless card.nil?
-      n = 1
-      p.cards.each do |c|
-        break if c.id == card.id
-        n += 1
-      end
-      a << n
-      if card.id == :grab
-        n = 1
-        p.cards.each do |c|
-          break if c.id == card2.id
-          n += 1
-        end
-        a << n
-      end
+    debug z + "-- Cards to play: #{cards.join(', ')}"
+    # Convert card objects into card numbers.
+    cards.map! do |c|
+      p.cards.index(p.cards.select { |e| e == c }.first) + 1
     end
     # Play the card or otherwise discard.
-    if a.length > 0
+    if cards.any?
       if p == players.first
-        debug "counter-countering with #{a.join(' ')}"
-        play_move(a)
+        debug "counter-countering with #{cards.join(' ')}"
+        play_move(cards)
       else
-        debug "countering with #{a.join(' ')}"
-        play_counter(p, a)
+        debug "countering with #{cards.join(' ')}"
+        play_counter(p, cards)
       end
     else
       pass(p)
@@ -1149,28 +1114,40 @@ class Junkyard
         do_grab(player, opponent, c)
         return
       else
-        notify player, "That's not an attack card."
+        notify player, "That's not an Attack card."
         return
       end
     elsif c[0].type == :disaster
       do_disaster(player, c[0])
       return
-    else
-    end
-    # Play the card
-    if c[0].id == :surgery
+    elsif c[0].id == :sleep
+      string = "You must also play an Attack/Unstoppable to use that card."
+      if c[1]
+        if [:attack, :unstoppable].include? c[1].type
+        else
+          notify player, string
+          return
+        end
+      else
+        notify player, string
+        return
+      end
+    elsif c[0].id == :surgery
       unless player.health == 1
         notify player, "You can only use that card with 1 health."
         return
       end
     end
+    # Play the card
     @discard << c[0]
     player.discard = c[0]
-    # Don't discard the crane/magnet card.
+    player.delete_cards(c[0])
+    # Don't discard the crane/magnet/sleep card(s).
     if [:crane, :magnet].include? player.discard.id
       player.garbage = c[1..-1]
+    elsif player.discard.id == :sleep
+      player.garbage = [c[1]]
     end
-    player.delete_cards(c[0])
     # Deflector, (by our interpretation of the rules,) automatically
     # pushes the attack onto a person without giving them a chance
     # to respond, therefore we execute the attack and increment_turn.
@@ -1216,10 +1193,10 @@ class Junkyard
 
   def do_grab(player, opponent, c)
     if c[1].nil?
-      notify player, "Play an attack when grabbing."
+      notify player, "Play an Attack when grabbing."
       return
     elsif c[1].type == :counter or c[1].type == :disaster
-      notify player, "You can't play a #{c[1].type} card when grabbing."
+      notify player, "You can't play a #{c[1].type.to_s.upcase} card when grabbing."
       return
     elsif c[1].id == :surgery
       dmg = opponent.discard || 0
@@ -1227,7 +1204,9 @@ class Junkyard
         notify player, "You can only use that card with 1 health."
         return
       end
-    elsif [:crane, :magnet].include? c[1].id
+    elsif c[1].id == :sleep and c[2].nil?
+      notify player, "You must also play an Attack/Support to use that card."
+    elsif [:crane, :magnet, :sleep].include? c[1].id
       player.garbage = c[2..-1]
     end
     do_move(opponent, player, wait=false) if player == attacked or opponent.discard
@@ -1436,7 +1415,17 @@ class Junkyard
         player.energy += n - 1
         player.health += 1 if player.health < MAX_HP
       else
-        n = player.discard.health * multiplier
+        if player.discard.id == :sleep
+          n = player.garbage.first.health.abs * multiplier
+          if player.garbage.first.id == :slot_machine
+            3.times { n += rand(4) * multiplier }
+          end
+          @discard |= player.garbage
+          player.delete_cards(player.garbage)
+          player.sort_cards
+        else
+          n = player.discard.health * multiplier
+        end
         until player.health >= MAX_HP or n < 1
           player.health += 1
           n -= 1
@@ -1474,27 +1463,20 @@ class Junkyard
         end
         @discard |= player.garbage
         player.delete_cards(player.garbage)
-        player.garbage = nil
         player.sort_cards
       when :meal_steal
-        h, temp_deck = player.health, []
+        n, temp_deck = 0, []
         opponent.cards.each do |e|
           if e.id == :soup or e.id == :sub
             temp_deck << e
-            h += e.health * multiplier
+            n += e.health * multiplier
           end
         end
         if temp_deck.length > 0
           opponent.delete_cards(temp_deck)
-          if h <= MAX_HP
-            player.health = h
-          elsif player.health <= MAX_HP
-            if h > MAX_HP
-              player.health = MAX_HP
-            else
-              player.health = h
-            end
-          else
+          until player.health >= MAX_HP or n < 1
+            player.health += 1
+            n -= 1
           end
         end
       else
@@ -1503,7 +1485,8 @@ class Junkyard
       end
     end
     # Announce attack
-    say player.discard.string % { :p => player, :o => opponent }
+    say player.discard.string % { :p => player, :o => opponent, :c => player.garbage.first }
+    player.garbage = []
     # Tally up turns being missed
     opponent.skips += player.discard.skips * multiplier
     player.turn_wizard += player.discard.skips * multiplier
@@ -1544,7 +1527,8 @@ class Junkyard
           { :p => opponent, :o => player, :c => player.discard }
         @discard << opponent.discard
         opponent.discard = player.discard.dup
-        player.discard = nil
+        opponent.garbage = player.garbage.dup
+        player.discard, player.garbage = nil, []
         # Mirror the attack, passing on any possible multiplier.
         do_move(opponent, player, wait=false, multiplier)
       end
@@ -1578,7 +1562,7 @@ class Junkyard
         say "#{player} dodged and nullified " +
             "#{opponent.user}'s #{opponent.discard}!"
         if opponent.propeller
-          say "#{player} discards #{player.propeller}."
+          say "#{opponent} discards #{opponent.propeller}."
           @discard << opponent.propeller
           opponent.propeller = nil
         end
@@ -2000,7 +1984,7 @@ class JunkyardPlugin < Plugin
       "or a #{s}Support#{cl} card if you wish to heal. Instead of attacking " +
       "when it's your turn, you can discard cards you don't want. If you " +
       "have no playable cards, you must discard. After discarding or " +
-      "playing an attack, your turn is over."
+      "playing an Attack, your turn is over."
     when /at+ack/
       "#{b}You're Attacked:#{b} #{c}Counter#{cl} cards are played to negate " +
       "or mitigate the damage you receive when being attacked. If you " +
@@ -2104,10 +2088,10 @@ class JunkyardPlugin < Plugin
     when /^drop( |\z)/
       return unless p and g.started
       victim = case a[0]
-               when 'me', nil then p
-               when 'bot' then g.get_player(@bot.nick)
-               else g.get_player(a[0], m.sourcenick.downcase)
-               end
+        when 'me', nil then p
+        when 'bot' then g.get_player(@bot.nick)
+        else g.get_player(a[0], m.sourcenick.downcase)
+        end
       unless victim
         m.reply "There is no one playing named '#{a[0]}'."
         return
