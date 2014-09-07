@@ -1144,6 +1144,7 @@ class Junkyard
       a.unshift(players.shuffle.select { |e| e != p }.first.user.to_s)
       debug "Bot's playing #{a.join(' ')} "
       play_move(a)
+      bot_thread_move if cards.first.type == :disaster
     else
       a = Array.new(p.cards.length) { |i| i + 1 }
       # Don't discard the first card
@@ -1152,7 +1153,6 @@ class Junkyard
       debug "Bot's discarding #{a.join(' ')}"
       discard(a)
     end
-    bot_thread_move if cards.first.type == :disaster
   end
 
   def bot_counter
