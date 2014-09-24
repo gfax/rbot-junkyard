@@ -5,7 +5,7 @@
 # Author:: Lite <jay@gfax.ch>
 # Copyright:: (C) 2014 gfax.ch
 # License:: GPL
-# Version:: 2014-09-06
+# Version:: 2014-09-23
 #
 
 class Junkyard
@@ -1183,7 +1183,6 @@ class Junkyard
       cards << h[:sleep].first
       cards << (h[:attack] + h[:unstoppable]).sort {|x,y| x.health <=> y.health}.first
     elsif p.health <= (MAX_HP/2) and h[:grab].any? and h[:support].any?
-      debug "THIS BLOCK THIS BLOCK THIS BLOCK"
       cards << h[:grab].first
       cards << h[:support].first
     elsif h[:counter].any? and (o.discard.health <= -3 or rand(2))
@@ -1237,24 +1236,15 @@ class Junkyard
       # is assumed to be the player not attacking.
       a.delete_at(0) if get_player(a[0], player.user.downcase)
       opponent = players[1]
+    elsif attacked
+      opponent = attacked
     else
-      if attacked
-        opponent = attacked
-      else
-        # Don't really need an opponent if disaster/support card.
-        temp_card = a[0].to_i - 1
-        if temp_card.between?(0, player.cards.length-1)
-          temp_card = player.cards[temp_card]
-          if temp_card.type == :disaster or temp_card.type == :support
-            opponent = players[1]
-          else
-            opponent = get_player(a[0], player.user.downcase)
-            if opponent.nil?
-              say "There is no player '#{a[0]}'."
-              return
-            end
-            a.delete_at(0)
-          end
+      # Don't really need an opponent if disaster/support card.
+      temp_card = a[0].to_i - 1
+      if temp_card.between?(0, player.cards.length-1)
+        temp_card = player.cards[temp_card]
+        if temp_card.type == :disaster or temp_card.type == :support
+          opponent = players[1]
         else
           opponent = get_player(a[0], player.user.downcase)
           if opponent.nil?
@@ -1263,10 +1253,17 @@ class Junkyard
           end
           a.delete_at(0)
         end
-        if player == opponent
-          say "You can't fight the mentally impaired."
+      else
+        opponent = get_player(a[0], player.user.downcase)
+        if opponent.nil?
+          say "There is no player '#{a[0]}'."
           return
         end
+        a.delete_at(0)
+      end
+      if player == opponent
+        say "You can't fight the mentally impaired."
+        return
       end
     end
     # Process card information.
@@ -1284,11 +1281,10 @@ class Junkyard
         return
       end
     end
-    if player.grabbed
-      if player.discard
-        say "You already played a card."
-        return
-      end
+    if player.discard
+      say "You already played a card."
+      return
+    elsif player.grabbed
       # Player responds to a counter grab.
       do_counter(player, opponent, c)
       return
@@ -1392,14 +1388,15 @@ class Junkyard
       notify player, "You must also play an Attack/Support to use that card."
     elsif [:crane, :magnet, :sleep].include? c[1].id
       player.garbage = c[2..-1]
+      debug "Player garbage: " + player.garbage.map { |e| e.name.to_s }.join(', ')
     end
-    do_move(opponent, player, wait=false) if player == attacked or opponent.discard
-    # In case player dies trying to grab.
-    return if player.health < 1
     @discard |= [ c[0], c[1] ]
     player.discard = c[1]
     do_slots(player)
     player.delete_cards([c[0], c[1]])
+    do_move(opponent, player, wait=false) if player == attacked or opponent.discard
+    # In case player dies trying to grab.
+    return if player.health < 1
     # In case player being grabbed dies when
     # when being grabbed (ie., from Deflector).
     if opponent.health < 1
@@ -1641,7 +1638,11 @@ class Junkyard
         else
           # Steal opponen't cards, up to double with propeller.
           a = opponent.cards.shuffle.pop(player.garbage.length * multiplier)
-          notify player, "#{Bold}You stole:#{Bold} " + a.join(', ')
+          if a.empty?
+            notify player, "#{Bold}Nothing to steal!#{Bold}"
+          else
+            notify player, "#{Bold}You stole:#{Bold} " + a.join(', ')
+          end
           player.cards |= a
           opponent.delete_cards(a)
         end
