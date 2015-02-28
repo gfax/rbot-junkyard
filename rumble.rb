@@ -3,9 +3,9 @@
 # :title: Junkyard
 #
 # Author:: Lite <jay@gfax.ch>
-# Copyright:: (C) 2014 gfax.ch
+# Copyright:: (C) 2015 gfax.ch
 # License:: GPL
-# Version:: 2014-09-23
+# Version:: 2015-02-27
 #
 
 class Junkyard
@@ -757,7 +757,7 @@ class Junkyard
       notify player, "#{Bold}You drew:#{Bold} #{cards.join(', ')}"
     end
     player.cards |= cards
-    player.sort_cards
+    player.sort_cards if @bot.config['junkyard.sort_cards']
   end
 
   def start_game
@@ -1603,7 +1603,7 @@ class Junkyard
           end
           @discard |= player.garbage
           player.delete_cards(player.garbage)
-          player.sort_cards
+          player.sort_cards if @bot.config['junkyard.sort_cards']
         else
           n = player.discard.health * multiplier
         end
@@ -1648,7 +1648,7 @@ class Junkyard
         end
         @discard |= player.garbage
         player.delete_cards(player.garbage)
-        player.sort_cards
+        player.sort_cards if @bot.config['junkyard.sort_cards']
       when :meal_steal
         n, temp_deck = 0, []
         opponent.cards.each do |e|
@@ -2111,6 +2111,9 @@ class JunkyardPlugin < Plugin
   Config.register Config::BooleanValue.new 'junkyard.reveal_cards',
     :default => false,
     :desc => "Reveal a player's hand cards when dropped or killed."
+  Config.register Config::BooleanValue.new 'junkyard.sort_cards',
+    :default => false,
+    :desc => "Sort players' hands when drawing new cards."
 
   TITLE = Junkyard::TITLE
   MAX_HP = Junkyard::MAX_HP
@@ -2465,7 +2468,7 @@ class JunkyardPlugin < Plugin
     end
     y = params[:y].to_s.downcase
     unless @registry[x][2].has_key? y
-      "They haven't played a game in this channel, #{m.source.nick}"
+      @bot.say m.replyto, "#{y} hasn't played #{TITLE} in this channel."
       return
     end
     @bot.say m.replyto, "#{Bold}#{@registry[x][2][y][:nick]}#{Bold} " +
